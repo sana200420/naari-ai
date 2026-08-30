@@ -1,0 +1,37 @@
+# ---- secrets: never commit these ----
+.env
+.env.local
+*.key
+credentials.json
+
+# ---- python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- node / next.js ----
+node_modules/
+.next/
+out/
+dist/
+.vercel/
+
+# ---- models & big artefacts (use HF Hub, not git) ----
+*.onnx
+*.bin
+*.safetensors
+*.pt
+models/
+
+# ---- os junk ----
+.DS_Store
+Thumbs.db
+
+# ---- pitch materials: large binaries, not code ----
+slidedeck/
+assets/*.mp4
+assets/*.pptx

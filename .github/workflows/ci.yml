@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fail if a .env file was committed
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "::error::.env is committed. Remove it and rotate the keys."
+            exit 1
+          fi
+          echo "No .env in the repo."
+
+      # Uncomment as each piece lands:
+      # - run: pip install -r requirements.txt
+      # - run: pytest retrieval/ api/
+      # - run: python eval/run_eval.py --ci
