@@ -1,0 +1,19 @@
+{
+  "description": "retrieval search() contract — Sana (KB) → Sabiha (backend)",
+  "function": "search(query: str, top_k: int = 5) -> list[Result]",
+  "result_shape": {
+    "id": "int — KB row ID",
+    "question": "string — matched question from KB",
+    "answer": "string — answer text",
+    "category": "string — e.g. 'Menstrual Health & Periods'",
+    "sub_category": "string — e.g. 'Period pain & cramp relief'",
+    "score": "float — cosine similarity score 0.0–1.0",
+    "review_tier": "string — 'A' | 'B' | 'C'",
+    "source": "string — citation URL"
+  },
+  "notes": [
+    "Tier C rows must never be served — filter them before returning",
+    "Minimum score threshold: 0.5 — do not return below this",
+    "Results sorted by score descending"
+  ]
+}
