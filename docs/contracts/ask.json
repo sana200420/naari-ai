@@ -1,0 +1,41 @@
+{
+  "_contract": "ask.json — the POST /ask request and response shape. Sabiha owns this endpoint; Tooba's /web consumes it. Changing this file needs a PR both sides approve.",
+
+  "_request_shape": {
+    "query": "string — raw user text, Sindhi (or Roman Sindhi / ASR output in prototype 2), not normalised by the client",
+    "session_id": "string, optional — for rate limiting and feedback correlation; server generates one if omitted"
+  },
+
+  "_response_shape": {
+    "answer": "string — the text to display: a verbatim KB answer, an LLM-stitched middle-band answer, an escalation script, or a refusal script",
+    "sources": "array of string — citation URL(s) backing the answer; empty array only for escalation/refusal paths",
+    "path": "string — one of 'danger_escalation', 'scope_refusal', 'verbatim', 'constrained_generation', 'low_confidence_refusal'",
+    "confidence": "float or null — the top retrieval/rerank score that produced this response; null for danger_escalation and scope_refusal, since those short-circuit before retrieval runs",
+    "review_tier": "string or null — the review_tier ('A'/'B'/'C') of the KB row(s) the answer is grounded in; null for escalation/refusal paths. Tier B responses must be shown with a visible 'not yet clinically verified' disclosure; Tier C rows are never served (see Risk 4 in PLAYBOOKS.md)",
+    "latency_ms": "int — total request time"
+  },
+
+  "_example_verbatim": {
+    "answer": "حيض واري صورتحال جي دور ۾ هڪ مهيني هارمونل عمل...",
+    "sources": ["WHO - https://www.who.int/news-room/fact-sheets/detail/menstrual-health-and-hygiene"],
+    "path": "verbatim",
+    "confidence": 0.94,
+    "review_tier": "B",
+    "latency_ms": 210
+  },
+
+  "_example_danger_escalation": {
+    "answer": "escalation script text from kb_safety_always_on.md",
+    "sources": [],
+    "path": "danger_escalation",
+    "confidence": null,
+    "review_tier": null,
+    "latency_ms": 15
+  },
+
+  "_notes": [
+    "path tells the client (and the log) exactly which of the section-3 pipeline stages produced the response — Tooba's UI should style danger_escalation and scope_refusal distinctly from a normal answer.",
+    "Every non-refusal response must have at least one entry in sources — the vetted-source citation is the whole point of this product, per ROADMAP.md.",
+    "Structured logging (query, path, confidence, latency, and the retrieval.json this was built from) is Sabiha's responsibility per PLAYBOOKS.md Phase 2."
+  ]
+}
