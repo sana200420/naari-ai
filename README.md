@@ -7,7 +7,7 @@ with RAG — not generated freely by a language model.
 Text-based now. Voice in prototype 2.
 
 **Team:** Sana · Sabiha · Tooba · Mahnoor — SZABIST
-
+**Status:** Phase 0 — Foundations. See [docs/status.md](docs/status.md).
 ---
 
 ## What's in here
