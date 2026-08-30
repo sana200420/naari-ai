@@ -1,0 +1,24 @@
+{
+  "description": "/ask endpoint contract — Sabiha (backend) → Tooba (UI)",
+  "request": {
+    "query": "string — user's question text or transcribed audio",
+    "language": "string — 'sindhi' | 'english' (default: sindhi)",
+    "session_id": "string | null — optional session identifier"
+  },
+  "response": {
+    "answer": "string — text answer in requested language",
+    "audio_url": "string | null — URL to pre-recorded audio if verbatim path",
+    "path": "string — 'danger' | 'verbatim' | 'generated' | 'referral'",
+    "confidence_band": "string — 'high' | 'mid' | 'low'",
+    "escalated": "boolean — true if danger-sign gate triggered",
+    "disclaimer": "boolean — true if Tier B disclosure required",
+    "retrieved_ids": "array[int] — KB row IDs used in answer",
+    "latency_ms": "float | null — request latency in milliseconds"
+  },
+  "notes": [
+    "If escalated=true, answer contains the fixed escalation script only",
+    "If path=verbatim, audio_url will be populated",
+    "If disclaimer=true, UI must show the Tier B disclosure banner",
+    "Do not cache on the UI side — caching is handled by the backend"
+  ]
+}
