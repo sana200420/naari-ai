@@ -199,7 +199,7 @@ def run_danger_gate(text: str) -> GateResult:
             + cat.get("keywords_urdu", [])
         )
         for kw in all_keywords:
-            if normalise(kw) in norm:
+            if re.search(r"\b" + re.escape(normalise(kw)) + r"\b", norm):
                 return GateResult(
                     escalate=True,
                     category=cat_name,
@@ -211,7 +211,7 @@ def run_danger_gate(text: str) -> GateResult:
     # 2. Check scope classifiers
     for scope_name, scope in SCOPE_REFERRALS.items():
         for kw in scope["keywords"]:
-            if normalise(kw) in norm:
+            if re.search(r"\b" + re.escape(normalise(kw)) + r"\b", norm):
                 return GateResult(
                     escalate=False,
                     category=None,
