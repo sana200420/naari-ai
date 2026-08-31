@@ -23,7 +23,9 @@ jobs:
           fi
           echo "No .env in the repo."
 
+      - run: pip install -r requirements.txt
+      - run: pytest retrieval/
+
       # Uncomment as each piece lands:
-      # - run: pip install -r requirements.txt
-      # - run: pytest retrieval/ api/
+      # - run: pytest api/
       # - run: python eval/run_eval.py --ci

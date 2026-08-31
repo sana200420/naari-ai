@@ -1,19 +1,47 @@
 {
-  "description": "retrieval search() contract — Sana (KB) → Sabiha (backend)",
-  "function": "search(query: str, top_k: int = 5) -> list[Result]",
-  "result_shape": {
-    "id": "int — KB row ID",
-    "question": "string — matched question from KB",
-    "answer": "string — answer text",
-    "category": "string — e.g. 'Menstrual Health & Periods'",
-    "sub_category": "string — e.g. 'Period pain & cramp relief'",
-    "score": "float — cosine similarity score 0.0–1.0",
-    "review_tier": "string — 'A' | 'B' | 'C'",
-    "source": "string — citation URL"
+  "_contract": "retrieval.json — what retrieval.search(query) returns. Sana owns this shape; Sabiha's /api consumes it. Changing this file needs a PR both sides approve.",
+
+  "_request_shape": {
+    "query": "string — the RAW user query, not yet normalised. search() normalises internally, same as embed_text() does."
   },
-  "notes": [
-    "Tier C rows must never be served — filter them before returning",
-    "Minimum score threshold: 0.5 — do not return below this",
-    "Results sorted by score descending"
+
+  "_response_shape": {
+    "query_normalised": "string — the query after normalize_sd(), for logging/debugging",
+    "results": [
+      {
+        "answer_id": "int — matches the KB `id` column, stable across languages/variants",
+        "category": "string",
+        "sub_category": "string",
+        "question": "string — the KB question text that matched",
+        "answer": "string — the Sindhi answer text to show/use",
+        "source": "string — citation, e.g. 'NHS - https://...'",
+        "score": "float — fused/reranked relevance score, higher is better, not bounded to [0,1] until reranking lands",
+        "path": "string — which retrieval leg found this row: one of 'sindhi_dense', 'sindhi_sparse', 'english_dense', 'variant'"
+      }
+    ],
+    "latency_ms": "int — wall-clock time for the whole search() call"
+  },
+
+  "_example": {
+    "query_normalised": "حيض جي چڪر ڇا آهي؟",
+    "results": [
+      {
+        "answer_id": 1,
+        "category": "حيض جي صحت ۽ مدت",
+        "sub_category": "سائيڪل جي بنياديات ۽ ڇا عام آهي",
+        "question": "حيض جي چڪر ڇا آهي؟",
+        "answer": "حيض واري صورتحال جي دور ۾ هڪ مهيني هارمونل عمل...",
+        "source": "WHO - https://www.who.int/news-room/fact-sheets/detail/menstrual-health-and-hygiene",
+        "score": 0.91,
+        "path": "sindhi_dense"
+      }
+    ],
+    "latency_ms": 42
+  },
+
+  "_notes": [
+    "results is ordered best-first, already deduped by answer_id — retrieval never returns the same answer_id twice in one call.",
+    "An empty results list is valid and means 'no confident match' — callers should not treat it as an error.",
+    "answer_id is the join key everywhere: across languages (Lever 4), across variants (Lever 2), and in eval sets (correct_answer_id in gold_eval.csv)."
   ]
 }
