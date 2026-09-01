@@ -6,7 +6,7 @@
 
 | Person | Currently | Blocked on |
 |---|---|---|
-| Sana | Levers 1, 3, 4 done and measured; reranking (item 8) built and measured; Sindhi+English embedded (3999/4000 points); gold eval set human-reviewed and folded in (280→275 rows); Phase 1 go/no-go is a GO; next: Phase 2 (package as a service, threshold tuning, ONNX) — also flagged: the remaining ~146 gold rows need individual review before reranking's Recall@1 feeds anything load-bearing like Lever 5 thresholds | One English translation short (KB `id=2000`, a backfilled row with no source translation) for a full 4000-point collection |
+| Sana | Levers 1, 3, 4 done and measured; reranking (item 8) built and measured; Sindhi+English fully embedded (4000/4000 points, verified live); gold eval set human-reviewed and folded in (280→275 rows); Phase 1 go/no-go is a GO, checklist fully closed; next: Phase 2 (package as a service, threshold tuning, ONNX) — also flagged: the remaining ~146 gold rows need individual review before reranking's Recall@1 feeds anything load-bearing like Lever 5 thresholds | — |
 | Sabiha | FastAPI skeleton + first deploy | — |
 | Tooba | Next.js skeleton, Sindhi font audit | — |
 | Mahnoor | Corpus merge landed; variant + eval pipeline landed but partial (see below) | Reviewer outreach and real-question harvesting not started yet |
