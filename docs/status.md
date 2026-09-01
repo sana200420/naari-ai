@@ -1,12 +1,12 @@
 # Project status
 
-**Current phase:** Phase 1 — The retrieval spike. **GO decision made 2026-09-01** (fused Recall@5 = 0.971, exit gate is ≥0.85) — clear to proceed to Phase 2. Only reranking (item 8) remains open on Sana's Phase 1 checklist in `docs/PLAYBOOKS.md`; it's not blocking, it targets Recall@1/confidence-gate precision.
+**Current phase:** Phase 1 — The retrieval spike. **GO decision made 2026-09-01** (fused Recall@5 = 0.971, exit gate is ≥0.85). Sana's full Phase 1 checklist in `docs/PLAYBOOKS.md` is now closed (items 1–9). Clear to proceed to Phase 2.
 
 ## Who's on what
 
 | Person | Currently | Blocked on |
 |---|---|---|
-| Sana | Levers 1, 3, 4 done and measured; Sindhi+English embedded (3999/4000 points); gold eval set human-reviewed and folded in (280→275 rows); Phase 1 go/no-go is a GO; next: reranking, then Phase 2 (package as a service, threshold tuning, ONNX) | One English translation short (KB `id=2000`, a backfilled row with no source translation) for a full 4000-point collection |
+| Sana | Levers 1, 3, 4 done and measured; reranking (item 8) built and measured; Sindhi+English embedded (3999/4000 points); gold eval set human-reviewed and folded in (280→275 rows); Phase 1 go/no-go is a GO; next: Phase 2 (package as a service, threshold tuning, ONNX) — also flagged: the remaining ~146 gold rows need individual review before reranking's Recall@1 feeds anything load-bearing like Lever 5 thresholds | One English translation short (KB `id=2000`, a backfilled row with no source translation) for a full 4000-point collection |
 | Sabiha | FastAPI skeleton + first deploy | — |
 | Tooba | Next.js skeleton, Sindhi font audit | — |
 | Mahnoor | Corpus merge landed; variant + eval pipeline landed but partial (see below) | Reviewer outreach and real-question harvesting not started yet |
@@ -35,6 +35,7 @@
   Fused clears the Phase 1 exit gate (≥0.85) comfortably. Getting here took two real bugs found and fixed along the way: (1) `dense_search`/`sparse_search` had no `lang` filter, so a "Sindhi-only" search was silently mixing in English points once the English KB shared the collection — fixed by defaulting to `lang="sd"`; (2) the first two re-run attempts of the Colab notebook silently kept using stale pre-fix code (`git pull` run from the wrong directory, then Python's module cache not reloaded, then a reconnected Colab tab reusing an already-stale VM) — fixed by making the notebook re-clone unconditionally and reload modules explicitly rather than trusting `git pull`.
 - `retrieval/translate.py` + `HybridRetriever.cross_lingual_search()` (Lever 4 cascade): built and measured. Of 8 Sindhi-only misses in the corrected gold set, English rescued **0 (0%)** — small sample, but a real number, not yet a flattering one. Worth checking the actual NLLB translations on those 8 before Phase 2 makes this leg conditional.
 - **Prefix convention empirically confirmed:** no-prefix Recall@1 0.552 vs. prefixed 0.431 on the same candidate pool — confirms ADR 0001, bge-m3 needs none.
+- **Reranking (item 8):** `retrieval/rerank.py` (`bge-reranker-v2-m3`) built and measured. Raw Recall@1 dropped to 0.385, which looked alarming — but a 40-row manual audit of the disagreements (`eval/rerank_regression_audit.csv`) found the reranker was right about as often (12/40) as genuinely wrong (11/40), with another 12/40 cases where fused's own top-1 was *also* wrong (i.e. the never-individually-reviewed gold rows, not reranking, are the actual weak point) and 5/40 near-duplicate-content ties. One real, occasional weakness confirmed: cross-category confusion from surface phrase overlap. Latency is well inside budget (p95 112ms/20 candidates). **Flag before Phase 2:** don't feed reranking's raw Recall@1 into Lever 5 threshold tuning until the remaining ~146 gold rows get the same individual review the original 24 got.
 
 ## Gold eval set — reviewed
 
