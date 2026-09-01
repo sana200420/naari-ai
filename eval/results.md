@@ -150,8 +150,8 @@ silent RAG bug" is confirmed *not* present here.
 
 ---
 
-# Item 8 — cross-encoder reranking over the fused top-20 (⚠️ UNDER INVESTIGATION, not a settled result)
-Generated: 2026-09-01T09:38Z
+# Item 8 — cross-encoder reranking over the fused top-20
+Generated: 2026-09-01T09:38Z, audited 2026-09-01
 
 `retrieval.rerank.rerank()` (`BAAI/bge-reranker-v2-m3`) over
 `HybridRetriever.fused_search(top_k=20, lang="sd")`, all 275 corrected gold queries.
@@ -161,14 +161,39 @@ Generated: 2026-09-01T09:38Z
 | dense only | 0.462 | 0.880 |
 | sparse only | 0.542 | 0.898 |
 | fused (no rerank) | 0.967 | 0.971 |
-| **reranked** | **0.385** | **0.785** |
+| reranked (raw, against unaudited ground truth) | 0.385 | 0.785 |
 
-**Do not read this as "reranking doesn't work for Sindhi" yet.** Reranked Recall@1 lands
-*below the weakest single leg* (sparse-only, 0.542) — a reranker with any real signal at
-all shouldn't score worse than a leg it never even sees, which is a stronger sign of an
-ordering/pairing bug than of a genuine capability gap. Diagnostic cells added to
-`retrieval/scripts/link_and_baseline_gold_queries.ipynb` (sanity-checking `compute_score`
-in isolation, and printing actual before/after disagreements) — not yet run. Latency
-(mean 335ms, p95 112ms for 20 candidates) is well inside Risk 2's 3s budget regardless of
-the accuracy question. Not blocking the Phase 1 GO decision either way (fused alone
-already clears the exit gate); this only matters for whether reranking gets used at all.
+**The raw reranked number is not trustworthy as-is — it's confounded by gold-set noise,
+not a real capability finding.** Sanity-checked `compute_score()` in isolation first
+(identical-pair score 0.9998 vs. unrelated-pair score 0.000016 — the model and scoring
+function work correctly). Then manually audited a random sample of 40 of the 160 queries
+where reranking moved the "correct" answer off rank 1
+(`eval/rerank_regression_audit.csv`, full method there):
+
+| Verdict | Count | Meaning |
+|---|---:|---|
+| RERANK_CORRECT | 12 | Reranker's pick was actually the better match — fused's unreviewed ground truth was wrong |
+| FUSED_CORRECT | 11 | Genuine regression — fused was right, reranker picked worse |
+| BOTH_WRONG | 12 | Neither candidate answers the query — a retrieval-pool gap; fused's own top-1 was already wrong here too |
+| BOTH_OK | 5 | Near-duplicate KB rows (content the corpus should probably dedupe), either answer is fine |
+
+Only 27.5% of sampled "regressions" are genuine — the reranker was right about as often
+(12) as it was wrong (11) on the cases where it actually disagreed with fused, and 30% of
+the disagreements (BOTH_WRONG) mean fused's own top-1 was *also* wrong for those same
+rows, which means fused's 0.967 headline number is itself somewhat inflated by the same
+never-individually-reviewed rows. **This is a gold-set completeness problem, not a
+reranking-quality problem:** only 129/275 rows were ever manually reviewed (the earlier
+24-row deep review); the rest were accepted on a category-level match, which turns out to
+be too coarse a bar for judging a component this discriminating.
+
+One confirmed real reranker weakness worth tracking: cross-category confusion from
+surface phrase overlap (`gold_7`, "how many times should I visit the doctor during
+pregnancy" reranked to a PCOS post-diagnosis follow-up row) — occurred in this sample,
+not fabricated, worth watching for as reranking gets tuned further.
+
+**Latency:** mean 335ms, p95 112ms for 20 candidates — well inside Risk 2's 3s budget.
+
+**Not blocking Phase 1's GO** (fused alone already clears the exit gate). Before relying
+on reranking's Recall@1 number for anything load-bearing (e.g. Lever 5 threshold tuning),
+the gold set needs the same individual-row review the original 24 flagged rows got,
+applied to the rest of the 275 — this audit is suggestive at n=40, not a full fix.
