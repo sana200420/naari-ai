@@ -2,6 +2,8 @@ pytest>=8.0
 pandas>=2.0
 qdrant-client>=1.19
 sentence-transformers>=6.0
+transformers>=4.40
+sentencepiece>=0.2
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
 pydantic==2.7.1
