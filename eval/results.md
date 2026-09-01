@@ -147,3 +147,28 @@ candidate pool rather than a full-corpus retrieval test.
 **Verdict: confirms ADR 0001** — bge-m3 needs no prefix, and adding one measurably hurts
 (Recall@1 drops from 0.552 to 0.431 within the same candidate pool). Risk 1's "most common
 silent RAG bug" is confirmed *not* present here.
+
+---
+
+# Item 8 — cross-encoder reranking over the fused top-20 (⚠️ UNDER INVESTIGATION, not a settled result)
+Generated: 2026-09-01T09:38Z
+
+`retrieval.rerank.rerank()` (`BAAI/bge-reranker-v2-m3`) over
+`HybridRetriever.fused_search(top_k=20, lang="sd")`, all 275 corrected gold queries.
+
+| Stage | Recall@1 | Recall@5 |
+|---|---:|---:|
+| dense only | 0.462 | 0.880 |
+| sparse only | 0.542 | 0.898 |
+| fused (no rerank) | 0.967 | 0.971 |
+| **reranked** | **0.385** | **0.785** |
+
+**Do not read this as "reranking doesn't work for Sindhi" yet.** Reranked Recall@1 lands
+*below the weakest single leg* (sparse-only, 0.542) — a reranker with any real signal at
+all shouldn't score worse than a leg it never even sees, which is a stronger sign of an
+ordering/pairing bug than of a genuine capability gap. Diagnostic cells added to
+`retrieval/scripts/link_and_baseline_gold_queries.ipynb` (sanity-checking `compute_score`
+in isolation, and printing actual before/after disagreements) — not yet run. Latency
+(mean 335ms, p95 112ms for 20 candidates) is well inside Risk 2's 3s budget regardless of
+the accuracy question. Not blocking the Phase 1 GO decision either way (fused alone
+already clears the exit gate); this only matters for whether reranking gets used at all.
