@@ -24,7 +24,8 @@
 
 - `retrieval/search.py`: `HybridRetriever` (dense/sparse/fused search against Qdrant) + `reciprocal_rank_fusion`, tested against fakes and verified against the live collection
 - Sindhi KB (2000 rows) + English KB (1999/2000 rows) embedded into Qdrant Cloud collection `naari_ai_kb`: named `dense` (1024-d cosine) + `sparse` vectors, `lang` payload field (`sd`/`en`) with a payload index, shared `answer_id` join key across languages
-- Ablation table (dense/sparse/fused Recall@1/5/20) in `eval/results.md` — provisional pass measured fused against its own top-1; a final pass against the human-reviewed 275-query gold set is queued in `retrieval/scripts/link_and_baseline_gold_queries.ipynb` but needs a live Colab run to produce real numbers
+- Ablation table (dense/sparse/fused Recall@1/5/20) in `eval/results.md` — provisional pass measured fused against its own top-1, **and** predates a bug fix (2026-09-01): `dense_search`/`sparse_search` had no `lang` filter, so once the English KB shared the collection, a "Sindhi-only" search was silently mixing in English points, double-counting some answer_ids in RRF. Fixed. A final pass against the human-reviewed 275-query gold set, with the fix applied, is queued in `retrieval/scripts/link_and_baseline_gold_queries.ipynb` but needs a live Colab run to produce real numbers.
+- `retrieval/translate.py` + `HybridRetriever.cross_lingual_search()` (Lever 4 cascade: SD dense + SD sparse + translated-query EN dense) built and unit-tested against fakes — still needs a live Colab run to measure the actual English-rescue fraction the checklist item asks for.
 
 ## Gold eval set — reviewed
 
