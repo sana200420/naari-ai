@@ -1,12 +1,12 @@
 # Project status
 
-**Current phase:** Phase 1 — The retrieval spike (Sana: items 1/2/3/4/6 of the Phase 1 checklist in `docs/PLAYBOOKS.md` done or superseded; 5/7/8/9 open)
+**Current phase:** Phase 1 — The retrieval spike. **GO decision made 2026-09-01** (fused Recall@5 = 0.971, exit gate is ≥0.85) — clear to proceed to Phase 2. Only reranking (item 8) remains open on Sana's Phase 1 checklist in `docs/PLAYBOOKS.md`; it's not blocking, it targets Recall@1/confidence-gate precision.
 
 ## Who's on what
 
 | Person | Currently | Blocked on |
 |---|---|---|
-| Sana | Levers 1 and 3 done and tested; Sindhi+English embedded (3999/4000 points); gold eval set human-reviewed and folded in (280→275 rows); next: prefix verification, Lever 4 query-time cascade, reranking, go/no-go | One English translation short (KB `id=2000`, a backfilled row with no source translation) for a full 4000-point collection |
+| Sana | Levers 1, 3, 4 done and measured; Sindhi+English embedded (3999/4000 points); gold eval set human-reviewed and folded in (280→275 rows); Phase 1 go/no-go is a GO; next: reranking, then Phase 2 (package as a service, threshold tuning, ONNX) | One English translation short (KB `id=2000`, a backfilled row with no source translation) for a full 4000-point collection |
 | Sabiha | FastAPI skeleton + first deploy | — |
 | Tooba | Next.js skeleton, Sindhi font audit | — |
 | Mahnoor | Corpus merge landed; variant + eval pipeline landed but partial (see below) | Reviewer outreach and real-question harvesting not started yet |
@@ -24,8 +24,17 @@
 
 - `retrieval/search.py`: `HybridRetriever` (dense/sparse/fused search against Qdrant) + `reciprocal_rank_fusion`, tested against fakes and verified against the live collection
 - Sindhi KB (2000 rows) + English KB (1999/2000 rows) embedded into Qdrant Cloud collection `naari_ai_kb`: named `dense` (1024-d cosine) + `sparse` vectors, `lang` payload field (`sd`/`en`) with a payload index, shared `answer_id` join key across languages
-- Ablation table (dense/sparse/fused Recall@1/5/20) in `eval/results.md` — provisional pass measured fused against its own top-1, **and** predates a bug fix (2026-09-01): `dense_search`/`sparse_search` had no `lang` filter, so once the English KB shared the collection, a "Sindhi-only" search was silently mixing in English points, double-counting some answer_ids in RRF. Fixed. A final pass against the human-reviewed 275-query gold set, with the fix applied, is queued in `retrieval/scripts/link_and_baseline_gold_queries.ipynb` but needs a live Colab run to produce real numbers.
-- `retrieval/translate.py` + `HybridRetriever.cross_lingual_search()` (Lever 4 cascade: SD dense + SD sparse + translated-query EN dense) built and unit-tested against fakes — still needs a live Colab run to measure the actual English-rescue fraction the checklist item asks for.
+- **Final ablation table (`eval/results.md`, 2026-09-01), 275-query human-reviewed gold set, `lang="sd"` bug fixed:**
+
+  | Leg | Recall@1 | Recall@5 | Recall@20 |
+  |---|---:|---:|---:|
+  | dense | 0.462 | 0.880 | 0.975 |
+  | sparse | 0.542 | 0.898 | 0.971 |
+  | fused | 0.967 | 0.971 | 0.975 |
+
+  Fused clears the Phase 1 exit gate (≥0.85) comfortably. Getting here took two real bugs found and fixed along the way: (1) `dense_search`/`sparse_search` had no `lang` filter, so a "Sindhi-only" search was silently mixing in English points once the English KB shared the collection — fixed by defaulting to `lang="sd"`; (2) the first two re-run attempts of the Colab notebook silently kept using stale pre-fix code (`git pull` run from the wrong directory, then Python's module cache not reloaded, then a reconnected Colab tab reusing an already-stale VM) — fixed by making the notebook re-clone unconditionally and reload modules explicitly rather than trusting `git pull`.
+- `retrieval/translate.py` + `HybridRetriever.cross_lingual_search()` (Lever 4 cascade): built and measured. Of 8 Sindhi-only misses in the corrected gold set, English rescued **0 (0%)** — small sample, but a real number, not yet a flattering one. Worth checking the actual NLLB translations on those 8 before Phase 2 makes this leg conditional.
+- **Prefix convention empirically confirmed:** no-prefix Recall@1 0.552 vs. prefixed 0.431 on the same candidate pool — confirms ADR 0001, bge-m3 needs none.
 
 ## Gold eval set — reviewed
 
