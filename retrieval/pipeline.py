@@ -57,6 +57,30 @@ def _get_retriever() -> HybridRetriever:
     return _retriever
 
 
+def warmup() -> None:
+    """Force every model to load now, instead of lazily on first use.
+
+    Without this, `translate_sd_to_en`'s NLLB model only loads the first
+    time some real query's Sindhi score actually lands below tau_high --
+    which might be request 1, or request 50. In production that means
+    whichever user happens to send the first uncertain query eats a
+    ~60s cold-load penalty that should have happened once at container
+    startup instead. Call this once when the service boots, before
+    serving any requests.
+    """
+    from retrieval.embed import embed_text
+    from retrieval.rerank import rerank as _rerank_warmup
+    from retrieval.translate import translate_sd_to_en as _translate_warmup
+
+    embed_text("warmup")
+    _translate_warmup("warmup")
+    _rerank_warmup("warmup", [{
+        "answer_id": 0, "category": "", "sub_category": "",
+        "question": "warmup", "answer": "", "source": "",
+    }])
+    _get_retriever()
+
+
 def _to_result(row: dict, path: str) -> dict:
     return {
         "answer_id": row["answer_id"],

@@ -4,7 +4,11 @@ translate model) is injected as a fake, so these never load a real model or
 touch the network. Real end-to-end verification against live Qdrant + real
 models happens in a notebook, same as the rest of this project."""
 
-from retrieval.pipeline import search
+import retrieval.embed
+import retrieval.rerank
+import retrieval.translate
+import retrieval.pipeline as pipeline_module
+from retrieval.pipeline import search, warmup
 from retrieval.tests.test_fake_retriever import REQUIRED_RESULT_KEYS
 
 
@@ -161,6 +165,20 @@ def test_search_response_includes_normalised_query():
     )
 
     assert result["query_normalised"]  # non-empty; exact normalisation covered in test_normalize.py
+
+
+def test_warmup_loads_all_three_models_and_the_retriever(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(retrieval.embed, "embed_text", lambda text: calls.append(("embed", text)))
+    monkeypatch.setattr(retrieval.translate, "translate_sd_to_en", lambda text: calls.append(("translate", text)))
+    monkeypatch.setattr(retrieval.rerank, "rerank", lambda query, candidates, top_k=5: calls.append(("rerank", query)))
+    monkeypatch.setattr(pipeline_module, "_get_retriever", lambda: calls.append(("retriever",)))
+
+    warmup()
+
+    kinds = [c[0] for c in calls]
+    assert kinds == ["embed", "translate", "rerank", "retriever"]
 
 
 def test_search_respects_top_k():
