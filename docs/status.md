@@ -1,6 +1,6 @@
 # Project status
 
-**Current phase:** Phase 1 — The retrieval spike. **GO decision made 2026-09-01** (fused Recall@5 = 0.971, exit gate is ≥0.85). Sana's full Phase 1 checklist in `docs/PLAYBOOKS.md` is now closed (items 1–9). Clear to proceed to Phase 2.
+**Current phase:** Phase 2 — Make it a service. Phase 1 checklist fully closed 2026-09-01 (GO, fused Recall@5 = 0.971). Phase 2 started same day: `retrieval/pipeline.py`'s `search()` built (the real `docs/contracts/retrieval.json` implementation, replacing `FakeRetriever` for Sabiha's `/api`), conditional English leg implemented, `eval/negative_set_100.csv` verified and unblocking threshold tuning. Live measurement (latency/memory/recall) still needed for all three.
 
 ## Who's on what
 
