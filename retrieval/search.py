@@ -12,6 +12,7 @@ requirement this module exists to produce.
 from qdrant_client import models
 
 from retrieval.embed import embed_text
+from retrieval.translate import translate_sd_to_en
 
 RRF_K = 60
 COLLECTION = "naari_ai_kb"
@@ -35,8 +36,24 @@ def reciprocal_rank_fusion(ranked_lists: list[list], k: int = RRF_K) -> list[tup
     return sorted(scores.items(), key=lambda pair: (-pair[1], pair[0]))
 
 
+def _lang_filter(lang: str | None):
+    if lang is None:
+        return None
+    return models.Filter(must=[models.FieldCondition(key="lang", match=models.MatchValue(value=lang))])
+
+
 class HybridRetriever:
     """Dense + sparse retrieval against the naari_ai_kb Qdrant collection.
+
+    Sindhi and English points share the same collection and the same named
+    `dense`/`sparse` vectors, distinguished only by a `lang` payload field
+    ("sd"/"en"). Every search here defaults to `lang="sd"` — without that
+    filter, English twins of the same answer_id silently mix into a
+    "Sindhi-only" search's results, which both crowds out other distinct
+    answer_ids from the top-k window and double-counts a single answer_id
+    across two points when RRF-fusing (each occurrence in a ranked list adds
+    its own 1/(k+rank) term). Pass lang="en" or lang=None explicitly for the
+    Lever 4 cross-lingual leg or an intentionally unfiltered search.
 
     The embed function is injected (defaults to the real embed_text, which
     calls normalize_sd() internally) so this class is testable against a
@@ -48,7 +65,7 @@ class HybridRetriever:
         self.collection = collection
         self.embed_fn = embed_fn
 
-    def dense_search(self, query: str, top_k: int = 25) -> list[dict]:
+    def dense_search(self, query: str, top_k: int = 25, lang: str | None = "sd") -> list[dict]:
         vec = self.embed_fn(query)
         hits = self.client.query_points(
             collection_name=self.collection,
@@ -56,10 +73,11 @@ class HybridRetriever:
             using="dense",
             limit=top_k,
             with_payload=True,
+            query_filter=_lang_filter(lang),
         ).points
         return [self._hit_to_row(h) for h in hits]
 
-    def sparse_search(self, query: str, top_k: int = 25) -> list[dict]:
+    def sparse_search(self, query: str, top_k: int = 25, lang: str | None = "sd") -> list[dict]:
         vec = self.embed_fn(query)
         sparse_vector = models.SparseVector(
             indices=[int(idx) for idx in vec["sparse"].keys()],
@@ -71,12 +89,13 @@ class HybridRetriever:
             using="sparse",
             limit=top_k,
             with_payload=True,
+            query_filter=_lang_filter(lang),
         ).points
         return [self._hit_to_row(h) for h in hits]
 
-    def fused_search(self, query: str, top_k: int = 5, leg_k: int = 25) -> list[dict]:
-        dense_rows = self.dense_search(query, top_k=leg_k)
-        sparse_rows = self.sparse_search(query, top_k=leg_k)
+    def fused_search(self, query: str, top_k: int = 5, leg_k: int = 25, lang: str | None = "sd") -> list[dict]:
+        dense_rows = self.dense_search(query, top_k=leg_k, lang=lang)
+        sparse_rows = self.sparse_search(query, top_k=leg_k, lang=lang)
 
         row_by_id = {}
         for row in dense_rows + sparse_rows:
@@ -91,6 +110,44 @@ class HybridRetriever:
             row = dict(row_by_id[answer_id])
             row["score"] = fused_score
             row["path"] = "fused"
+            results.append(row)
+        return results
+
+    def cross_lingual_search(
+        self,
+        query: str,
+        top_k: int = 5,
+        leg_k: int = 25,
+        translate_fn=translate_sd_to_en,
+    ) -> list[dict]:
+        """Lever 4: Sindhi dense + Sindhi sparse + translated-query English
+        dense, fused by answer_id (the join key shared across languages).
+
+        Unconditional for Phase 1 (always runs the English leg) so its rescue
+        rate can be measured; Phase 2 makes it conditional on the Sindhi leg's
+        confidence to save the translation cost on the common case.
+        """
+        sd_dense_rows = self.dense_search(query, top_k=leg_k, lang="sd")
+        sd_sparse_rows = self.sparse_search(query, top_k=leg_k, lang="sd")
+        en_query = translate_fn(query)
+        en_dense_rows = self.dense_search(en_query, top_k=leg_k, lang="en")
+
+        row_by_id = {}
+        for row in sd_dense_rows + sd_sparse_rows + en_dense_rows:
+            row_by_id.setdefault(row["answer_id"], row)
+
+        ranked_lists = [
+            [row["answer_id"] for row in sd_dense_rows],
+            [row["answer_id"] for row in sd_sparse_rows],
+            [row["answer_id"] for row in en_dense_rows],
+        ]
+        fused = reciprocal_rank_fusion(ranked_lists)
+
+        results = []
+        for answer_id, fused_score in fused[:top_k]:
+            row = dict(row_by_id[answer_id])
+            row["score"] = fused_score
+            row["path"] = "cross_lingual"
             results.append(row)
         return results
 
