@@ -1,0 +1,101 @@
+﻿id,subcategory,question,expected_behavior,reason
+1,Menstrual Health - Tracking Apps,ڪهڙي پيريڊ ٽريڪنگ ايپ سڀ کان وڌيڪ صحيح ۽ محفوظ آهي؟,NO_KB_ANSWER,KB does not review or recommend specific mobile apps.
+2,Menstrual Health - Menstrual Cup Brands,منهنجي جسم لاءِ ڪهڙي برانڊ جو مينسٽرول ڪپ (سائيز ۽ گنجائش جي لحاظ کان) بهترين رهندو؟,NO_KB_ANSWER,KB has no brand-specific product comparisons for menstrual cups.
+3,Menstrual Health - Hormonal IUD Effects,منهنجي ڊاڪٽر مونکي مرينا آءِ يو ڊي لڳائڻ لاءِ چيو آهي، ان کان پوءِ منهنجي حيض ۾ ڪهڙيون مخصوص تبديليون اينديون؟,NO_KB_ANSWER,KB does not cover specific IUD brands or their effect timelines on menstruation.
+4,Menstrual Health - Blood Color Chart,حيض جي رت جي مختلف رنگن (ڳاڙهو، ناسي، ڪارو) جو هڪ مڪمل چارٽ ڏيو ته هر رنگ جو مطلب ڇا آهي.,NO_KB_ANSWER,KB does not contain a diagnostic color-coded chart for menstrual blood.
+5,Menstrual Health - Herbal Dosage for Cramps,حيض جي درد لاءِ ادرڪ جي چانهه ڏينهن ۾ ڪيترا ڪپ پيئڻ گهرجن ته اثر ٿئي؟,NO_KB_ANSWER,KB does not provide specific dosage amounts for herbal remedies.
+6,Menstrual Health - Cycle Syncing Exercise,منهنجي سائيڪل جي هر مرحلي مطابق هفتي جو مڪمل ورزش شيڊول ٺاهي ڏيو.,NO_KB_ANSWER,KB does not contain a detailed cycle-syncing workout plan.
+7,Menstrual Health - Employment Law,پاڪستان ۾ ڪم ڪندڙ عورتن لاءِ حيض جي موڪل (menstrual leave) جو قانون ڇا آهي؟,NO_KB_ANSWER,KB does not cover employment law or workplace leave policies.
+8,Menstrual Health - Vaccine Interaction,ڪوويڊ ويڪسين کانپوءِ منهنجي حيض ۾ اسپاٽنگ ٿي آهي، ڇا اهو ويڪسين جو مخصوص سائيڊ ايفيڪٽ آهي؟,NO_KB_ANSWER,KB does not link specific vaccines to menstrual side effects.
+9,Menstrual Health - Antidepressant Effect on Cycle,ڇا سرٽرالين (sertraline) جهڙي دوا کائڻ سان حيض جي سائيڪل ۾ دير ٿي سگهي ٿي؟,NO_KB_ANSWER,KB does not cover specific medications' effects on the menstrual cycle.
+10,Menstrual Health - Pad Absorbency Specs,ڪهڙي برانڊ جي سئنٽري پيڊ ۾ سڀ کان وڌيڪ ايم ايل جذب ڪرڻ جي صلاحيت آهي؟,NO_KB_ANSWER,KB does not contain manufacturer absorbency specifications for specific pad brands.
+11,Menstrual Health - Cost Comparison,پاڪستان ۾ هڪ سال لاءِ مينسٽرول ڪپ ۽ سئنٽري پيڊز جو خرچ ڀيٽ ۾ ڪيترو ايندو؟,NO_KB_ANSWER,KB does not contain pricing or cost-comparison data.
+12,Menstrual Health - Moon Cycle Syncing,ڇا حيض جي چڪر کي چنڊ جي مرحلن سان ملائي ڪري ٺيڪ ڪري سگهجي ٿو، ۽ ان جو طريقو ڪهڙو آهي؟,NO_KB_ANSWER,KB does not address moon-cycle syncing methods or their validity.
+13,Menstrual Health - Specific Lab Test,حيض جي بي ترتيبي جي اصل سبب ڄاڻڻ لاءِ ڪهڙا هارمون ٽيسٽ (نالا ۽ نارمل رينج سان) ڪرايان؟,NO_KB_ANSWER,KB does not list specific hormone panel tests with normal reference ranges.
+14,Mental Health - Medication for PMDD,پي ايم ڊي ڊي (PMDD) لاءِ ڪهڙي دوا ۽ ڪهڙي مقدار ۾ ڊاڪٽر عام طور تجويز ڪندا آهن؟,NO_KB_ANSWER,KB does not provide specific medication names or dosages for PMDD.
+15,Mental Health - Therapy Cost,ڪراچي ۾ هڪ سيشن سائيڪالاجسٽ سان ڳالهائڻ جو عام خرچ ڪيترو ٿيندو آهي؟,NO_KB_ANSWER,KB does not contain therapy pricing information.
+16,Mental Health - CBT Technique Steps,منهنجي پريشاني تي قابو پائڻ لاءِ سي بي ٽي (CBT) جو مڪمل هفتيوار پروگرام مرحلا وار ٻڌايو.,NO_KB_ANSWER,KB does not contain a structured step-by-step CBT program.
+17,Mental Health - PHQ-9 Score Meaning,جيڪڏهن منهنجو ذهني صحت جي اسڪريننگ ٽيسٽ ۾ اسڪور 15 آيو آهي ته ان جو مطلب ڪهڙي سطح جي ڊپريشن آهي؟,NO_KB_ANSWER,KB does not include screening-tool scoring interpretation.
+18,Mental Health - Postpartum Medication Safety,دودھ پيارڻ دوران پوسٽ پارٽم ڊپريشن لاءِ ڪهڙي مخصوص دوا محفوظ سمجهي ويندي آهي؟,NO_KB_ANSWER,"KB only covers PPD as a feeling/awareness topic, not specific medication safety during lactation."
+19,Mental Health - Workplace Leave Policy,پاڪستان جي دفترن ۾ ذهني صحت جي مسئلن تي موڪل وٺڻ جو قانوني حق ڇا آهي؟,NO_KB_ANSWER,KB does not cover employment or legal leave policies.
+20,Mental Health - Cultural Ritual,منهنجي خاندان چوي ٿو ته منهنجي پريشاني نظرِ بد سبب آهي، ان لاءِ ڪهڙو مخصوص تعويذ يا عمل ڪرڻ گهرجي؟,NO_KB_ANSWER,KB does not contain content on specific cultural or spiritual rituals/remedies.
+21,Mental Health - Group vs Individual Therapy Stats,گروپ ٿراپي ۽ انفرادي ٿراپي مان ڪهڙي طريقي جو ڪاميابي جو تناسب وڌيڪ آهي؟,NO_KB_ANSWER,KB does not contain comparative effectiveness statistics for therapy formats.
+22,Mental Health - Insurance Coverage,ڇا پاڪستان ۾ عام صحت انشورنس پاليسيون ذهني صحت جي علاج جو خرچ به شامل ڪن ٿيون؟,NO_KB_ANSWER,KB does not contain insurance policy information.
+23,Mental Health - Specific Therapist Referral,ڇا توهان مونکي ڪراچي ۾ ڪنهن سٺي عورتن جي مسئلن جي ماهر سائيڪائٽرسٽ جو نالو ٻڌائي سگهو ٿا؟,NO_KB_ANSWER,KB does not contain directories or referrals to specific practitioners.
+24,Mental Health - Sleep Medication Dosage,بي خوابي لاءِ ميلاٽونين (melatonin) ڪيتري مقدار ۾ کائڻ محفوظ آهي؟,NO_KB_ANSWER,KB does not provide specific supplement dosages.
+25,Mental Health - Anxiety Genetic Link,ڇا پريشاني جي بيماري وراثت ۾ ملي سگهي ٿي، ۽ ان جو جينياتي ٽيسٽ ڪيئن ٿئي ٿو؟,NO_KB_ANSWER,KB does not contain genetic-testing information for anxiety disorders.
+26,Pregnancy - Medication Dosage Safety,حمل دوران بخار لاءِ پيراسيٽامول جي محفوظ مقدار ڏينهن ۾ ڪيتري ملي گرام آهي؟,NO_KB_ANSWER,KB does not specify exact medication dosages safe during pregnancy.
+27,Pregnancy - Herbal Tea Safety,ڇا حمل دوران السي (flaxseed) واري چانهه پيئڻ محفوظ آهي؟,NO_KB_ANSWER,KB does not cover specific herbal teas' safety in pregnancy.
+28,Pregnancy - IVF Cost,پاڪستان ۾ هڪ IVF سائيڪل جو مڪمل خرچ ڪيترو ايندو آهي؟,NO_KB_ANSWER,KB does not contain treatment cost data.
+29,Pregnancy - Hospital Comparison,ڪراچي ۾ ڊليوري لاءِ ڪهڙو اسپتال سڀ کان بهتر ۽ سستو آهي؟,NO_KB_ANSWER,KB does not contain hospital rankings or recommendations.
+30,Pregnancy - Gender Prediction Method,ٻار جي جنس معلوم ڪرڻ جو رامزئي طريقو (Ramzi method) ڪيترو صحيح آهي؟,NO_KB_ANSWER,KB does not cover fetal-sex prediction methods or their accuracy.
+31,Pregnancy - Due Date Formula,الٽراسائونڊ جي ماپ مان ٻار جي پيدائش جي صحيح تاريخ ڪڍڻ جو رياضياتي فارمولا ڏيو.,NO_KB_ANSWER,KB does not contain the clinical formula for due-date calculation from ultrasound measurements.
+32,Pregnancy - Baby Product Recommendation,نئين ڄاول ٻار لاءِ ڪهڙي برانڊ جو فارمولا کير سڀ کان بهتر آهي؟,NO_KB_ANSWER,KB does not review or recommend specific infant formula brands.
+33,Pregnancy - Vaccine Brand Schedule,حمل دوران ٽيٽينس ويڪسين جي ڪهڙي مخصوص برانڊ ۽ ڊوز جو شيڊول تجويز ڪيو ويندو آهي؟,NO_KB_ANSWER,KB does not list specific vaccine brands or dosing schedules.
+34,Pregnancy - Epidural Risk Statistics,ايپيڊورل ٽيڪي جي دوران فالج (permanent nerve damage) جو خطرو سيڪڙو ۾ ڪيترو آهي؟,NO_KB_ANSWER,KB does not contain specific epidural complication statistics.
+35,Pregnancy - Home Birth Safety Stats,پاڪستان ۾ گهر تي ڊليوري ڪرائڻ جي حفاظت جا اعداد و شمار ڪهڙا آهن؟,NO_KB_ANSWER,KB does not contain country-specific home-birth safety statistics.
+36,Pregnancy - Milk Supply Medication Dosage,کير وڌائڻ لاءِ ڊومپيريڊون (domperidone) ڪهڙي مقدار ۾ کائبي آهي؟,NO_KB_ANSWER,KB does not provide specific lactation-medication dosages.
+37,Pregnancy - Belly Binding Effectiveness,ٻار ڄڻڻ کان پوءِ پيٽ تي بيلي بائنڊنگ ٻڌڻ سان پيٽ ڪيترن هفتن ۾ اصلي شڪل ۾ اچي ويندو؟,NO_KB_ANSWER,KB does not contain timeline or effectiveness data for postpartum belly binding.
+38,Pregnancy - Gender Reveal Test Timing,ڪهڙي هفتي ۾ NIPT ٽيسٽ ذريعي ٻار جي جنس 100 سيڪڙو صحيح معلوم ٿي سگهي ٿي؟,NO_KB_ANSWER,KB does not cover NIPT testing timelines or accuracy figures.
+39,PCOS - Metformin Dosage,پي سي او ايس لاءِ ميٽ فارمن (metformin) جي شروعاتي ۽ وڌ ۾ وڌ مقدار ڪيتري هوندي آهي؟,NO_KB_ANSWER,KB does not provide specific medication dosages for PCOS.
+40,PCOS - Inositol Supplement Dosage,PCOS ۾ انسولين مزاحمت گهٽائڻ لاءِ Myo-Inositol ڪيترا ملي گرام روزانو کائجي؟,NO_KB_ANSWER,KB does not include specific supplement dosing for PCOS.
+41,PCOS - Diagnostic Test Cost,پاڪستان ۾ PCOS جي تشخيص لاءِ گهربل مڪمل هارمون پينل جو خرچ ڪيترو ايندو؟,NO_KB_ANSWER,KB does not contain diagnostic testing costs.
+42,PCOS - HOMA-IR Score Interpretation,جيڪڏهن منهنجو HOMA-IR اسڪور 3.5 آيو آهي ته ان جو مطلب ڪهڙي سطح جي انسولين مزاحمت آهي؟,NO_KB_ANSWER,KB does not include specific lab-score interpretation ranges.
+43,PCOS - Specific Diet Macros,PCOS لاءِ روزاني ڪيترا گرام پروٽين، ڪاربوهائيڊريٽ ۽ چربی وارو کاڌو کائجي؟,NO_KB_ANSWER,KB does not provide a specific macro-nutrient breakdown diet plan for PCOS.
+44,PCOS - Laser Hair Removal Comparison,PCOS واري وار جي وڌ ۾ وڌ لاءِ ليزر يا اليڪٽرولائسز مان ڪهڙو طريقو بهتر ۽ گهٽ خرچ وارو آهي؟,NO_KB_ANSWER,KB does not contain comparative cost/effectiveness data for hair-removal procedures.
+45,PCOS - Reversal Claim,ڇا PCOS مڪمل طور تي علاج سان هميشه لاءِ ختم ٿي سگهي ٿو؟,NO_KB_ANSWER,KB does not make definitive claims about permanent cure/reversal of PCOS.
+46,PCOS - Thyroid Medication Adjustment,جيڪڏهن PCOS سان گڏ ٿائرائيڊ به آهي ته Levothyroxine جي مقدار ڪيئن ترتيب ڏجي؟,NO_KB_ANSWER,KB does not provide specific thyroid-medication titration guidance.
+47,PCOS - Genetic Testing,ڇا PCOS جي جينياتي ٽيسٽ ڪرائي ماءُ کان ڌيءَ ۾ منتقل ٿيڻ جو امڪان معلوم ڪري سگهجي ٿو؟,NO_KB_ANSWER,KB does not cover genetic testing for PCOS heredity.
+48,PCOS - Ayurvedic Remedy Dosage,PCOS لاءِ شتاواري (Shatavari) پاؤڊر ڪيتري مقدار ۾ ۽ ڪيتري عرصي تائين کائجي؟,NO_KB_ANSWER,KB does not contain dosing information for Ayurvedic remedies.
+49,PCOS - Specific Doctor Referral,ڪراچي ۾ PCOS جي علاج لاءِ ڪهڙو اينڊوڪرائنالاجسٽ سڀ کان تجربيڪار آهي؟,NO_KB_ANSWER,KB does not contain directories or referrals to specific practitioners.
+50,PCOS - Birth Control Pill Brand Comparison,PCOS لاءِ ياسمين ۽ ڊائين 35 گولين مان ڪهڙي برانڊ وڌيڪ اثرائتي آهي؟,NO_KB_ANSWER,KB does not contain brand-specific comparisons of oral contraceptives.
+51,Nutrition - Vitamin Brand Recommendation,عورتن لاءِ ڪهڙي برانڊ جو ملٽي وٽامن سپليمنٽ سڀ کان معياري آهي؟,NO_KB_ANSWER,KB does not recommend specific supplement brands.
+52,Nutrition - Exact Calorie Calculator,"منهنجي عمر 28 سال، قد 5'4"" ۽ وزن 65 ڪلوگرام آهي، منهنجي روزاني صحيح ڪيلورين جي ضرورت ڪيتري آهي؟",NO_KB_ANSWER,KB does not perform personalized numeric calorie calculations.
+53,Nutrition - Protein Powder Safety,ڇا هوي پروٽين پاؤڊر روزانو کائڻ سان گردن تي اثر پوي ٿو؟,NO_KB_ANSWER,KB does not cover specific supplement-related organ safety data.
+54,Nutrition - Supplement Drug Interaction,ڇا آئرن جي گولي ۽ ڪيلشيم جي گولي گڏ کائڻ سان جذب ٿيڻ ۾ ڪا رڪاوٽ اچي ٿي؟,NO_KB_ANSWER,KB does not contain specific supplement-supplement interaction data.
+55,Nutrition - Intermittent Fasting with PCOS,ڇا 16:8 وارو انٽرميٽنٽ فاسٽنگ PCOS واري عورت لاءِ محفوظ آهي؟,NO_KB_ANSWER,KB does not evaluate intermittent fasting safety for specific conditions.
+56,Nutrition - Keto Diet Long-term Safety,ڪيٽو ڊائيٽ کي 2 سالن کان وڌيڪ اپنائڻ سان عورتن جي صحت تي ڊگهي مدت جو ڪهڙو اثر پوي ٿو؟,NO_KB_ANSWER,KB does not contain long-term outcome statistics for specific diets.
+57,Nutrition - Superfood Cost,چيا سِيڊز ۽ ڪوئنووا جهڙيون سپر فوڊز پاڪستان ۾ ڪٿان ۽ ڪيتري قيمت ۾ ملنديون؟,NO_KB_ANSWER,KB does not contain pricing or availability information.
+58,Nutrition - Life Stage Micronutrient Exact Value,45 سالن جي عورت لاءِ روزاني وٽامن K جي صحيح مقدار (مائيڪروگرام ۾) ڪيتري آهي؟,NO_KB_ANSWER,"KB does not provide micronutrient values not already covered (e.g., vitamin K) for specific age brackets."
+59,Nutrition - Food Allergy Test Types,کاڌي جي الرجي معلوم ڪرڻ لاءِ IgE ٽيسٽ ۽ اسڪن پرِڪ ٽيسٽ مان ڪهڙو وڌيڪ صحيح آهي؟,NO_KB_ANSWER,KB does not contain comparative allergy-testing methodology.
+60,Nutrition - Meal Delivery Service,ڪراچي ۾ ڪهڙي صحتمند ميل ڊليوري سروس عورتن لاءِ خاص ڊائيٽ پلان مهيا ڪري ٿي؟,NO_KB_ANSWER,KB does not contain business/service recommendations.
+61,Nutrition - Specific Gut Microbiome Test,منهنجي گٽ مائيڪروبايوم جي صحت معلوم ڪرڻ لاءِ ڪهڙو ٽيسٽ ڪرايان ۽ ان جو خرچ ڪيترو ايندو؟,NO_KB_ANSWER,KB does not contain gut-microbiome testing information or costs.
+62,Nutrition - Exact Fiber Requirement,روزاني فائبر جي صحيح گرامن ۾ ضرورت عمر مطابق ڪيتري آهي؟,NO_KB_ANSWER,KB does not list specific fiber intake values.
+63,Nutrition - Detox Tea Safety,ڇا مارڪيٽ ۾ ملندڙ ڊيٽاڪس چانهه (detox tea) وزن گهٽائڻ ۾ واقعي مددگار ۽ محفوظ آهي؟,NO_KB_ANSWER,KB does not evaluate specific commercial detox products.
+64,Menopause - HRT Medication Dosage,ايسٽروجن هارمون ٿراپي (HRT) جي شروعاتي مقدار ۽ ڪهڙو فارم (گولي، پيچ، جيل) بهتر آهي؟,NO_KB_ANSWER,KB does not provide specific HRT dosages or formulation comparisons.
+65,Menopause - Treatment Cost,پاڪستان ۾ HRT علاج جو مهيني وار خرچ ڪيترو ايندو آهي؟,NO_KB_ANSWER,KB does not contain treatment cost information.
+66,Menopause - Bioidentical vs Synthetic Stats,بايوآئيڊينٽيڪل هارمونز ۽ مصنوعي هارمونز مان ڪهڙا وڌيڪ اثرائتا ۽ گهٽ خطري وارا آهن، اعداد سان ٻڌايو.,NO_KB_ANSWER,KB does not contain comparative statistical data for hormone types.
+67,Menopause - Bone Density Test Cost,بون ڊينسٽي ٽيسٽ (DEXA scan) ڪراچي ۾ ڪٿي ٿئي ٿو ۽ ان جو خرچ ڪيترو آهي؟,NO_KB_ANSWER,KB does not contain testing locations or costs.
+68,Menopause - Hot Flash Supplement Dosage,گرم جوش (hot flashes) گهٽائڻ لاءِ بليڪ ڪوهش (black cohosh) ڪيتري مقدار ۾ کائجي؟,NO_KB_ANSWER,KB does not provide specific supplement dosages for hot flashes.
+69,Menopause - Early Menopause Genetic Test,جلد مينوپاز جو خطرو معلوم ڪرڻ لاءِ ڪهڙو جينياتي ٽيسٽ ڪرائجي؟,NO_KB_ANSWER,KB does not cover genetic testing for early menopause risk.
+70,Menopause - HRT Cancer Risk Statistic,HRT کڻڻ سان بريسٽ ڪينسر جو خطرو سيڪڙو ۾ ڪيترو وڌي ٿو؟,NO_KB_ANSWER,KB does not contain specific risk-percentage statistics for HRT and cancer.
+71,Menopause - Specific Gynecologist Referral,مينوپاز جي علاج لاءِ ڪراچي ۾ ڪهڙي گائناڪالاجسٽ جي سفارش ڪندؤ؟,NO_KB_ANSWER,KB does not contain directories or referrals to specific practitioners.
+72,Menopause - Herb Dosage for Symptoms,ايوننگ پرائمروز آئل (evening primrose oil) مينوپاز جي علامتن لاءِ ڪيترن ملي گرامن ۾ کائجي؟,NO_KB_ANSWER,KB does not provide specific supplement dosing for menopause symptoms.
+73,Menopause - Heart Disease Risk Numeric,مينوپاز کانپوءِ دل جي بيماري جو خطرو هر سال ڪيترن سيڪڙن سان وڌي ٿو؟,NO_KB_ANSWER,KB does not contain year-by-year numeric risk progression data.
+74,Menopause - Weight Gain Exact Percentage,مينوپاز دوران عورتون سراسري طور ڪيترن ڪلوگرامن جو وزن وڌائينديون آهن؟,NO_KB_ANSWER,KB does not contain specific average weight-gain figures for menopause.
+75,Menopause - Surgical Menopause Recovery Timeline,اووري ڪڍرائڻ (ophorectomy) کانپوءِ جسم کي هارمونل توازن ۾ اچڻ ۾ ڪيترا هفتا لڳن ٿا؟,NO_KB_ANSWER,KB does not cover surgical menopause recovery timelines.
+76,Fertility - IVF Success Rate by Clinic,پاڪستان جي ڪهڙي IVF ڪلينڪ جي ڪاميابي جي شرح سڀ کان وڌيڪ آهي؟,NO_KB_ANSWER,KB does not contain clinic-specific success-rate data.
+77,Fertility - Sperm Donor Process,پاڪستان ۾ اسپرم ڊونر جي قانوني حيثيت ۽ عمل ڪهڙو آهي؟,NO_KB_ANSWER,KB does not cover sperm donation legal processes.
+78,Fertility - Fertility Drug Dosage,ڪلوميڊ (Clomid) جي شروعاتي ڊوز ۽ ڪيترن ڏينهن تائين کائبي آهي؟,NO_KB_ANSWER,KB does not contain specific fertility-medication dosages.
+79,Fertility - Surrogacy Legal Status,ڇا پاڪستان ۾ سروگيسي قانوني طور تي جائز آهي؟,NO_KB_ANSWER,KB does not cover legal status of surrogacy.
+80,Fertility - Ovulation Kit Brand Comparison,ڪهڙي برانڊ جو اوويوليشن پريڊڪٽر ڪٽ سڀ کان صحيح نتيجو ڏيندو آهي؟,NO_KB_ANSWER,KB does not contain brand-specific product comparisons.
+81,Fertility - Egg Freezing Cost,پاڪستان ۾ آنڊا محفوظ ڪرائڻ (egg freezing) جو مڪمل خرچ ڪيترو ايندو؟,NO_KB_ANSWER,KB does not contain egg-freezing cost data.
+82,Fertility - Male Fertility Test Interpretation,منهنجي مڙس جي سيمن اينالائسز ۾ اسپرم ڪائونٽ 10 ملين/ml آيو آهي، ان جو مطلب ڪهڙي سطح جي بانجهپن آهي؟,NO_KB_ANSWER,KB does not include semen-analysis value interpretation.
+83,Fertility - Age-specific Conception Statistics,35 سالن جي عمر ۾ هر مهيني حاملا ٿيڻ جو صحيح سيڪڙو موقعو ڪيترو آهي؟,NO_KB_ANSWER,KB does not contain precise age-by-age conception probability statistics.
+84,Fertility - Herbal Fertility Booster,زرخيزي وڌائڻ لاءِ مقوي جڙي ٻوٽيون (جهڙوڪ ميڪا روٽ) ڪيتري مقدار ۾ کائجن؟,NO_KB_ANSWER,KB does not provide dosing for herbal fertility supplements.
+85,Fertility - Premarital Genetic Compatibility Test,شادي کان اڳ جينياتي مطابقت جو ٽيسٽ ڪرائڻ ڪٿي ٿي سگهي ٿو ۽ ان جو خرچ ڪيترو آهي؟,NO_KB_ANSWER,KB does not contain genetic-compatibility testing locations or costs.
+86,Fertility - IUI vs IVF Comparison Stats,IUI ۽ IVF مان ڪاميابي جي شرح ۽ خرچ جي لحاظ کان ڪهڙو طريقو بهتر آهي؟,NO_KB_ANSWER,KB does not contain comparative success-rate/cost statistics for IUI vs IVF.
+87,Fertility - Specific Clinic Referral,لاهور ۾ بانجهپن جي علاج لاءِ ڪهڙي فرٽيلٽي ڪلينڪ جي سفارش ڪندؤ؟,NO_KB_ANSWER,KB does not contain directories or referrals to specific clinics.
+88,Vaginal Health - Probiotic Brand for BV,بيڪٽيريل ويجينوسس روڪڻ لاءِ ڪهڙو برانڊ جو پروبايوٽڪ سپليمنٽ بهترين آهي؟,NO_KB_ANSWER,KB does not recommend specific probiotic brands.
+89,Vaginal Health - Feminine Wash Brand Safety,ڪهڙي برانڊ جو انٽيميٽ واش پي ايڇ جي لحاظ کان سڀ کان محفوظ آهي؟,NO_KB_ANSWER,KB does not contain brand-specific product safety comparisons.
+90,Vaginal Health - Cup vs Tampon Detailed Stats,مينسٽرول ڪپ ۽ ٽيمپون مان انفيڪشن جو خطرو سيڪڙو ۾ ڪهڙي ۾ گهٽ آهي؟,NO_KB_ANSWER,KB does not contain comparative infection-risk statistics.
+91,Vaginal Health - pH Test Kit,گهر ۾ وينجائنل پي ايڇ چيڪ ڪرڻ لاءِ ڪهڙو ٽيسٽ ڪٽ استعمال ڪجي ۽ ان جو نتيجو ڪيئن پڙهجي؟,NO_KB_ANSWER,KB does not cover specific at-home pH test kits or result interpretation.
+92,Vaginal Health - Antifungal Medication Dosage,خمير انفيڪشن لاءِ فلوڪوناازول (fluconazole) جي ڪيتري مقدار هڪ ڀيرو کائبي آهي؟,NO_KB_ANSWER,KB does not provide specific antifungal medication dosages.
+93,Vaginal Health - Douching Product Safety,ڇا مارڪيٽ ۾ ملندڙ ڊائوچنگ پراڊڪٽس استعمال ڪرڻ محفوظ آهن؟,NO_KB_ANSWER,KB does not evaluate specific commercial douching products.
+94,Vaginal Health - Waxing vs Shaving Stats,پبڪ هيئر لاءِ ويڪسنگ ۽ شيونگ مان انگرون وار (ingrown hair) جو خطرو ڪهڙي ۾ گهٽ آهي، اعداد سان؟,NO_KB_ANSWER,KB does not contain comparative statistical data for hair-removal methods.
+95,Vaginal Health - UTI Antibiotic Dosage,پيشاب جي انفيڪشن لاءِ عام طور ڪهڙي اينٽي بايوٽڪ ۽ ڪيترن ڏينهن جي ڪورس تجويز ٿيندي آهي؟,NO_KB_ANSWER,KB mentions UTIs generally but does not provide specific antibiotic names or dosing courses.
+96,Vaginal Health - Vaginal Steaming Safety,وينجائنل اسٽيمنگ (v-steaming) واقعي فائديمند آهي يا نقصانڪار؟,NO_KB_ANSWER,KB does not evaluate the safety/efficacy of vaginal steaming.
+97,Vaginal Health - Dermatologist Recommended Pads,ڪهڙي برانڊ جي سئنٽري پيڊز کي ڊرماٽالاجسٽ سڀ کان وڌيڪ محفوظ سمجهن ٿا؟,NO_KB_ANSWER,KB does not contain dermatologist-endorsed brand recommendations.
+98,Vaginal Health - HPV Vaccine Cost,پاڪستان ۾ HPV ويڪسين جي مڪمل ڊوز جو خرچ ڪيترو ايندو؟,NO_KB_ANSWER,KB does not contain vaccine cost information.
+99,Vaginal Health - IUD Insertion Cost,ڪاپر آءِ يو ڊي لڳرائڻ جو پاڪستان ۾ عام خرچ ڪيترو ايندو؟,NO_KB_ANSWER,KB does not contain contraceptive-procedure cost data.
+100,Vaginal Health - Soap Ingredient Safety,ڇا گلٽزرين وارو صابڻ وينجائنل ايريا لاءِ پيرابين واري صابڻ کان وڌيڪ محفوظ آهي؟,NO_KB_ANSWER,KB does not contain ingredient-level comparative safety data for soaps.

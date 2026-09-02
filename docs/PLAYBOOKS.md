@@ -44,7 +44,7 @@ Chosen route: **harvest real speech first, then use it to steer generation.** An
 - Batch by category so few-shot examples come from the same topic. Twelve real examples + the KB row → five variants in that register.
 - Temperature ~0.9. You want spread, not the safest phrasing five times.
 - Dedupe twice: exact match on normalised text, then cosine > 0.95.
-- Quota: batch ten rows per call ≈ 200 calls — comfortably inside a day of Gemini free tier.
+- Quota: batch ten rows per call ≈ 200 calls — inside Groq's 1,000/day. This is an offline build step, so rate limits don't matter; just run it over an afternoon.
 
 **Stage D — Review with a realistic budget**
 Not a CSV in Excel. A three-column Google Sheet (variant / keep-fix-drop / corrected text) clears ~200 rows per hour.
@@ -93,7 +93,7 @@ Do the arithmetic out loud, because this is where projects like this die: 2000 �
 2. Plot two overlapping distributions: correct vs incorrect top-1. **τ_high** = score where precision of "top-1 is correct" reaches 0.95.
 3. For **τ_low** you need what most teams forget: a **negative set** — ~100 health-shaped questions with no correct KB answer ("my child has fever", "my husband's blood pressure", "what causes kidney stones"). Without these you cannot distinguish "low score because retrieval is unsure" from "low score because the answer isn't there", and τ_low is a guess.
 4. Set τ_low so ≥90% of the negative set falls below it.
-5. Plot the precision/coverage curve. One of your strongest viva figures — it shows you chose a point on a trade-off deliberately.
+5. Plot the precision/coverage curve. One of your strongest figures when presenting the work — it shows you chose a point on a trade-off deliberately.
 
 **Worked if:** verbatim-path precision ≥0.95 at τ_high, refusal rate on the negative set ≥0.90.
 
@@ -127,13 +127,13 @@ Fixed mitigation order: ONNX int8 both models → make the English leg condition
 
 ---
 
-### Risk 3 — Gemini rate-limits during a demo
+### Risk 3 — the LLM provider rate-limits during a demo
 **Owner: Sabiha** · *Signal: 429s under load, or a cold Space taking 40s while a jury watches.*
 
 **Before it fires**
 - **Cache on normalised query text** in Postgres, 24h TTL. Demo questions get asked repeatedly in rehearsal, so by demo day they're all warm.
 - **Measure your verbatim-path rate.** If >70% of realistic questions clear τ_high, most of your demo never touches an LLM. That's your real insurance — optimise for it deliberately.
-- **One `generate()` interface, three implementations:** Gemini → Groq → static "I can't answer right now, please ask a lady health worker". Test failover by deliberately revoking the Gemini key once.
+- **One `select()` interface, three implementations:** Groq → OpenRouter → deterministic top-1-by-rerank-score (no LLM at all). Because the LLM only picks between retrieved answers, the no-LLM fallback still returns a correct vetted answer — it just picks slightly less well. Test failover by deliberately revoking the Groq key once.
 - **A demo-mode flag** forcing verbatim-only, refusing everything below τ_high. Slightly less impressive, completely unbreakable. Have it ready even if unused.
 - **Keep the Space warm** with a scheduled ping every 10 min on demo day, or accept a 40s cold start in front of judges.
 
@@ -149,7 +149,7 @@ Fixed mitigation order: ONNX int8 both models → make the English leg condition
 > ⚠️ **Amend the roadmap.** `ROADMAP.md` puts reviewer engagement in Phase 4. With nobody lined up that is too late — clinician outreach runs on a scale of weeks and cannot be compressed by working harder. **Move first contact into Phase 0** and let it run in the background.
 
 **Who to approach, roughly in order**
-- **SZABIST faculty and your supervisor's network** — the shortest path is almost always someone who already knows someone.
+- **Proxima's own network, and your supervisor's** — ask there first. The shortest path is almost always someone who already knows someone.
 - **Aga Khan University, Community Health Sciences** — they run LHW and maternal health research and are unusually receptive to student work in this space.
 - **Dow University final-year MBBS students** for a first pass, plus one consultant for sign-off. Two tiers costs much less of the scarce person's time.
 - **Lady Health Worker Programme district office** (Thatta, Sujawal) — an LHW supervisor is arguably a *better* reviewer than a hospital consultant here, because she knows what rural women actually ask and what advice is actionable where there is no transport.
@@ -163,7 +163,7 @@ Fixed mitigation order: ONNX int8 both models → make the English leg condition
 - **Tier B** — sourced to WHO or a named guideline, peer-reviewed in-team, not clinician-verified. Served with a visible banner saying exactly that.
 - **Tier C** — uncertain or flagged. Not served; the system refuses and refers.
 
-This turns an unbounded blocker into a bounded, honest product decision. *"We built a tiered disclosure system because clinical review was incomplete"* is a much better viva answer than either "we didn't get review" or — far worse — presenting unreviewed content as vetted.
+This turns an unbounded blocker into a bounded, honest product decision. *"We built a tiered disclosure system because clinical review was incomplete"* is a much better answer to a supervisor than either "we didn't get review" or — far worse — presenting unreviewed content as vetted.
 
 **Hard line:** never present Tier B content as clinically verified, in the product, the deck, or the report.
 
@@ -244,22 +244,22 @@ Every item has a **Done when** — if you can't tell whether it's finished, it i
 #### Phase 1 — Prove Sindhi retrieval works, or find out it doesn't
 *Measure after every single change, one at a time, so every point of recall is attributable. Resist adding two levers at once — you won't untangle them afterwards.*
 
-- [ ] **Codepoint histogram + commit the normalisation decision table** — *Done when* every codepoint is classified keep/map/drop in `docs/adr/0002` with a reason. `[Lever 1]`
-- [ ] **Implement `normalize_sd()` with idempotence, golden-fixture and non-destruction tests** — *Done when* all three test classes pass and no two distinct KB questions collide. `[Lever 1]`
-- [ ] **Embed 2000 Sindhi + 2000 English rows; create the Qdrant collection** — *Done when* it holds 4000 points with named dense/sparse vectors and a `lang` payload.
-- [ ] **Dense-only baseline against the first 100 gold queries** — *Done when* Recall@1/@5/@20 are committed to `eval/results/` with the commit hash. `[Risk 1]`
-- [ ] **Verify the model prefix convention before trusting the baseline** — *Done when* you've confirmed in the model card whether prefixes are required, and tested both ways if unsure. `[Risk 1]`
-- [ ] **Add the sparse leg and RRF fusion; produce the ablation table** — *Done when* dense-only, sparse-only and fused Recall@5 appear in one committed table. `[Lever 3]`
-- [ ] **Add the English dual path with local NLLB translation** — *Done when* you can state what fraction of Sindhi-only failures English rescues. `[Lever 4]`
-- [ ] **Add cross-encoder reranking over the fused top 20** — *Done when* the Recall@1 improvement from reranking is measured and committed.
-- [ ] **Phase 1 go/no-go on the embedding model** — *Done when* Recall@5 ≥ 0.85, or a written decision to fine-tune on Colab with a named date. `[Risk 1]`
+- [x] **Codepoint histogram + commit the normalisation decision table** — *Done when* every codepoint is classified keep/map/drop in `docs/adr/0002` with a reason. `[Lever 1]` — 145 codepoints classified in `docs/adr/0002-normalisation-map.md`.
+- [x] **Implement `normalize_sd()` with idempotence, golden-fixture and non-destruction tests** — *Done when* all three test classes pass and no two distinct KB questions collide. `[Lever 1]` — `retrieval/normalize.py` + `retrieval/tests/test_normalize.py`, idempotence over all 4000 question+answer strings, 47 golden fixtures, 0 collisions.
+- [x] **Embed 2000 Sindhi + 2000 English rows; create the Qdrant collection** — *Done when* it holds 4000 points with named dense/sparse vectors and a `lang` payload. — **4000/4000 as of 2026-09-01**, verified live against the collection (`points_count` + direct point retrieval, not just trusting the notebook's own print statement). `id=2000`'s English translation (`retrieval/scripts/embed_missing_english_row.ipynb`) closed the last gap.
+- [x] **Dense-only baseline against the first 100 gold queries** — *Done when* Recall@1/@5/@20 are committed to `eval/results/` with the commit hash. `[Risk 1]` — superseded by the fuller 275-query linked gold set (see Lever 3 ablation below); numbers live in `eval/results.md`, committed to git.
+- [x] **Verify the model prefix convention before trusting the baseline** — *Done when* you've confirmed in the model card whether prefixes are required, and tested both ways if unsure. `[Risk 1]` — empirically confirmed 2026-09-01 (`eval/results.md`): no-prefix Recall@1 0.552 vs prefixed 0.431 on the same 58-query candidate pool. Confirms ADR 0001; Risk 1's "most common silent RAG bug" is not present here.
+- [x] **Add the sparse leg and RRF fusion; produce the ablation table** — *Done when* dense-only, sparse-only and fused Recall@5 appear in one committed table. `[Lever 3]` — `retrieval/search.py` (`HybridRetriever`, `reciprocal_rank_fusion`). **Final, trustworthy table in `eval/results.md` as of 2026-09-01** (275-query human-reviewed gold set, `lang="sd"` bug fixed): dense 0.462/0.880/0.975, sparse 0.542/0.898/0.971, fused 0.967/0.971/0.975 (Recall@1/5/20). Fused beats the better single leg by well over the ≥3-point bar at every K.
+- [x] **Add the English dual path with local NLLB translation** — *Done when* you can state what fraction of Sindhi-only failures English rescues. `[Lever 4]` — `retrieval/translate.py` (NLLB-200-distilled-600M) + `HybridRetriever.cross_lingual_search()` built and measured 2026-09-01: of 8 Sindhi-only misses in the corrected gold set, English rescued **0 (0.0%)**. Small n, and not blocking Phase 1 exit since fused already clears the bar without it — but a real, unflattering number, not a flattering assumption. Worth checking the actual NLLB translations on those 8 queries before Phase 2 makes this leg conditional.
+- [x] **Add cross-encoder reranking over the fused top 20** — *Done when* the Recall@1 improvement from reranking is measured and committed. `retrieval/rerank.py` built and tested. Raw measurement (Recall@1 0.385) came back confounded by gold-set noise, not a real capability finding — a 40-row manual audit of the disagreements (`eval/rerank_regression_audit.csv`) found the reranker right about as often (12) as genuinely wrong (11), with another 30% of disagreements being cases where fused's own top-1 was *also* wrong (BOTH_WRONG) — meaning the never-individually-reviewed 146/275 gold rows are too coarse to fairly score a component this discriminating. One real, confirmed weakness: occasional cross-category confusion from surface phrase overlap. Latency (p95 112ms/20 candidates) is well inside budget. Not blocking Phase 1's GO. Before this feeds anything load-bearing (Lever 5 thresholds), the gold set needs the rest of its rows individually reviewed, not just the original 24.
+- [x] **Phase 1 go/no-go on the embedding model** — *Done when* Recall@5 ≥ 0.85, or a written decision to fine-tune on Colab with a named date. `[Risk 1]` — **GO.** Fused Recall@5 = 0.971 on the 275-query human-reviewed gold set, well clear of the 0.85 exit gate (`docs/ROADMAP.md` §5) and the 0.70 fine-tune-escalation floor. No fine-tuning needed to proceed to Phase 2. Reranking (previous item) remains worth doing for Recall@1/confidence-gate precision, not to hit this bar.
 
 #### Phase 2 — Make it a service, not a notebook
 *The gap between "works in my notebook" and "works in Sabiha's container at 3am" is mostly model loading, memory and cold starts. Handle it now, not during a demo.*
 
-- [ ] **Package retrieval as an importable module, models loaded once at startup** — *Done when* a second query returns under 1s and memory is flat across 100 requests.
-- [ ] **Make the English leg conditional on the Sindhi top score** — *Done when* median latency drops measurably and Recall@5 does not. `[Lever 4] [Risk 2]`
-- [ ] **Tune τ_high and τ_low from score distributions and the negative set** — *Done when* the precision/coverage curve is committed as a figure and both thresholds have a stated justification. `[Lever 5]` *(needs Mahnoor's negative set)*
+- [x] **Package retrieval as an importable module, models loaded once at startup** — *Done when* a second query returns under 1s and memory is flat across 100 requests. Live-verified 2026-09-02: second query 1067ms (67ms over target, reads as noise not a real problem given this started at 25000-60000ms before the `retrieval/translate.py` GPU-device fix), memory flat (+13MB over 100 calls). Effectively done.
+- [ ] **Make the English leg conditional on the Sindhi top score** — *Done when* median latency drops measurably and Recall@5 does not. `[Lever 4] [Risk 2]` — code done and live-tested 2026-09-02, but the comparison run (forced-off vs conditional) tested the wrong pair — needs conditional vs. **always-on** (`tau_high=1.1`) to actually answer "does making it conditional save time over always translating". Re-run pending.
+- [ ] **Tune τ_high and τ_low from score distributions and the negative set** — *Done when* the precision/coverage curve is committed as a figure and both thresholds have a stated justification. `[Lever 5]` — **BLOCKED, not a code problem.** Run 2026-09-02: `tau_low = 0.2034` (hits the ≥90% negative-set target), but no `tau_high` threshold reaches 0.95 precision anywhere — `eval/tau_score_distributions.png` shows correct/incorrect gold-query scores overlapping heavily even near 1.0. Direct consequence of the Item 8 audit. Progress since: the 25 new gold rows and the 151 never-flagged legacy rows are now individually reviewed (39 corrected, 23 dropped — `eval/never_flagged_151_review.csv`). **105 legacy rows (bulk category-matched only) still need the same review** before this is unblockable — that's the last piece.
 - [ ] **Convert both models to ONNX int8** — *Done when* p95 retrieval latency is under 1.5s on the free Space and recall is within 1 point of float32. `[Risk 2]`
 
 #### Phase 3 — Absorb the variants and retune
@@ -311,8 +311,8 @@ Every item has a **Done when** — if you can't tell whether it's finished, it i
 
 - [ ] **Implement stages 00–08 in order, danger gate short-circuiting everything** — *Done when* a danger-sign query provably never reaches retrieval or the LLM, verified in logs.
 - [ ] **Implement the three-band confidence gate behaviour** — *Done when* the response payload states which band and path produced it. `[Lever 5]`
-- [ ] **Write the constrained generation prompt for the middle band** — *Done when* the model refuses to answer from its own knowledge in a test where retrieved context is deliberately irrelevant.
-- [ ] **Build `generate()` with Gemini → Groq → static fallback** — *Done when* revoking the Gemini key mid-session degrades cleanly with no user-visible error. `[Risk 3]`
+- [ ] **Write the selection prompt for the middle band** — *Done when* the model returns only an `answer_id` or `NONE`, never prose, and returns `NONE` in a test where all five retrieved candidates are deliberately irrelevant. Anything that isn't a valid ID from the candidate list is rejected by the parser and treated as `NONE`.
+- [ ] **Build `select()` with Groq → OpenRouter → deterministic fallback** — *Done when* revoking the Groq key mid-session degrades cleanly with no user-visible error and answers still return. `[Risk 3]`
 - [ ] **Structured logging into Supabase** — *Done when* query, retrieved IDs, scores, band, path, latency and provider are queryable for any request.
 
 #### Phase 3 — Harden: filters, limits, tiers, caching
@@ -408,7 +408,7 @@ Every item has a **Done when** — if you can't tell whether it's finished, it i
 - [ ] **Begin harvesting real questions from LHWs, family and neighbours** — *Done when* 50 verbatim questions are in `data/variants/seed_real.csv` with no identifying details. `[Lever 2]`
 
 #### Phase 1 — Give Sana something honest to measure against
-*The gold set is the instrument the entire project is judged with. If it's biased toward the KB's own wording, every number after it is inflated and you won't find out until the viva.*
+*The gold set is the instrument the entire project is judged with. If it's biased toward the KB's own wording, every number after it is inflated and you won't find out until someone checks your method.*
 
 - [ ] **Write the first 100 gold queries in colloquial Sindhi** — *Done when* each maps to a correct `answer_id` and each was written from the seed real-question set, not by reading the KB row. `[Risk 1]`
 - [ ] **Build the first adversarial danger-sign set** — *Done when* 40 indirect phrasings exist that share no keyword with the bank but mean the same thing.

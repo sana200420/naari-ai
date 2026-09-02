@@ -80,9 +80,11 @@ class _FakeQdrantClient:
         self._dense_hits = dense_hits
         self._sparse_hits = sparse_hits
         self.calls = []
+        self.filters = []
 
-    def query_points(self, collection_name, query, using, limit, with_payload):
+    def query_points(self, collection_name, query, using, limit, with_payload, query_filter=None):
         self.calls.append(using)
+        self.filters.append(query_filter)
         hits = self._dense_hits if using == "dense" else self._sparse_hits
         return SimpleNamespace(points=hits[:limit])
 
@@ -144,3 +146,122 @@ def test_fused_search_respects_top_k():
     rows = retriever.fused_search("query", top_k=5, leg_k=25)
 
     assert len(rows) == 5
+
+
+# ---------------------------------------------------------------------------
+# lang filtering — Sindhi and English points share one collection/vectors
+# ---------------------------------------------------------------------------
+
+def test_dense_search_defaults_to_sindhi_only_filter():
+    client = _FakeQdrantClient(dense_hits=[_FakeHit(1, 0.9)], sparse_hits=[])
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    retriever.dense_search("query")
+
+    query_filter = client.filters[0]
+    assert query_filter is not None
+    assert query_filter.must[0].match.value == "sd"
+
+
+def test_dense_search_lang_none_sends_no_filter():
+    client = _FakeQdrantClient(dense_hits=[_FakeHit(1, 0.9)], sparse_hits=[])
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    retriever.dense_search("query", lang=None)
+
+    assert client.filters[0] is None
+
+
+def test_sparse_search_defaults_to_sindhi_only_filter():
+    client = _FakeQdrantClient(dense_hits=[], sparse_hits=[_FakeHit(1, 0.9)])
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    retriever.sparse_search("query")
+
+    assert client.filters[0].must[0].match.value == "sd"
+
+
+def test_fused_search_passes_lang_filter_to_both_legs():
+    client = _FakeQdrantClient(
+        dense_hits=[_FakeHit(1, 0.9)],
+        sparse_hits=[_FakeHit(1, 0.8)],
+    )
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    retriever.fused_search("query", lang="en")
+
+    assert all(f.must[0].match.value == "en" for f in client.filters)
+
+
+# ---------------------------------------------------------------------------
+# cross_lingual_search — Lever 4 cascade: SD dense + SD sparse + EN dense
+# ---------------------------------------------------------------------------
+
+class _FakeCrossLingualClient:
+    """Distinguishes legs by (using, lang) so cross_lingual_search's three
+    queries can be independently canned."""
+
+    def __init__(self, sd_dense, sd_sparse, en_dense):
+        self._responses = {
+            ("dense", "sd"): sd_dense,
+            ("sparse", "sd"): sd_sparse,
+            ("dense", "en"): en_dense,
+        }
+        self.calls = []
+
+    def query_points(self, collection_name, query, using, limit, with_payload, query_filter=None):
+        lang = query_filter.must[0].match.value if query_filter else None
+        self.calls.append((using, lang))
+        hits = self._responses.get((using, lang), [])
+        return SimpleNamespace(points=hits[:limit])
+
+
+def test_cross_lingual_search_queries_all_three_legs():
+    client = _FakeCrossLingualClient(
+        sd_dense=[_FakeHit(1, 0.9)],
+        sd_sparse=[_FakeHit(2, 0.8)],
+        en_dense=[_FakeHit(3, 0.7)],
+    )
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    rows = retriever.cross_lingual_search("query", translate_fn=lambda q: "translated")
+
+    assert set(client.calls) == {("dense", "sd"), ("sparse", "sd"), ("dense", "en")}
+    ids = {r["answer_id"] for r in rows}
+    assert ids == {1, 2, 3}
+    assert all(r["path"] == "cross_lingual" for r in rows)
+
+
+def test_cross_lingual_search_english_leg_rescues_a_miss():
+    # id 99 only turns up via the translated English leg -- this is the
+    # rescue case Lever 4 exists for.
+    client = _FakeCrossLingualClient(
+        sd_dense=[_FakeHit(1, 0.9)],
+        sd_sparse=[_FakeHit(1, 0.85)],
+        en_dense=[_FakeHit(99, 0.6)],
+    )
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    rows = retriever.cross_lingual_search("query", translate_fn=lambda q: "translated")
+
+    assert 99 in {r["answer_id"] for r in rows}
+
+
+def test_cross_lingual_search_translates_before_english_leg():
+    seen_queries = []
+
+    class _RecordingClient(_FakeCrossLingualClient):
+        def query_points(self, collection_name, query, using, limit, with_payload, query_filter=None):
+            lang = query_filter.must[0].match.value if query_filter else None
+            if (using, lang) == ("dense", "en"):
+                seen_queries.append(query)
+            return super().query_points(collection_name, query, using, limit, with_payload, query_filter)
+
+    client = _RecordingClient(sd_dense=[], sd_sparse=[], en_dense=[_FakeHit(1, 0.9)])
+    retriever = HybridRetriever(client, embed_fn=lambda q: {"dense": [q], "sparse": {}})
+
+    retriever.cross_lingual_search("سنڌي سوال", translate_fn=lambda q: f"EN:{q}")
+
+    # embed_fn echoes its input into the dense vector, so we can see the
+    # English leg was embedded from the *translated* text, not the original.
+    assert seen_queries == [["EN:سنڌي سوال"]]
