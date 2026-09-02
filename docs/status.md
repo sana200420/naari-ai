@@ -6,7 +6,7 @@
 
 | Person | Currently | Blocked on |
 |---|---|---|
-| Sana | Levers 1, 3, 4 done and measured; reranking (item 8) built and measured; Sindhi+English fully embedded (4000/4000 points, verified live); gold eval set human-reviewed and folded in (280→275 rows); Phase 1 go/no-go is a GO, checklist fully closed; next: Phase 2 (package as a service, threshold tuning, ONNX) — also flagged: the remaining ~146 gold rows need individual review before reranking's Recall@1 feeds anything load-bearing like Lever 5 thresholds | — |
+| Sana | Levers 1, 3, 4 done and measured; reranking (item 8) built and measured; Sindhi+English fully embedded (4000/4000 points, verified live); gold eval set at 296 rows (275 original + 25 new, individually reviewed); Phase 1 go/no-go is a GO, checklist fully closed; Phase 2: pipeline.py latency/memory fixed and verified, τ threshold tuning blocked on the ~146 legacy rows that were never individually reviewed (only bulk category-matched) | Gold-set review of the remaining ~146 legacy rows — top priority, blocking Lever 5 threshold tuning |
 | Sabiha | FastAPI skeleton + first deploy | — |
 | Tooba | Next.js skeleton, Sindhi font audit | — |
 | Mahnoor | Corpus merge landed; variant + eval pipeline landed but partial (see below) | Reviewer outreach and real-question harvesting not started yet |
@@ -37,9 +37,10 @@
 - **Prefix convention empirically confirmed:** no-prefix Recall@1 0.552 vs. prefixed 0.431 on the same candidate pool — confirms ADR 0001, bge-m3 needs none.
 - **Reranking (item 8):** `retrieval/rerank.py` (`bge-reranker-v2-m3`) built and measured. Raw Recall@1 dropped to 0.385, which looked alarming — but a 40-row manual audit of the disagreements (`eval/rerank_regression_audit.csv`) found the reranker was right about as often (12/40) as genuinely wrong (11/40), with another 12/40 cases where fused's own top-1 was *also* wrong (i.e. the never-individually-reviewed gold rows, not reranking, are the actual weak point) and 5/40 near-duplicate-content ties. One real, occasional weakness confirmed: cross-category confusion from surface phrase overlap. Latency is well inside budget (p95 112ms/20 candidates). **Flag before Phase 2:** don't feed reranking's raw Recall@1 into Lever 5 threshold tuning until the remaining ~146 gold rows get the same individual review the original 24 got.
 
-## Gold eval set — reviewed
+## Gold eval set — 296 rows, partially reviewed
 
-- `eval/gold_eval_280_linked.csv`: 280 gold questions linked to `correct_answer_id` via fused search, now folded down to 275 rows after full human review — 129 category-mismatch/low-confidence rows triaged against `docs/PLAYBOOKS.md`'s category-boundary rules down to 24 genuine unknowns, each manually re-searched against the full KB (`eval/gold_eval_280_needs_review_enriched.csv`): 9 corrections, 5 drops, 10 confirmed-OK, 105 confirmed-OK-in-bulk
+- `eval/gold_eval_280_linked.csv`: original 280 gold questions linked via fused search, folded down to 275 after full human review — 129 category-mismatch/low-confidence rows triaged against `docs/PLAYBOOKS.md`'s category-boundary rules down to 24 genuine unknowns, each manually re-searched against the full KB (`eval/gold_eval_280_needs_review_enriched.csv`): 9 corrections, 5 drops, 10 confirmed-OK, 105 confirmed-OK-in-bulk (this last 105 is the **unreviewed-at-the-individual-row-level chunk** blocking τ threshold tuning, see Phase 2 note above)
+- 2026-09-02: Mahnoor's 25 new independently-written questions (`eval/New_25_Gold_Questions.csv`) reviewed individually — 11 confirmed OK, 10 corrected to a better KB match (full reasoning in `eval/new25_review_final.csv`), 4 dropped as genuine KB content gaps (postpartum swelling, first-labor duration, period symptoms at work, PMS breast tenderness — worth a content-team follow-up). **275 → 296 rows**, 4 short of the 300 target. These 21 are now fully individually reviewed — the still-unreviewed ~146 are all from the original 280, not these.
 - `New_300_Womens_Health_Gold_Set_KB.csv` (a separate attempt) was rejected — every one of its 300 questions was a byte-identical copy of an existing KB question, unusable as an independent gold set
 
 ## Lever 2 / data & eval pipeline — landed, partial
