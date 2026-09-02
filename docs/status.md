@@ -1,6 +1,6 @@
 # Project status
 
-**Current phase:** Phase 2 — Make it a service. Phase 1 checklist fully closed 2026-09-01 (GO, fused Recall@5 = 0.971). Phase 2 started same day: `retrieval/pipeline.py`'s `search()` built (the real `docs/contracts/retrieval.json` implementation, replacing `FakeRetriever` for Sabiha's `/api`), conditional English leg implemented, `eval/negative_set_100.csv` verified and unblocking threshold tuning. Live measurement (latency/memory/recall) still needed for all three.
+**Current phase:** Phase 2 — Make it a service. Phase 1 checklist fully closed 2026-09-01 (GO, fused Recall@5 = 0.971). Phase 2 started same day: `retrieval/pipeline.py`'s `search()` built. Live-verified 2026-09-02: warm loading/latency/memory effectively done (a real GPU-device bug in NLLB was found and fixed along the way — was 25000-60000ms/query, now ~1s). **Blocked on gold-set quality, not code:** τ threshold tuning (Lever 5) can't produce a usable τ_high — correct/incorrect score distributions overlap too heavily, because 146/275 gold rows were never individually reviewed (only the original 24 flagged ones were). **This is now the top-priority next task** — it's blocking both threshold tuning and a clean read on the conditional-English-leg comparison.
 
 ## Who's on what
 
