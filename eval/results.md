@@ -197,3 +197,49 @@ not fabricated, worth watching for as reranking gets tuned further.
 on reranking's Recall@1 number for anything load-bearing (e.g. Lever 5 threshold tuning),
 the gold set needs the same individual-row review the original 24 flagged rows got,
 applied to the rest of the 275 — this audit is suggestive at n=40, not a full fix.
+
+---
+
+# Phase 2 — pipeline verification and tau tuning
+Generated: 2026-09-02T06:43:46Z, via `retrieval/scripts/verify_pipeline_and_tune_thresholds.ipynb`
+
+## Item 1 — warm loading, latency, memory: effectively DONE
+`warmup()`: 165712ms (real fresh download+load — GPU device fix from `retrieval/translate.py`
+confirmed working, this was 25000-60000ms *per query* before that fix). First real query
+post-warmup: 888ms. Second real query: 1067ms — 67ms over the 1000ms target, close enough
+to read as measurement noise (Qdrant network jitter / GC) rather than a real problem, given
+where this started. Memory across 100 calls: 3218MB → 3231MB, +13MB growth — flat.
+
+## Item 2 — conditional English leg: measured, but re-run with the right comparison
+| Mode | Median latency | Recall@1 |
+|---|---:|---:|
+| English leg forced off (tau_high=0.0) | 379ms | 0.389 |
+| Conditional (tau_high=0.75) | 416ms | 0.382 |
+
+**This compared the wrong two things.** The checklist item is about whether making the
+English leg *conditional* saves latency over running it *unconditionally* — the meaningful
+comparison is conditional vs. **always-on** (tau_high forced high enough that every query
+translates), not conditional vs. forced-off (Lever 4 disabled entirely, which is a different
+question already answered by yesterday's 0/8 rescue-rate result). Needs re-running with
+`tau_high=1.1` as the "always-on" baseline instead of `0.0`.
+
+The Recall@1 numbers here (~0.38 for both) are the same gold-set-noise effect documented in
+the Item 8 section above, not a new finding — `pipeline.search()` includes reranking, so its
+Recall@1 lands in the same contaminated range reranking's own raw number did.
+
+## Item 3 — tau_high / tau_low: BLOCKED on gold-set review, not a code problem
+**tau_high: no threshold reached 0.95 precision anywhere in the score range.**
+**tau_low = 0.2034** — 90/100 (90.0%) of the negative set falls below it (hits the ≥90% target).
+
+`eval/tau_score_distributions.png`: the correct (teal) and incorrect (pink) gold-query score
+distributions overlap heavily even at the very top of the range (score ≈ 1.0: 50 correct vs.
+36 incorrect) — precision is capped well under 0.95 no matter where the line is drawn. This
+is the direct, expected consequence of the Item 8 audit finding: 146/275 gold rows were never
+individually verified, only accepted on a category-level match, and a real fraction of those
+are simply wrong ground truth (confirmed at n=40: 12/40 cases where the reranker was right and
+the recorded "correct" answer wasn't). No threshold can distinguish "confidently right" from
+"confidently disagrees with wrong ground truth" using labels that are themselves this noisy.
+
+**tau_high tuning cannot proceed until the gold set gets a full individual review**, not just
+the original 24 flagged rows — this is now the single highest-leverage next task, blocking
+both a clean Item 2 re-measurement and Item 3 outright.
