@@ -243,3 +243,98 @@ the recorded "correct" answer wasn't). No threshold can distinguish "confidently
 **tau_high tuning cannot proceed until the gold set gets a full individual review**, not just
 the original 24 flagged rows — this is now the single highest-leverage next task, blocking
 both a clean Item 2 re-measurement and Item 3 outright.
+
+---
+
+# Phase 2 — real diagnostics against the fully-reviewed 248-row gold set (2026-09-05)
+Generated via `retrieval/scripts/verify_pipeline_and_tune_thresholds.ipynb`, run on Kaggle.
+
+The gold-set review is done (see docs/status.md — 248 rows, all individually verified).
+This run adds the diagnostics needed to actually explain *why* tau_high still doesn't
+converge, rather than continuing to guess.
+
+**Correction to the raw run output:** the notebook's category-mismatch check initially
+compared `stated_category` (English, from the gold CSV) against the KB row's `category`
+(Sindhi) directly as strings — these can never match, so the first pass of this run
+reported a false "58/58 (100%) category mismatch." Fixed in the notebook (an
+English→Sindhi category map, `retrieval/scripts/verify_pipeline_and_tune_thresholds.ipynb`)
+and recomputed by hand from the downloaded audit CSV below. The corrected numbers are the
+ones that matter.
+
+## Item 1 — warm loading, latency, memory: still fine
+`warmup()`: 231s (cold model download+load). First query post-warmup: 1164ms. Second
+query: 663ms (under the 1s target). Memory flat over 100 calls (+10MB).
+
+## Item 2 — conditional English leg: DONE, clean result
+| Mode | Median latency | Recall@1 |
+|---|---:|---:|
+| Forced off (tau_high=0.0) | 465ms | 0.351 |
+| Conditional (tau_high=0.750) | 507ms | 0.339 |
+| Always on (tau_high=1.1) | 1050ms | 0.339 |
+
+**This finally answers the checklist question correctly.** Conditional vs. always-on —
+the actual comparison this item asks for — shows identical Recall@1 (0.339 both) at 543ms
+less median latency. Being conditional costs nothing and saves over half a second per
+query relative to always translating. Checklist item can be marked done.
+
+(Side observation, not the main point: forced-off has slightly *higher* recall (0.351)
+than either mode that uses the English leg (0.339) — small-n noise at this scale (12
+queries), but consistent with Lever 4's original 0/8 rescue finding that the leg wasn't
+obviously earning its keep. The Closure section below has an updated, more encouraging
+number on this.)
+
+## Item 3 / Diagnostic 1 — tau_high still doesn't converge, and now we know why
+`tau_high`: no threshold reaches 0.95 precision. `tau_low = 0.2034` (90% of negative set
+below it, target met).
+
+**Recall@1 (final pipeline): 0.339. Recall@20 (fused shortlist, pre-rerank): 0.726.**
+That's a 39-point gap — the correct answer is usually *sitting in the shortlist* (73% of
+the time) but only reaches the final top-1 slot a third of the time. Per the diagnostic
+rule this run was designed to answer: **a gap this large means the failure is in
+ranking/fusion/reranking, not in retrieval or embeddings.** Reranking work is not wasted
+effort; retrieval/embedding work would be, right now.
+
+68/248 (27%) of queries never surface the correct answer anywhere in the top-20 shortlist
+at all — a genuine retrieval-pool gap for that subset specifically, which no amount of
+reranking or tau tuning can fix. Worth its own investigation later, but it's a minority
+of the problem.
+
+## Diagnostic 2 — hub-row frequency: no row exceeded 20% this run
+Somewhat surprising given the id=610/821/773/956/644 pattern observed repeatedly during
+the manual gold-set review — either that pattern is concentrated within specific
+sub-topics (not enough to clear a flat 20%-of-all-queries bar) or it's less dominant
+against the now-cleaned gold set than it appeared during review. Worth rechecking the
+top-15-by-raw-frequency list (printed in the notebook, not saved to a file this run).
+
+## Diagnostic 3 — structured audit of the 58 incorrect-but-score≥0.9 queries
+**Corrected numbers** (the notebook's own 58/58 category-mismatch figure was the language
+bug described above): of the 58, **31 (53%) are actually same-category** — the reranker
+picked the wrong specific KB row, but the right general topic — and **27 (47%) are true
+cross-category confusion**. 37/58 (64%) have the correct answer sitting somewhere else in
+the top-20 (a ranking problem for those, not a missing-from-pool problem).
+
+**The most actionable finding in this audit:** of the 58, **25 had the correct answer
+sitting at rank 1 of the pre-rerank fused shortlist** — meaning fusion already got it
+right, and reranking *demoted the correct answer in favor of a wrong one*. That's not
+noise or category confusion; it's the reranker actively making 25/248 (10%) of all
+queries worse than doing nothing would have. `gold_7` (the pregnancy-checkup-frequency
+query reranked into a PCOS follow-up row, first flagged in the Item 8 audit) is one of
+these 25 — same failure mode, now confirmed to recur at meaningful scale, not a one-off.
+
+Full per-query detail: `eval/high_score_wrong_answer_audit.csv` (downloaded from this
+run — not yet committed; the human columns are still blank pending a fill-in pass).
+
+## Diagnostic 4 — alternative confidence signals
+Notebook output not yet captured to a file this run (needs a copy of the printed
+train/test table). Given Diagnostic 3's finding above, `fusion_agrees_with_final` is the
+signal most likely to matter — a query where fusion and the final reranked answer agree
+should be a real precision boost, precisely because 25/58 of the current failures are
+cases where they disagree and fusion was right. Re-run needed to get real numbers.
+
+## Closure — English leg: less dead than it looked
+Of 20 sampled Sindhi-only misses (queries that never surface the correct answer in the
+Sindhi-only top-20), the English leg rescued **4 (20%)** — a real, meaningfully positive
+number against the old measurement's 0/8 (0%). Extrapolated to the full 68 Sindhi-only
+misses this run, that's a plausible ~13-14 queries the leg could be rescuing. This
+reopens the "should Lever 4 be deleted" question from the opposite direction — worth
+re-running the full 68 (not just the 20 sampled) before deciding either way.
