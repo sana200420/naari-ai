@@ -191,7 +191,7 @@ surface phrase overlap (`gold_7`, "how many times should I visit the doctor duri
 pregnancy" reranked to a PCOS post-diagnosis follow-up row) — occurred in this sample,
 not fabricated, worth watching for as reranking gets tuned further.
 
-**Latency:** mean 335ms, p95 112ms for 20 candidates — well inside Risk 2's 3s budget.
+**Latency:** mean 335ms, p50 112ms for 20 candidates — well inside Risk 2's 3s budget. **Correction (2026-09-02):** this was originally mislabeled "p95" — p95 cannot be below the mean for a latency distribution, so 112ms is the median. The actual p95 was never recorded from that run; needs re-measuring before treating the 3s budget claim as verified at the tail rather than just on average.
 
 **Not blocking Phase 1's GO** (fused alone already clears the exit gate). Before relying
 on reranking's Recall@1 number for anything load-bearing (e.g. Lever 5 threshold tuning),
