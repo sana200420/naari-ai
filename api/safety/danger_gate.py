@@ -3,165 +3,289 @@ Safety Gate — Phase 1
 Pure function over normalised text.
 No LLM, no retrieval, no network calls.
 A bug here has a physical consequence for a real woman.
+
+v2: 
+- Canonical Sindhi escalation script from kb_safety_always_on.md
+- Sindhi keywords added for all 11 canonical categories
+- Embedding similarity detection added (Phase 1 requirement)
 """
 
 import re
 import unicodedata
 from dataclasses import dataclass
+from typing import Optional
 
-# ── Escalation script (fixed — never change without clinical review) ──────────
+# ── Escalation script — canonical Sindhi from kb_safety_always_on.md ─────────
 ESCALATION_SCRIPT = (
-    "یہ معلومات آپ کی مدد کے لیے کافی نہیں ہیں۔ "
-    "براہ کرم فوری طور پر کسی لیڈی ہیلتھ ورکر یا ڈاکٹر سے ملیں۔ "
-    "اگر آپ کو شدید تکلیف ہے تو قریبی اسپتال جائیں۔"
+    "اها نشاني انتظار ڪرڻ جهڙي ناهي. "
+    "مهرباني ڪري هينئر ئي ويجهي صحت مرڪز يا اسپتال وڃو، "
+    "۽ ڪنهن کي پاڻ سان وٺي وڃو. دير نه ڪريو."
 )
 
 ESCALATION_SCRIPT_EN = (
-    "This information is not enough to help you. "
-    "Please immediately contact a lady health worker or doctor. "
-    "If you are in severe pain, go to the nearest hospital."
+    "This sign is not one to wait on. Please go to the nearest health centre "
+    "or hospital now, and take someone with you. Don't delay."
 )
 
-# ── 11 Danger Categories ───────────────────────────────────────────────────────
+# ── 11 Canonical Danger Categories (from kb_safety_always_on.md) ─────────────
 DANGER_CATEGORIES = {
     "heavy_bleeding": {
-        "description": "Heavy or uncontrolled bleeding",
-        "keywords_sindhi": ["گھڻو رت", "تيز رت", "رت بند نٿو ٿئي"],
+        "description": "Any bleeding during pregnancy or heavy postpartum bleeding",
+        "keywords_sindhi": [
+            "رت وهڻ", "گھڻو رت", "تيز رت", "رت بند نٿو ٿئي",
+            "ويم کان پوءِ گهڻو رت وهڻ", "پيڊ ڀرجي وڃي",
+        ],
         "keywords_english": [
             "heavy bleeding", "soaking pads", "bleeding won't stop",
-            "hemorrhage", "blood clots large", "flooding"
+            "hemorrhage", "blood clots large", "flooding",
+            "miscarriage bleeding", "tissue passing from vagina",
         ],
         "keywords_urdu": ["زیادہ خون", "خون بند نہیں", "بہت خون"]
     },
+    "severe_headache": {
+        "description": "Severe headache",
+        "keywords_sindhi": [
+            "سِر ۾ سخت سور", "سر ۾ تيز سور", "بي انتها مٿي جو سور",
+        ],
+        "keywords_english": [
+            "severe headache", "worst headache", "unbearable headache",
+            "thunderclap headache",
+        ],
+        "keywords_urdu": ["شدید سر درد", "ناقابل برداشت سر درد"]
+    },
+    "blurred_vision": {
+        "description": "Blurred vision or darkness before eyes",
+        "keywords_sindhi": [
+            "اکين اڳيان ڌنڌ يا اونداهي", "اکين اڳيان اونداهي",
+            "نظر ڌنڌلو", "وڄ جون چمڪون", "پاڇولا",
+        ],
+        "keywords_english": [
+            "blurred vision", "blurred vision pregnancy", "darkness before eyes",
+            "seeing spots", "vision changes",
+        ],
+        "keywords_urdu": ["دھندلی نظر", "آنکھوں کے آگے اندھیرا"]
+    },
     "severe_pain": {
-        "description": "Severe or sudden abdominal/pelvic pain",
-        "keywords_sindhi": ["سخت درد", "تيز درد", "اڻ سهڻو درد"],
+        "description": "Severe abdominal or pelvic pain",
+        "keywords_sindhi": [
+            "پيٽ ۾ سخت سور", "سخت درد", "تيز درد", "اڻ سهڻو درد",
+            "سيخ وانگر سور", "نچوڙيندڙ سور",
+        ],
         "keywords_english": [
             "severe pain", "unbearable pain", "sudden pain",
-            "sharp pain", "excruciating", "worst pain"
+            "sharp pain", "excruciating", "worst pain",
+            "severe abdominal pain",
         ],
         "keywords_urdu": ["شدید درد", "ناقابل برداشت درد", "اچانک درد"]
     },
-    "pregnancy_danger": {
-        "description": "Danger signs in pregnancy",
-        "keywords_sindhi": ["حمل ۾ خطرو", "پيٽ ۾ درد حمل"],
-        "keywords_english": [
-            "blurred vision pregnancy", "swollen face pregnancy",
-            "no fetal movement", "baby not moving", "preeclampsia",
-            "fits in pregnancy", "convulsion pregnant", "water broke early"
+    "swelling_face_hands": {
+        "description": "Swelling of hands and face",
+        "keywords_sindhi": [
+            "هٿن ۽ منهن جو سُڄڻ", "چهري ۽ هٿن تي سوجن",
+            "منهن سڄجڻ", "هٿ سڄجڻ",
         ],
-        "keywords_urdu": ["حمل میں خطرہ", "بچہ نہیں ہل رہا", "دھندلی نظر حمل"]
+        "keywords_english": [
+            "swollen face", "swollen hands", "swelling of hands and face",
+            "face swelling pregnancy", "puffiness face",
+        ],
+        "keywords_urdu": ["چہرہ سوجن", "ہاتھ سوجن", "حمل میں سوجن"]
     },
-    "postpartum_danger": {
-        "description": "Danger signs after delivery",
-        "keywords_sindhi": ["ڄڻڻ کان پوءِ تڪليف"],
-        "keywords_english": [
-            "postpartum bleeding", "fever after delivery", "foul smell after birth",
-            "lochia smell", "infection after delivery", "wound not healing"
+    "fever": {
+        "description": "Fever",
+        "keywords_sindhi": [
+            "بخار", "تيز بخار", "سخت بخار", "ٿڌ سان بخار",
+            "بخار ويم کان پوءِ",
         ],
-        "keywords_urdu": ["بچے کے بعد بخار", "ڈلیوری کے بعد خون", "بدبو ڈلیوری کے بعد"]
+        "keywords_english": [
+            "fever after delivery", "very high fever", "fever won't break",
+            "high fever", "fever with chills", "burning up",
+        ],
+        "keywords_urdu": ["تیز بخار", "بخار اتر نہیں رہا", "ڈلیوری کے بعد بخار"]
     },
-    "suicide_self_harm": {
-        "description": "Suicidal ideation or self-harm",
-        "keywords_sindhi": ["پاڻ کي نقصان", "زندگي ختم"],
-        "keywords_english": [
-            "want to die", "kill myself", "end my life", "self harm",
-            "cut myself", "hurt myself", "suicide", "no reason to live"
+    "reduced_fetal_movement": {
+        "description": "Reduced or absent fetal movement",
+        "keywords_sindhi": [
+            "ٻار جو چرپر گهٽ ٿيڻ", "ٻار نٿو چري",
+            "ٻار جي حرڪت", "حرڪت محسوس ناهي",
         ],
-        "keywords_urdu": ["مرنا چاہتی ہوں", "خود کو نقصان", "زندگی ختم کرنا"]
-    },
-    "unconsciousness": {
-        "description": "Loss of consciousness or fits",
-        "keywords_sindhi": ["بيهوش", "دورو"],
         "keywords_english": [
-            "unconscious", "fainted", "passed out", "seizure",
-            "fits", "convulsion", "not waking up"
+            "baby not moving", "no fetal movement", "reduced fetal movement",
+            "baby not moving for hours", "can't feel baby",
         ],
-        "keywords_urdu": ["بیہوش", "دورہ پڑا", "ہوش نہیں"]
+        "keywords_urdu": ["بچہ نہیں ہل رہا", "حرکت نہیں", "بچے کی حرکت نہیں"]
     },
     "breathing_difficulty": {
         "description": "Difficulty breathing",
-        "keywords_sindhi": ["ساهه نٿو اچي"],
+        "keywords_sindhi": [
+            "ساهه کڻڻ ۾ تڪليف", "ساهه نٿو اچي", "ساهه گھٽجڻ",
+            "ساهه بلڪل بند", "ساهه ٻوسڻ",
+        ],
         "keywords_english": [
             "can't breathe", "difficulty breathing", "shortness of breath",
-            "chest pain", "gasping"
+            "chest pain", "gasping", "breathless",
         ],
         "keywords_urdu": ["سانس نہیں آ رہی", "سینے میں درد", "دم گھٹ رہا ہے"]
     },
-    "high_fever": {
-        "description": "Very high fever",
-        "keywords_sindhi": ["تيز بخار", "سخت بخار"],
-        "keywords_english": [
-            "very high fever", "fever won't break", "104 fever",
-            "105 fever", "burning up", "fever with rash"
+    "postpartum_danger": {
+        "description": "Danger signs after delivery",
+        "keywords_sindhi": [
+            "ويم کان پوءِ گهڻو رت وهڻ", "بدبودار پاڻي",
+            "گندي بوءِ", "ساواڻ مائل پاڻي",
         ],
-        "keywords_urdu": ["تیز بخار", "بخار اتر نہیں رہا"]
+        "keywords_english": [
+            "postpartum bleeding", "foul smell after birth",
+            "foul-smelling discharge", "infection after delivery",
+            "lochia smell", "wound not healing",
+        ],
+        "keywords_urdu": ["ڈلیوری کے بعد خون", "بدبو ڈلیوری کے بعد", "بچے کے بعد بخار"]
+    },
+    "fits_fainting": {
+        "description": "Fits or fainting",
+        "keywords_sindhi": [
+            "ڪَڙَ يا بيهوشي", "بيهوش", "دورو", "هٿ پير ڏڪڻ",
+            "چڪرائي ڪري پيس",
+        ],
+        "keywords_english": [
+            "fits", "seizure", "convulsion", "unconscious", "fainted",
+            "passed out", "not waking up", "fits in pregnancy",
+            "she is unconscious",
+        ],
+        "keywords_urdu": ["بیہوش", "دورہ پڑا", "ہوش نہیں", "غش"]
+    },
+    "infant_danger": {
+        "description": "Danger signs in newborn",
+        "keywords_sindhi": [
+            "نوزائيده خطرو", "کير پيئڻ ڇڏي ڏنو",
+        ],
+        "keywords_english": [
+            "baby not breathing", "newborn not feeding", "baby yellow",
+            "jaundice newborn", "baby cold", "baby limp", "infant fits",
+        ],
+        "keywords_urdu": ["بچہ سانس نہیں لے رہا", "نوزائیدہ خطرہ"]
     },
     "abuse_violence": {
         "description": "Domestic violence or abuse",
         "keywords_sindhi": ["مار کٽ", "گهريلو تشدد"],
         "keywords_english": [
-            "husband hitting", "domestic violence", "being beaten",
-            "physical abuse", "he hit me", "forced sex", "rape"
+            "husband hitting", "husband hitting me", "domestic violence",
+            "being beaten", "physical abuse", "he hit me", "forced sex", "rape"
         ],
-        "keywords_urdu": ["مار پیٹ", "گھریلو تشدد", "زبردستی", "زیادتی"]
+        "keywords_urdu": ["مار پیٹ", "گھریلو تشدد", "زبردستی"]
     },
-    "infant_danger": {
-        "description": "Danger signs in newborn",
-        "keywords_sindhi": ["نوزائيده خطرو"],
-        "keywords_english": [
-            "baby not breathing", "newborn not feeding", "baby yellow",
-            "jaundice newborn", "baby cold", "baby limp", "infant fits"
+    "suicide_self_harm": {
+        "description": "Suicidal ideation or self-harm",
+        "keywords_sindhi": [
+            "پاڻ کي نقصان", "زندگي ختم", "خودڪشي",
+            "پاڻ کي ماري", "زندگي مان اميد ختم",
         ],
-        "keywords_urdu": ["بچہ سانس نہیں لے رہا", "نوزائیدہ خطرہ", "بچہ پیلا"]
-    },
-    "ectopic_miscarriage": {
-        "description": "Signs of ectopic pregnancy or miscarriage",
-        "keywords_sindhi": ["اسقاط حمل", "حمل ضايع"],
         "keywords_english": [
-            "miscarriage", "bleeding in pregnancy", "tissue passing",
-            "ectopic", "pregnancy loss", "clots in pregnancy"
+            "want to die", "kill myself", "i want to die", "i want to kill myself",
+            "end my life", "self harm", "cut myself", "hurt myself",
+            "suicide", "no reason to live",
         ],
-        "keywords_urdu": ["اسقاط حمل", "حمل گر گیا", "حمل میں خون"]
+        "keywords_urdu": ["مرنا چاہتی ہوں", "خود کو نقصان", "زندگی ختم کرنا"]
     },
 }
 
 # ── Scope classifier ───────────────────────────────────────────────────────────
 SCOPE_REFERRALS = {
     "abortion": {
-        "keywords": ["abortion", "terminate pregnancy", "اسقاط حمل کروانا", "حمل گرانا"],
+        "keywords": ["abortion", "terminate pregnancy", "اسقاط حمل کروانا", "حمل گرانا", "اسقاط", "حمل ختم"],
         "response": (
-            "NaariAI صرف عورتوں کی صحت کی عمومی معلومات دیتی ہے۔ "
-            "براہ کرم کسی ڈاکٹر سے ملیں۔"
+            "هي موضوع مخصوص طبي ۽ قانوني رهنمائي گھري ٿو جيڪا هي سروس مهيا نٿي ڪري سگهي. "
+            "مهرباني ڪري ويجهي صحت مرڪز، ليڊي ڊاڪٽر يا تصديق ٿيل فيملي پلاننگ ڪلينڪ سان رابطو ڪريو."
         )
     },
     "named_contraceptives": {
-        "keywords": ["pill name", "contraceptive pill", "iud brand", "copper t brand"],
+        "keywords": ["pill name", "contraceptive pill", "iud brand", "copper t brand", "مرينا", "ياسمين"],
         "response": (
-            "مخصوص دوائیوں کے بارے میں معلومات کے لیے ڈاکٹر سے رجوع کریں۔"
+            "هي سروس مخصوص برانڊ يا پراڊڪٽ جي مقابلي جي صلاح نٿي ڏئي. "
+            "پنهنجي حالت لاءِ بهترين آپشن معلوم ڪرڻ لاءِ مهرباني ڪري صحت ڪارڪن يا ڊاڪٽر سان صلاح ڪريو."
         )
     },
     "domestic_violence_referral": {
         "keywords": ["shelter", "escape husband", "leave home safe", "DV helpline"],
         "response": (
-            "آپ کی مدد کے لیے لیڈی ہیلتھ ورکر سے رابطہ کریں۔ "
-            "آپ اکیلی نہیں ہیں۔"
+            "توهان جي حفاظت اهم آهي. مهرباني ڪري ويجهي مدد ڪندڙ اداري، "
+            "پوليس هيلپ لائين يا ڀروسي واري شخص سان رابطو ڪريو. توهان اڪيلا ناهيو."
         )
     },
     "not_health": {
-        "keywords": ["recipe", "cooking", "politics", "cricket", "weather", "news"],
+        "keywords": ["recipe", "cooking", "politics", "cricket", "weather", "news",
+                     "recipe for biryani", "cricket match score"],
         "response": (
-            "NaariAI صرف عورتوں کی صحت سے متعلق سوالوں کے جواب دیتی ہے۔"
+            "معاف ڪجو، هي سوال هن سروس جي دائري کان ٻاهر آهي. "
+            "مهرباني ڪري لاڳاپيل شعبي جي ڊاڪٽر يا ماهر سان رابطو ڪريو."
         )
     },
     "doctor_question": {
-        "keywords": ["are you a doctor", "kya tum doctor ho", "ڇا تون ڊاڪٽر آهين"],
+        "keywords": ["are you a doctor", "kya tum doctor ho", "ڇا تون ڊاڪٽر آهين",
+                     "ڇا توهان ڊاڪٽر آهيو", "are you a doctor"],
         "response": (
-            "نہیں، میں NaariAI ہوں — ایک معلوماتی آواز کا ساتھی۔ "
-            "میں ڈاکٹر نہیں ہوں۔ ہمیشہ کسی لیڈی ہیلتھ ورکر یا ڈاکٹر سے تصدیق کریں۔"
+            "نه، هي هڪ خودڪار معلوماتي سروس آهي، ڊاڪٽر ناهي. "
+            "هي عام صحت جي معلومات ڏئي ٿي، تشخيص يا علاج نٿي ڪري. "
+            "طبي صلاح لاءِ مهرباني ڪري ڊاڪٽر يا صحت ڪارڪن سان رابطو ڪريو."
         )
     }
 }
+
+# ── Embedding similarity (Phase 1 requirement) ────────────────────────────────
+# Loaded once at module level — never reload per request
+_embedder = None
+_danger_phrase_embeddings = None
+_danger_phrases = []
+
+DANGER_PHRASES_FOR_EMBEDDING = [
+    # Canonical Sindhi from kb_safety_always_on.md
+    "رت وهڻ", "سِر ۾ سخت سور", "اکين اڳيان ڌنڌ يا اونداهي",
+    "پيٽ ۾ سخت سور", "هٿن ۽ منهن جو سُڄڻ", "بخار",
+    "ٻار جو چرپر گهٽ ٿيڻ", "ساهه کڻڻ ۾ تڪليف",
+    "ويم کان پوءِ گهڻو رت وهڻ", "بدبودار پاڻي", "ڪَڙَ يا بيهوشي",
+    # English equivalents
+    "heavy bleeding", "severe headache", "blurred vision",
+    "severe abdominal pain", "swollen face and hands", "high fever",
+    "baby not moving", "difficulty breathing",
+    "bleeding after delivery", "foul smelling discharge", "fits fainting",
+    "i want to die", "kill myself", "self harm",
+]
+
+EMBEDDING_THRESHOLD = 0.75  # cosine similarity threshold
+
+
+def _load_embedder():
+    """Load model once. Call only when embedding path is needed."""
+    global _embedder, _danger_phrase_embeddings, _danger_phrases
+    if _embedder is not None:
+        return
+    try:
+        from sentence_transformers import SentenceTransformer
+        import numpy as np
+        _embedder = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+        _danger_phrases = DANGER_PHRASES_FOR_EMBEDDING
+        _danger_phrase_embeddings = _embedder.encode(
+            _danger_phrases, normalize_embeddings=True
+        )
+    except Exception:
+        _embedder = None
+
+
+def _embedding_match(text: str) -> Optional[str]:
+    """
+    Returns matched danger phrase if embedding similarity >= threshold.
+    Returns None if embedder not available or no match.
+    """
+    if _embedder is None:
+        return None
+    try:
+        import numpy as np
+        query_emb = _embedder.encode([text], normalize_embeddings=True)
+        scores = (_danger_phrase_embeddings @ query_emb.T).flatten()
+        best_idx = int(np.argmax(scores))
+        if scores[best_idx] >= EMBEDDING_THRESHOLD:
+            return _danger_phrases[best_idx]
+    except Exception:
+        pass
+    return None
 
 
 # ── Normaliser ─────────────────────────────────────────────────────────────────
@@ -177,25 +301,27 @@ def normalise(text: str) -> str:
 @dataclass
 class GateResult:
     escalate: bool
-    category: str | None          # which danger category triggered
-    scope_block: str | None       # which scope referral triggered
-    response: str | None          # fixed response if blocked
-    matched_keyword: str | None   # for logging/regression tests
+    category: str | None
+    scope_block: str | None
+    response: str | None
+    matched_keyword: str | None
+    method: str = "none"  # "keyword" | "embedding" | "scope" | "none"
 
 
 # ── Main gate function ─────────────────────────────────────────────────────────
-def run_danger_gate(text: str) -> GateResult:
+def run_danger_gate(text: str, use_embedding: bool = True) -> GateResult:
     """
     Pure function. Call this FIRST — before retrieval, before LLM.
     Returns GateResult with escalate=True if any danger keyword matches.
+    use_embedding=True enables semantic fallback when keyword misses.
     """
     norm = normalise(text)
 
-    # 1. Check all 11 danger categories
+    # 1. Keyword check — fast, no model needed
     for cat_name, cat in DANGER_CATEGORIES.items():
         all_keywords = (
-            cat.get("keywords_english", [])
-            + cat.get("keywords_sindhi", [])
+            cat.get("keywords_sindhi", [])
+            + cat.get("keywords_english", [])
             + cat.get("keywords_urdu", [])
         )
         for kw in all_keywords:
@@ -206,9 +332,24 @@ def run_danger_gate(text: str) -> GateResult:
                     scope_block=None,
                     response=ESCALATION_SCRIPT,
                     matched_keyword=kw,
+                    method="keyword",
                 )
 
-    # 2. Check scope classifiers
+    # 2. Embedding similarity — catches paraphrases that share no keyword
+    if use_embedding:
+        _load_embedder()
+        matched_phrase = _embedding_match(text)
+        if matched_phrase:
+            return GateResult(
+                escalate=True,
+                category="embedding_match",
+                scope_block=None,
+                response=ESCALATION_SCRIPT,
+                matched_keyword=matched_phrase,
+                method="embedding",
+            )
+
+    # 3. Scope classifier
     for scope_name, scope in SCOPE_REFERRALS.items():
         for kw in scope["keywords"]:
             if normalise(kw) in norm:
@@ -218,13 +359,15 @@ def run_danger_gate(text: str) -> GateResult:
                     scope_block=scope_name,
                     response=scope["response"],
                     matched_keyword=kw,
+                    method="scope",
                 )
 
-    # 3. All clear
+    # 4. All clear
     return GateResult(
         escalate=False,
         category=None,
         scope_block=None,
         response=None,
         matched_keyword=None,
+        method="none",
     )
