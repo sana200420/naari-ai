@@ -338,3 +338,49 @@ number against the old measurement's 0/8 (0%). Extrapolated to the full 68 Sindh
 misses this run, that's a plausible ~13-14 queries the leg could be rescuing. This
 reopens the "should Lever 4 be deleted" question from the opposite direction — worth
 re-running the full 68 (not just the 20 sampled) before deciding either way.
+
+---
+
+# Diagnostic 4, properly cross-validated (2026-09-07) — and a targeted reranker fix
+Generated from `eval/gold_scored_full.csv` (a re-run of the notebook with the per-query
+export added), analyzed locally rather than read off one notebook print statement.
+
+**The single-split numbers from the 2026-09-05 run were optimistic noise.** With only 75
+held-out queries, one misclassified query swings precision by ~1.3 points, and the
+reported 0.87–0.947 precision for `fusion_agrees_with_final AND category_match` (and for
+a logistic-regression cutoff) didn't hold up. Two more robust checks:
+
+1. **10-fold cross-validated logistic regression** (score, margin, fusion-agreement,
+   category-match as features, pooled predictions across all 10 held-out folds): peaks at
+   **83.6% precision, 24.6% coverage** (p≥0.70 cutoff, 61/248 queries) and does not
+   improve at stricter cutoffs — precision actually drops slightly past that point,
+   which is the signature of a real ceiling, not an unexplored coverage/precision
+   trade-off.
+2. **The hand-built rule evaluated directly on the full 248 rows** (no split needed,
+   since it's a fixed predicate): `score≥0.98 AND fusion_agrees AND category_match` — the
+   most extreme cutoff tried — reaches **90.6% precision at only 12.9% coverage** (32
+   queries) and still doesn't move meaningfully past that with a stricter floor.
+
+**Conclusion: 0.95 precision is not reachable with any signal combination on top of the
+current retrieval+rerank pipeline, at any coverage down to a few dozen queries.** This
+argues for two things instead of continuing to search for a better gating trick:
+- A three-band serving design (verbatim answer / "did you mean this?" confirmation /
+  decline) rather than a single binary threshold, since ~85-90% precision is a
+  reasonable bar for a confirmation step even though it's not enough to answer silently.
+- Fixing the underlying cause directly, since gating can only hide a wrong answer, not
+  make it right. Per the 2026-09-05 finding (25/58 high-confidence-wrong answers had the
+  correct answer at rank 1 of the fused shortlist before reranking demoted it),
+  `retrieval/pipeline.py` now has `_prefer_fusion_top1_if_close()`: when the reranker's
+  top pick differs from fusion's own top-1 by less than `RERANK_OVERRIDE_MARGIN`, fusion's
+  #1 wins the tie instead of being silently overridden. Ships with the margin defaulted
+  to `0.0` (a no-op — real behaviour is unchanged) because there's no calibrated value
+  yet; `eval/gold_scored_full.csv` now also carries `fusion_top1_rerank_score` and
+  `preguard_top1_id`/`preguard_top1_score` so any margin can be simulated offline from
+  one export, without a GPU run per candidate value. **Next run should sweep this and
+  report the margin that maximizes Recall@1.**
+
+Also confirmed on this run: the hub-row pattern is real, just under the flat 20%
+threshold used to flag it. Top by shortlist frequency: `id=610` (18%), `id=821` (17%),
+`id=825` (15%), `id=623` (15%) — the same rows flagged by hand across three review
+passes. Worth splitting these into narrower, single-topic KB rows independent of
+anything on the reranker side.
