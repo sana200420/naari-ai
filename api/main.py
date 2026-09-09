@@ -25,7 +25,10 @@ app.include_router(ask.router)
 # at startup, it blocks the port from opening and the platform health check
 # times out and marks the boot failed. So: warm in a background thread, serve
 # /health immediately, and expose readiness separately at /ready.
-_warm = {"ready": False, "error": None}
+_warm = {"ready": False, "error": None, "started": False}
+
+
+_warm_lock = threading.Lock()
 
 
 def _warmup() -> None:
@@ -38,9 +41,25 @@ def _warmup() -> None:
         _warm["error"] = f"{type(exc).__name__}: {exc}"  # lazy loading still works
 
 
+def ensure_warm() -> None:
+    """Start warmup once, from whichever entrypoint gets there first.
+
+    On a Gradio-SDK Space, Hugging Face may serve the Gradio Blocks directly
+    rather than the FastAPI app, in which case the startup event below never
+    fires and the first real query would pay the full ~230s cold load. app.py
+    calls this at module scope so warmup happens either way; the flag makes
+    the second caller a no-op instead of loading every model a second time.
+    """
+    with _warm_lock:
+        if _warm["started"]:
+            return
+        _warm["started"] = True
+    threading.Thread(target=_warmup, daemon=True).start()
+
+
 @app.on_event("startup")
 def _start_warmup() -> None:
-    threading.Thread(target=_warmup, daemon=True).start()
+    ensure_warm()
 
 
 @app.get("/ready")
@@ -48,4 +67,4 @@ def ready():
     """Distinguishes 'process is up' (/health) from 'models are loaded'.
     Poll this before a demo -- a query sent while ready is false still works,
     it just pays the remaining cold-start cost."""
-    return {"ready": _warm["ready"], "warmup_error": _warm["error"]}
+    return {"ready": _warm["ready"], "started": _warm["started"], "warmup_error": _warm["error"]}

@@ -28,6 +28,7 @@ import os
 import gradio as gr
 
 from api.main import app as fastapi_app
+from api.main import ensure_warm
 from api.pipeline import run_pipeline
 from api.routers.ask import AskRequest
 
@@ -47,6 +48,12 @@ _PATH_LABEL = {
     "verbatim": "✅ ڄاڻ جي ذخيري مان لفظ به لفظ (verbatim)",
     "generated": "✍️ ذخيري جي بنياد تي ٺاهيل (grounded generation)",
 }
+
+
+# Kick the model load off now, regardless of which server ends up running:
+# on a Gradio-SDK Space, Hugging Face may serve the Blocks directly and never
+# fire FastAPI's startup event. ensure_warm() is idempotent.
+ensure_warm()
 
 
 @spaces.GPU(duration=1)
@@ -90,8 +97,12 @@ demo = gr.ChatInterface(
 # API routes stay at their existing paths and the UI takes "/".
 app = gr.mount_gradio_app(fastapi_app, demo, path="/")
 
-
-if __name__ == "__main__":
+# On a Gradio-SDK Space, Hugging Face starts the server itself and binds 7860.
+# Calling uvicorn.run() here as well raced it and lost:
+#   [Errno 98] error while attempting to bind on address ('0.0.0.0', 7860)
+# So bind only when running this file directly off-Space. SPACE_ID is set in
+# every Space container, which is what distinguishes the two cases.
+if __name__ == "__main__" and not os.getenv("SPACE_ID"):
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "7860")))
