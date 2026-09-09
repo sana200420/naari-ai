@@ -24,9 +24,11 @@ immediately, `/ready` reports when the models have finished loading.
 import spaces  # must precede anything that touches torch/CUDA
 
 import os
+import threading
 
 import gradio as gr
 
+from api.main import app as fastapi_app
 from api.main import ensure_warm
 from api.pipeline import run_pipeline
 from api.routers.ask import AskRequest
@@ -94,18 +96,29 @@ demo = gr.ChatInterface(
 
 # Serve via Gradio's own launcher -- the canonical Gradio-SDK Space entrypoint.
 #
-# Two earlier shapes both failed on the Space and are worth not re-trying:
-# mounting Gradio onto FastAPI and serving it with uvicorn.run() died with
-# "[Errno 98] address already in use" on 7860, and simply omitting the bind
-# made the script run to completion and exit, which the Space reports as a
-# RUNTIME_ERROR. Hugging Face runs `python app.py` and expects it to block
-# serving, which is exactly what launch() does.
+# Hugging Face runs `python app.py` and expects it to block serving. Two other
+# shapes were tried on the Space and both failed, so don't re-try them:
+# mounting Gradio onto our FastAPI and serving with uvicorn.run() died with
+# "[Errno 98] address already in use" on 7860 (HF is already serving that
+# port), and omitting the bind entirely let the script run to completion and
+# exit, which the Space reports as RUNTIME_ERROR.
 #
-# The cost of this shape is that FastAPI's /ask, /health and /ready are not
-# exposed here -- Gradio's server is what is running, not api.main's app. The
-# pipeline underneath is identical (answer() calls run_pipeline directly), so
-# the demo is fully functional; re-exposing the REST contract for Tooba's
-# frontend is a follow-up, and until then the frontend keeps pointing at its
-# existing backend.
+# Gradio's own FastAPI instance only exists after launch(), so the REST API is
+# mounted onto it immediately afterwards with prevent_thread_lock=True, then
+# this thread blocks forever. That puts the docs/contracts/retrieval.json
+# endpoints under /api -- /api/ask, /api/health, /api/ready -- alongside the
+# chat UI at /, so Tooba's frontend has a real endpoint to call instead of
+# having to speak Gradio's two-step queue protocol.
+#
+# The sub-app's own startup events do not fire when it is mounted after the
+# server is already running, which is why warmup is kicked off by
+# ensure_warm() at module scope above rather than relying on FastAPI's
+# startup hook.
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", "7860")))
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=int(os.getenv("PORT", "7860")),
+        prevent_thread_lock=True,
+    )
+    demo.app.mount("/api", fastapi_app)
+    threading.Event().wait()
