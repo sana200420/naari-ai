@@ -12,6 +12,34 @@ const categories = [
   { label: "صفائي", query: "هڪ معمولي اندام جي گند عام آهي؟" },
 ];
 
+// Override if the Space is renamed or moved.
+const SPACE_URL =
+  process.env.NEXT_PUBLIC_SPACE_URL ?? "https://sanapalijo-naari-ai.hf.space";
+
+type AskResponse = {
+  answer: string;
+  path: string;
+  confidence_band: string;
+  retrieved_ids: number[];
+  latency_ms: number;
+};
+
+/** Pull the payload out of Gradio's SSE stream.
+ *  Frames look like:  "event: complete" then "data: [\"{...json...}\"]"
+ *  The inner element is itself a JSON string, hence the double parse. */
+function parseGradioSse(raw: string): AskResponse {
+  let event: string | null = null;
+  for (const rawLine of raw.split("\n")) {
+    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+    if (line.startsWith("event:")) {
+      event = line.slice(6).trim();
+    } else if (line.startsWith("data:") && event === "complete") {
+      return JSON.parse(JSON.parse(line.slice(5).trim())[0]) as AskResponse;
+    }
+  }
+  throw new Error("no complete event in Gradio stream");
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
   const [input, setInput] = useState("");
@@ -26,23 +54,31 @@ export default function Home() {
     setLoading(true);
 
     try {
-      // The backend is a Hugging Face Space (Gradio SDK), so it is reached
-      // through @gradio/client rather than a plain REST POST. The Space's
-      // "/ask" endpoint returns the same AskResponse shape as before, as a
-      // JSON string. Override the target with NEXT_PUBLIC_SPACE_ID if the
-      // Space is ever moved or renamed.
-      const { Client } = await import("@gradio/client");
-      const app = await Client.connect(
-        process.env.NEXT_PUBLIC_SPACE_ID ?? "Sanapalijo/naari-ai"
-      );
-      const result = await app.predict("/ask", { query, language: "sindhi" });
-      const data = JSON.parse((result.data as string[])[0]);
+      // The backend is a Hugging Face Space. Gradio exposes each endpoint as a
+      // two-step REST call: POST queues the job and returns an event_id, then
+      // GET streams the result back as SSE. Plain fetch is deliberate --
+      // @gradio/client hung on connect here and pulls a large dependency for
+      // what is ultimately two HTTP requests.
+      const post = await fetch(`${SPACE_URL}/gradio_api/call/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [query, "sindhi"] }),
+      });
+      if (!post.ok) throw new Error(`queue failed: HTTP ${post.status}`);
+      const { event_id } = await post.json();
+
+      const stream = await fetch(`${SPACE_URL}/gradio_api/call/ask/${event_id}`);
+      if (!stream.ok) throw new Error(`stream failed: HTTP ${stream.status}`);
+      const data = parseGradioSse(await stream.text());
 
       setMessages((prev) => [
         ...prev,
         { role: "assistant", text: data.answer },
       ]);
     } catch (err) {
+      // Show the user Sindhi, but leave the real cause in the console --
+      // a silent catch-all is how the dead Railway backend went unnoticed.
+      console.error("[naari] ask failed:", err);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", text: "معاف ڪجو، ڪا خرابي آئي آهي." },
