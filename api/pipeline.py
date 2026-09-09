@@ -18,6 +18,15 @@ _logger = logging.getLogger("naari.pipeline")
 
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
 
+# Model names are env-overridable because hardcoding them is exactly how the
+# generation path broke: "gemini-2.5-flash" was retired ("no longer available
+# to new users") and "llama-3.3-70b-versatile" stopped resolving, and because
+# both failures were swallowed, production just served the refusal string.
+# gemini-flash-latest is an alias Google keeps pointing at a current model, so
+# it survives the next retirement instead of 404ing.
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+
 # Logger — never import at top level to avoid circular imports
 def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id=None):
     try:
@@ -155,7 +164,7 @@ Answer in Sindhi:"""
 
 
 def _try_gemini(prompt: str) -> str:
-    """Try Gemini 2.5 Flash — returns None on any failure.
+    """Try Gemini — returns None on any failure.
 
     The failure is logged rather than swallowed silently. When this returned
     None quietly, a broken generation path was indistinguishable in
@@ -169,7 +178,7 @@ def _try_gemini(prompt: str) -> str:
     try:
         import google.generativeai as genai
         genai.configure(api_key=key)
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel(GEMINI_MODEL)
         response = model.generate_content(prompt)
         return response.text.strip()
     except Exception as exc:
@@ -187,9 +196,9 @@ def _try_groq(prompt: str) -> str:
         from groq import Groq
         client = Groq(api_key=key)
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=512,
+            max_completion_tokens=512,
         )
         return response.choices[0].message.content.strip()
     except Exception as exc:
