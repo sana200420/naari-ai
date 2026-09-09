@@ -26,12 +26,17 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://naari-ai-production.up.railway.app/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, language: "sindhi" }),
-      });
-      const data = await res.json();
+      // The backend is a Hugging Face Space (Gradio SDK), so it is reached
+      // through @gradio/client rather than a plain REST POST. The Space's
+      // "/ask" endpoint returns the same AskResponse shape as before, as a
+      // JSON string. Override the target with NEXT_PUBLIC_SPACE_ID if the
+      // Space is ever moved or renamed.
+      const { Client } = await import("@gradio/client");
+      const app = await Client.connect(
+        process.env.NEXT_PUBLIC_SPACE_ID ?? "Sanapalijo/naari-ai"
+      );
+      const result = await app.predict("/ask", { query, language: "sindhi" });
+      const data = JSON.parse((result.data as string[])[0]);
 
       setMessages((prev) => [
         ...prev,
