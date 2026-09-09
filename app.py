@@ -105,18 +105,22 @@ def ask_api(query: str, language: str = "sindhi") -> str:
     return json.dumps(result, ensure_ascii=False)
 
 
-demo = gr.ChatInterface(
-    fn=answer,
-    title=TITLE,
-    description=DESCRIPTION,
-    examples=[
-        "حيض جي چڪر ڇا آهي؟",
-        "حمل دوران الٽي ٿئي ته ڇا ڪجي؟",
-        "ٻار کي کير پيارڻ جا فائدا ڇا آهن؟",
-    ],
-)
-
-with demo:
+# Everything is built inside a single Blocks context. Re-entering `with demo:`
+# on an already-constructed ChatInterface to attach gr.api made launch() stop
+# blocking, so `python app.py` fell off the end and exited -- the Space came
+# up and then died with RUNTIME_ERROR. Constructing both children in one
+# context up front is the canonical shape and avoids that entirely.
+with gr.Blocks(title=TITLE) as demo:
+    gr.ChatInterface(
+        fn=answer,
+        title=TITLE,
+        description=DESCRIPTION,
+        examples=[
+            "حيض جي چڪر ڇا آهي؟",
+            "حمل دوران الٽي ٿئي ته ڇا ڪجي؟",
+            "ٻار کي کير پيارڻ جا فائدا ڇا آهن؟",
+        ],
+    )
     gr.api(ask_api, api_name="ask")
 
 
