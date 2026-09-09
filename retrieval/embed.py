@@ -21,26 +21,12 @@ _model = None
 _model_lock = threading.Lock()
 
 
-def _use_fp16() -> bool:
-    """fp16 only when there's a GPU to run it on.
-
-    FlagEmbedding applies `use_fp16` unconditionally (`if self.use_fp16:
-    self.model.half()` — no device check), so passing True on a CPU-only
-    host gives a half-precision model that x86 has no native kernels for:
-    torch upcasts per-op, making inference *slower* than plain fp32 while
-    saving memory we'd rather spend than pay latency for. The deployed
-    service (docs/runbook.md) is CPU-only, so this has to be device-aware
-    or every production query eats that penalty.
-    """
-    import torch
-
-    return torch.cuda.is_available()
-
-
 def _load_model():
     from FlagEmbedding import BGEM3FlagModel
 
-    return BGEM3FlagModel("BAAI/bge-m3", use_fp16=_use_fp16())
+    from retrieval.device import device, use_fp16
+
+    return BGEM3FlagModel("BAAI/bge-m3", use_fp16=use_fp16(), devices=device())
 
 
 def _get_model():

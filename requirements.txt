@@ -1,11 +1,18 @@
-# CPU-only torch. Without this, pip on Linux resolves the default torch wheel
-# and pulls ~3GB of nvidia-* CUDA libraries that a CPU host can never execute.
-# That bloat is why builds have failed since this file gained its ML
-# dependencies (892aaa1, 2026-09-01), leaving production on the Phase 0 mock.
-# Declared here rather than only in the Dockerfile so it applies whichever
-# builder runs -- Docker, Nixpacks, or a plain `pip install -r`.
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.4.1+cpu
+# torch is deliberately NOT pinned here.
+#
+# The Hugging Face Space (Gradio SDK on zero-a10g) ships its own torch build
+# that the `spaces` package expects to patch; pinning a CPU wheel over it
+# risks breaking that. Railway's CPU-only torch pin therefore lives in the
+# Dockerfile instead -- see the comment there. The thing to avoid on any
+# *non-HF* host is a plain `pip install torch`, which resolves the default
+# CUDA wheel and drags in ~3GB of nvidia-* libraries a CPU host can never
+# execute. That bloat is why builds failed from 2026-09-01 (892aaa1) onward,
+# leaving production stuck on the Phase 0 mock.
+
+spaces>=0.30
+# Pinned to the 6.x line: ChatInterface dropped both `type` and `theme` in
+# 6.0, and app.py is written against the 6 signature.
+gradio>=6.0,<7
 
 pytest>=8.0
 pandas>=2.0
@@ -17,9 +24,6 @@ FlagEmbedding>=1.3
 google-generativeai>=0.8
 groq>=0.11
 supabase>=2.7
-# Pinned to the 6.x line: ChatInterface dropped its `type` argument in 6.0,
-# so app.py is written against 6 and would break on a 5.x Space.
-gradio>=6.0,<7
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
 pydantic==2.7.1

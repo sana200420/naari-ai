@@ -1,20 +1,27 @@
-"""Hugging Face Spaces entrypoint (Gradio SDK).
+"""Hugging Face Spaces entrypoint (Gradio SDK, ZeroGPU hardware, CPU-resident).
 
-The Docker SDK is a paid option on this account, so the Space runs under the
-free Gradio SDK instead. That only changes how the process is *started* --
-the service itself is unchanged: this mounts the existing FastAPI app, so
-`/ask`, `/health` and `/ready` keep the exact shape
-`docs/contracts/retrieval.json` and Tooba's frontend already depend on, and
-Gradio's chat UI is served alongside it at `/`.
+Hardware, because it is not obvious: a free HF account cannot host a Gradio
+Space on `cpu-basic` -- that needs PRO (verified: the API returns 402 Payment
+Required). The one free path is `zero-a10g`, so the Space sits there with a
+single no-op `@spaces.GPU` function to satisfy ZeroGPU's "at least one
+decorated function" requirement, and every bit of real work stays outside it.
+Nothing ever requests a GPU, so no ZeroGPU quota is burned. This is the
+documented pattern for CPU-bound Spaces on a free account.
 
-Free Gradio Spaces get CPU basic: 2 vCPU and 16GB RAM. The model set --
-bge-m3, bge-reranker-v2-m3, NLLB-600M, and the danger gate's MiniLM -- peaks
-around 8.5GB resident on CPU, so it fits here where Railway's 512MB free tier
-never could.
+Consequence worth knowing: `import spaces` patches `torch.cuda.*` in this
+process so `torch.cuda.is_available()` answers True with no GPU attached.
+`retrieval/device.py` deliberately ignores that and pins everything to CPU --
+see its docstring.
+
+This mounts the existing FastAPI app rather than replacing it, so `/ask`,
+`/health` and `/ready` keep the exact shape `docs/contracts/retrieval.json`
+and Tooba's frontend already depend on, with Gradio's chat UI at `/`.
 
 Startup warmup still runs in api/main.py's background thread: the port opens
 immediately, `/ready` reports when the models have finished loading.
 """
+
+import spaces  # must precede anything that touches torch/CUDA
 
 import os
 
@@ -40,6 +47,13 @@ _PATH_LABEL = {
     "verbatim": "✅ ڄاڻ جي ذخيري مان لفظ به لفظ (verbatim)",
     "generated": "✍️ ذخيري جي بنياد تي ٺاهيل (grounded generation)",
 }
+
+
+@spaces.GPU(duration=1)
+def _noop():
+    """ZeroGPU refuses to start without at least one decorated function.
+    Never called, never wired to an event -- the whole pipeline runs on CPU
+    in the main process, so no GPU is ever requested and no quota is spent."""
 
 
 def answer(message: str, history) -> str:
