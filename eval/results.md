@@ -429,3 +429,26 @@ What shipped instead is the actual finding (cross-validated, not a threshold fit
 noise) plus a targeted fix for the largest identified cause of the gap. Item 4 (ONNX
 int8 conversion) is untouched and still needs real work — a separate GPU-dependent task,
 not a documentation update.
+
+
+# Phase 2, Item 4 -- ONNX int8 conversion
+Generated: 2026-09-09T15:40:05.502119+00:00, via retrieval/scripts/convert_models_to_onnx_int8.ipynb
+
+**Scope:** converted and quantized the embedder's dense output and the reranker. Sparse search stays on the original float32 model -- its extra learned head isn't exportable via standard tooling, and converting it blind risked silently breaking a component that's currently pulling real weight (0.542 Recall@1 alone). See the notebook's intro cell for the full reasoning.
+
+## Sanity checks (run before trusting anything below)
+Reranker: relevant-pair / irrelevant-pair scores compared original vs int8 -- see notebook output.
+Dense embedding: cosine similarity original vs onnx-int8 = 0.9839 (target: >0.95, ideally >0.98).
+
+## Latency (CPU, matching the free-Space deployment target)
+| Stage | fp32-CPU p50 | fp32-CPU p95 | int8-CPU p50 | int8-CPU p95 |
+|---|---:|---:|---:|---:|
+| Dense embed | 36ms | 134ms | 75ms | 111ms |
+| Rerank | 50ms | 59ms | 137ms | 181ms |
+
+Combined embed+rerank p95: fp32 192ms, int8 292ms (target: under 1500ms; excludes Qdrant network round-trip and sparse search).
+
+## Recall (dense+rerank on int8, sparse and fusion unchanged, n=248)
+Recall@1 fp32: 0.351. Recall@1 int8: 0.327. Drop: 2.42 percentage points (target: within 1.0 point).
+
+**Verdict: latency PASS, recall FAIL.**
