@@ -22,7 +22,9 @@ def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session
         log_query(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id)
     except Exception:
         pass
-TAU_LOW = float(os.getenv("TAU_LOW", "0.40"))
+# 0.2034 is calibrated: 90/100 of eval/negative_set_100.csv falls below it.
+# The old 0.40 was a placeholder that refused correct answers.
+TAU_LOW = float(os.getenv("TAU_LOW", "0.2034"))
 
 
 def run_pipeline(request: AskRequest) -> AskResponse:
@@ -58,9 +60,15 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             latency_ms=round((time.time() - t0) * 1000, 2),
         )
 
-    # Stage 02: retrieval (stub — Sana replaces with real KB retrieval)
-    chunks = []
-    top_score = 0.0
+    # Stage 02: retrieval
+    from retrieval.pipeline import search as retrieval_search
+
+    retrieval_result = retrieval_search(query)
+    chunks = [
+        {"id": r["answer_id"], "text": r["answer"], "score": r["score"]}
+        for r in retrieval_result["results"]
+    ]
+    top_score = chunks[0]["score"] if chunks else 0.0
 
     # Stage 03: confidence band decision
     if top_score >= TAU_HIGH and chunks:
