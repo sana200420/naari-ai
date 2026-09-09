@@ -30,17 +30,27 @@ Reranker override guard (2026-09-07, docs/status.md): auditing 58
 incorrect-but-high-confidence answers against the fully-reviewed 248-row
 gold set found 25 cases where reciprocal-rank-fusion's own top-1 pick was
 already correct, and reranking demoted it in favour of a wrong answer —
-roughly 10% of all queries. `_prefer_fusion_top1_if_close` is a narrow
-tie-break for exactly that pattern: rerank scores every fused candidate
-(not just the top `top_k`) so fusion's #1 pick's rerank score is always
-available, and if the reranker's chosen top-1 differs from fusion's #1 by
-less than `RERANK_OVERRIDE_MARGIN`, fusion's #1 wins the tie instead of
-being silently overridden. `RERANK_OVERRIDE_MARGIN` defaults to 0.0 (a
-no-op — current behaviour is unchanged) because there isn't yet real data
-on what rerank-score gap actually separates a genuine reranker correction
-from a demotion; `retrieval/scripts/verify_pipeline_and_tune_thresholds.ipynb`
-needs a cell that sweeps this against Recall@1 before it's set to
-anything else.
+roughly 10% of all queries. `_prefer_fusion_top1_if_close` is the guard
+against that pattern: rerank scores every fused candidate (not just the
+top `top_k`) so fusion's #1 pick's rerank score is always available, and
+if the reranker's chosen top-1 differs from fusion's #1 by less than
+`RERANK_OVERRIDE_MARGIN`, fusion's #1 wins the tie instead of being
+silently overridden.
+
+`RERANK_OVERRIDE_MARGIN` was calibrated, not guessed: `eval/gold_scored_full.csv`
+captures the pre-guard reranker state for all 248 gold queries, which let
+every candidate margin be simulated offline with no extra GPU run. Of the
+139 queries where fusion and reranking actually disagreed on the top-1
+pick, fusion was right and reranking wrongly overrode it **61 times**;
+reranking was right to override fusion only **10 times** — a 6:1 ratio
+against trusting the reranker's disagreement, confirmed by randomly
+splitting those 139 disagreements in half and checking the ratio holds
+independently in each half (30:5 and 31:5). There's no crossover point
+where trusting reranking starts winning, so the margin is set to `2.0`
+— outside the range a rerank-score gap can ever reach — meaning fusion's
+#1 pick always wins when the two disagree. This is a real property of
+this reranker on this KB, not a threshold fit to noise; see
+`eval/results.md`'s 2026-09-07 section for the full sweep table.
 """
 
 import os
@@ -53,19 +63,21 @@ from retrieval.search import COLLECTION, HybridRetriever, reciprocal_rank_fusion
 from retrieval.translate import translate_sd_to_en
 
 DEFAULT_TAU_HIGH = 0.75
-DEFAULT_RERANK_OVERRIDE_MARGIN = 0.0
+DEFAULT_RERANK_OVERRIDE_MARGIN = 2.0
 
 
 def _prefer_fusion_top1_if_close(
     reranked: list[dict], fusion_top1_id, margin: float
 ) -> list[dict]:
     """If reranking disagrees with fusion's own top-1 pick by less than
-    `margin`, put fusion's #1 back on top instead of trusting a razor-thin
-    reranker preference. `reranked` must already be sorted best-first and
-    must include every fused candidate (not just the caller's requested
-    top_k) so fusion's #1 is guaranteed to have a rerank_score to compare.
-    A margin of 0.0 never overrides anything (two floats are essentially
-    never exactly equal), so this is a no-op until the margin is tuned.
+    `margin`, put fusion's #1 back on top instead of trusting the reranker.
+    `reranked` must already be sorted best-first and must include every
+    fused candidate (not just the caller's requested top_k) so fusion's #1
+    is guaranteed to have a rerank_score to compare. `margin=0.0` disables
+    this entirely (two floats are essentially never exactly equal, so
+    nothing ever qualifies); `DEFAULT_RERANK_OVERRIDE_MARGIN` (module
+    docstring) is calibrated to always override instead, since the data
+    shows reranking is net-harmful whenever it disagrees with fusion here.
     """
     if not reranked or reranked[0]["answer_id"] == fusion_top1_id:
         return reranked

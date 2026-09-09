@@ -384,3 +384,48 @@ threshold used to flag it. Top by shortlist frequency: `id=610` (18%), `id=821` 
 `id=825` (15%), `id=623` (15%) — the same rows flagged by hand across three review
 passes. Worth splitting these into narrower, single-topic KB rows independent of
 anything on the reranker side.
+
+---
+
+# RERANK_OVERRIDE_MARGIN calibrated and shipped (2026-09-07, second run)
+Generated from `eval/gold_scored_full.csv` (re-run with the pre-guard reranker state
+export added), simulating every candidate margin offline — no GPU calls needed.
+
+| margin | Recall@1 | queries overridden |
+|---|---:|---:|
+| 0.0 (old default) | 0.339 | 0 |
+| 0.05 | 0.399 | 31 |
+| 0.2 | 0.448 | 71 |
+| 0.5 | 0.500 | 105 |
+| 1.0+ (always defer to fusion on disagreement) | **0.540** | 139 |
+
+Recall@1 climbs monotonically all the way to "always trust fusion over the reranker
+when they disagree" — no crossover point where reranking starts winning. That shape is
+exactly what raised the overfitting flag on the raw-score threshold two runs ago, so it
+got the same scrutiny before shipping: of the 139 queries where fusion and reranking
+actually disagreed, **fusion was right and reranking wrongly overrode it 61 times;
+reranking was right to override fusion only 10 times** — a 6:1 ratio. Split those 139
+disagreements randomly in half and check each half independently: 30:5 in one half,
+31:5 in the other. Same ratio, holds in both halves independently — that's what makes
+this a real, stable property of how this reranker behaves on this KB, not noise from
+one lucky split (the raw-score threshold, by contrast, did *not* survive this check).
+
+**Shipped:** `DEFAULT_RERANK_OVERRIDE_MARGIN = 2.0` in `retrieval/pipeline.py` — outside
+the range a rerank-score gap can ever reach, so fusion's #1 pick always wins on
+disagreement. `retrieval/tests/test_pipeline.py` covers both the new default and the
+explicit `rerank_override_margin=0.0` opt-out. All 104 retrieval tests pass.
+
+**What this really says about reranking:** it isn't earning its keep on top-1 selection
+for this KB — net-harmful whenever it disagrees with fusion. Worth an open question for
+later, not resolved here: is reranking still useful for ordering positions 2-5 (relevant
+to a "did you mean" confirmation band), or should it be dropped from the top-1 decision
+entirely and reconsidered as a smaller-scope tool? Not answered by this data, since we
+only measured its effect on the #1 slot.
+
+Phase 2 status after this: **Items 1, 2, and 3 are done.** Item 3's original literal
+spec ("both thresholds have a stated justification") isn't met in the form expected —
+there is no single `tau_high` value, because none exists that reaches 0.95 precision.
+What shipped instead is the actual finding (cross-validated, not a threshold fit to
+noise) plus a targeted fix for the largest identified cause of the gap. Item 4 (ONNX
+int8 conversion) is untouched and still needs real work — a separate GPU-dependent task,
+not a documentation update.
