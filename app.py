@@ -27,7 +27,6 @@ import os
 
 import gradio as gr
 
-from api.main import app as fastapi_app
 from api.main import ensure_warm
 from api.pipeline import run_pipeline
 from api.routers.ask import AskRequest
@@ -93,16 +92,20 @@ demo = gr.ChatInterface(
     ],
 )
 
-# Mount Gradio *onto* the FastAPI app rather than the other way round, so the
-# API routes stay at their existing paths and the UI takes "/".
-app = gr.mount_gradio_app(fastapi_app, demo, path="/")
-
-# On a Gradio-SDK Space, Hugging Face starts the server itself and binds 7860.
-# Calling uvicorn.run() here as well raced it and lost:
-#   [Errno 98] error while attempting to bind on address ('0.0.0.0', 7860)
-# So bind only when running this file directly off-Space. SPACE_ID is set in
-# every Space container, which is what distinguishes the two cases.
-if __name__ == "__main__" and not os.getenv("SPACE_ID"):
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "7860")))
+# Serve via Gradio's own launcher -- the canonical Gradio-SDK Space entrypoint.
+#
+# Two earlier shapes both failed on the Space and are worth not re-trying:
+# mounting Gradio onto FastAPI and serving it with uvicorn.run() died with
+# "[Errno 98] address already in use" on 7860, and simply omitting the bind
+# made the script run to completion and exit, which the Space reports as a
+# RUNTIME_ERROR. Hugging Face runs `python app.py` and expects it to block
+# serving, which is exactly what launch() does.
+#
+# The cost of this shape is that FastAPI's /ask, /health and /ready are not
+# exposed here -- Gradio's server is what is running, not api.main's app. The
+# pipeline underneath is identical (answer() calls run_pipeline directly), so
+# the demo is fully functional; re-exposing the REST contract for Tooba's
+# frontend is a follow-up, and until then the frontend keeps pointing at its
+# existing backend.
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", "7860")))
