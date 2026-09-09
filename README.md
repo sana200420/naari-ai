@@ -6,7 +6,7 @@ colorTo: purple
 sdk: gradio
 app_file: app.py
 pinned: false
-short_description: Sindhi-first women's health assistant (RAG over a verified KB)
+short_description: Sindhi women's health assistant, RAG over a verified KB
 ---
 
 # Naari AI — نارِي اي آءِ
