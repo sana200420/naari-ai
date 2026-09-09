@@ -2,6 +2,7 @@
 Phase 2 — Main pipeline: stages 00-08
 Danger gate short-circuits everything — a danger query never reaches retrieval or LLM.
 """
+import logging
 import time
 import os
 import re
@@ -12,6 +13,8 @@ from api.routers.ask import AskRequest, AskResponse
 BAND_HIGH = "high"
 BAND_MID = "mid"
 BAND_LOW = "low"
+
+_logger = logging.getLogger("naari.pipeline")
 
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
 
@@ -152,9 +155,16 @@ Answer in Sindhi:"""
 
 
 def _try_gemini(prompt: str) -> str:
-    """Try Gemini 2.5 Flash — returns None on any failure."""
+    """Try Gemini 2.5 Flash — returns None on any failure.
+
+    The failure is logged rather than swallowed silently. When this returned
+    None quietly, a broken generation path was indistinguishable in
+    production from a working one: the mid band just served the static
+    fallback ("جواب ڏيڻ ممڪن ناهي") and looked like a deliberate refusal.
+    """
     key = os.getenv("GEMINI_API_KEY")
     if not key:
+        _logger.warning("gemini: GEMINI_API_KEY not set, skipping")
         return None
     try:
         import google.generativeai as genai
@@ -162,7 +172,8 @@ def _try_gemini(prompt: str) -> str:
         model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(prompt)
         return response.text.strip()
-    except Exception:
+    except Exception as exc:
+        _logger.warning("gemini failed: %s: %s", type(exc).__name__, exc)
         return None
 
 
@@ -170,6 +181,7 @@ def _try_groq(prompt: str) -> str:
     """Try Groq Llama — returns None on any failure."""
     key = os.getenv("GROQ_API_KEY")
     if not key:
+        _logger.warning("groq: GROQ_API_KEY not set, skipping")
         return None
     try:
         from groq import Groq
@@ -180,7 +192,8 @@ def _try_groq(prompt: str) -> str:
             max_tokens=512,
         )
         return response.choices[0].message.content.strip()
-    except Exception:
+    except Exception as exc:
+        _logger.warning("groq failed: %s: %s", type(exc).__name__, exc)
         return None
 
 
