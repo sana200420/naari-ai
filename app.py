@@ -23,12 +23,11 @@ immediately, `/ready` reports when the models have finished loading.
 
 import spaces  # must precede anything that touches torch/CUDA
 
+import json
 import os
-import threading
 
 import gradio as gr
 
-from api.main import app as fastapi_app
 from api.main import ensure_warm
 from api.pipeline import run_pipeline
 from api.routers.ask import AskRequest
@@ -83,6 +82,29 @@ def answer(message: str, history) -> str:
     return response.answer + footer
 
 
+def ask_api(query: str, language: str = "sindhi") -> str:
+    """The structured endpoint the web frontend calls.
+
+    Returns the full AskResponse shape from docs/contracts/retrieval.json --
+    answer, path, confidence_band, retrieved_ids, latency_ms and the rest --
+    rather than the chat UI's display string, so the frontend can branch on
+    the band and show the danger/refusal paths differently from a normal
+    answer. Reachable from JS via @gradio/client:
+        const app = await Client.connect("Sanapalijo/naari-ai");
+        const r = await app.predict("/ask", { query, language: "sindhi" });
+
+    Returns a JSON *string*, not a dict: gradio_client walks structured
+    return values looking for file paths to download, and cheerfully tried to
+    GET "/gradio_api/file=verbatim" off the `path` field. A string is opaque
+    to that traversal, so the caller does one JSON.parse and gets the real
+    shape back.
+    """
+    if not query or not query.strip():
+        return json.dumps({"error": "empty query"}, ensure_ascii=False)
+    result = run_pipeline(AskRequest(query=query, language=language)).model_dump()
+    return json.dumps(result, ensure_ascii=False)
+
+
 demo = gr.ChatInterface(
     fn=answer,
     title=TITLE,
@@ -94,31 +116,24 @@ demo = gr.ChatInterface(
     ],
 )
 
+with demo:
+    gr.api(ask_api, api_name="ask")
+
+
 # Serve via Gradio's own launcher -- the canonical Gradio-SDK Space entrypoint.
+# Hugging Face runs `python app.py` and expects it to block serving.
 #
-# Hugging Face runs `python app.py` and expects it to block serving. Two other
-# shapes were tried on the Space and both failed, so don't re-try them:
-# mounting Gradio onto our FastAPI and serving with uvicorn.run() died with
-# "[Errno 98] address already in use" on 7860 (HF is already serving that
-# port), and omitting the bind entirely let the script run to completion and
-# exit, which the Space reports as RUNTIME_ERROR.
+# Three other shapes were tried on the Space and all failed; don't re-try them:
+#   1. gr.mount_gradio_app onto our FastAPI + uvicorn.run() -> "[Errno 98]
+#      address already in use" on 7860.
+#   2. Omitting the bind entirely -> the script ran to completion and exited,
+#      which the Space reports as RUNTIME_ERROR.
+#   3. launch(prevent_thread_lock=True) then demo.app.mount("/api", ...) ->
+#      built and ran, but every /api/* request came back as Gradio's HTML;
+#      the mount never reached the server actually being proxied. Worked
+#      locally, which is exactly why it needed checking on the Space.
 #
-# Gradio's own FastAPI instance only exists after launch(), so the REST API is
-# mounted onto it immediately afterwards with prevent_thread_lock=True, then
-# this thread blocks forever. That puts the docs/contracts/retrieval.json
-# endpoints under /api -- /api/ask, /api/health, /api/ready -- alongside the
-# chat UI at /, so Tooba's frontend has a real endpoint to call instead of
-# having to speak Gradio's two-step queue protocol.
-#
-# The sub-app's own startup events do not fire when it is mounted after the
-# server is already running, which is why warmup is kicked off by
-# ensure_warm() at module scope above rather than relying on FastAPI's
-# startup hook.
+# The REST contract is instead exposed through gr.api (see ask_api above),
+# which is Gradio's supported mechanism for this and needs no FastAPI at all.
 if __name__ == "__main__":
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=int(os.getenv("PORT", "7860")),
-        prevent_thread_lock=True,
-    )
-    demo.app.mount("/api", fastapi_app)
-    threading.Event().wait()
+    demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", "7860")))
