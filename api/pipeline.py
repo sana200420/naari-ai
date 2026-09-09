@@ -14,6 +14,14 @@ BAND_MID = "mid"
 BAND_LOW = "low"
 
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
+
+# Logger — never import at top level to avoid circular imports
+def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id=None):
+    try:
+        from api.logging.logger import log_query
+        log_query(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id)
+    except Exception:
+        pass
 TAU_LOW = float(os.getenv("TAU_LOW", "0.40"))
 
 
@@ -24,6 +32,8 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     # Stage 00: danger gate — runs FIRST, always
     gate: GateResult = run_danger_gate(query)
     if gate.escalate:
+        latency = round((time.time() - t0) * 1000, 2)
+        _log(query, [], [], BAND_HIGH, "danger", latency, "gate", request.session_id)
         return AskResponse(
             answer=gate.response,
             audio_url=None,
@@ -32,7 +42,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=True,
             disclaimer=False,
             retrieved_ids=[],
-            latency_ms=round((time.time() - t0) * 1000, 2),
+            latency_ms=latency,
         )
 
     # Stage 01: scope classifier
@@ -93,6 +103,8 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     # Stage 07: output filter
     answer = output_filter(answer)
 
+    latency = round((time.time() - t0) * 1000, 2)
+    _log(query, [c["id"] for c in chunks], [], BAND_MID, "generated", latency, "llm", request.session_id)
     return AskResponse(
         answer=answer,
         audio_url=None,
@@ -101,7 +113,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
         escalated=False,
         disclaimer=True,
         retrieved_ids=[c["id"] for c in chunks],
-        latency_ms=round((time.time() - t0) * 1000, 2),
+        latency_ms=latency,
     )
 
 
