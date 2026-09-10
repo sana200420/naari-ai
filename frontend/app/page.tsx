@@ -11,6 +11,7 @@ import {
   HeartHandshake,
   Sparkles,
   Send,
+  ArrowRight,
 } from "lucide-react";
 
 const categories = [
@@ -241,6 +242,42 @@ export default function Home() {
             عورتن جي صحت بابت سوالن جا جواب
           </p>
         </header>
+
+        {/* ================= BACK ================= */}
+        {/* Only one route exists, so "back" means leaving the conversation
+            and returning to the category screen. Hidden on the welcome
+            screen, where there is nothing to go back to. */}
+
+        {messages.length > 0 && (
+          <button
+            onClick={() => {
+              setMessages([]);
+              setInput("");
+            }}
+            disabled={loading}
+            aria-label="واپس وڃو"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "#FFFFFF",
+              border: "1px solid #F0DDD7",
+              borderRadius: "14px",
+              padding: "10px 16px",
+              marginBottom: "16px",
+              color: "#4A1942",
+              fontSize: "15px",
+              fontWeight: 600,
+              fontFamily: "inherit",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.5 : 1,
+              boxShadow: "0 5px 18px rgba(74, 25, 66, 0.05)",
+            }}
+          >
+            <ArrowRight size={18} />
+            واپس
+          </button>
+        )}
 
         {/* ================= WELCOME ================= */}
 
