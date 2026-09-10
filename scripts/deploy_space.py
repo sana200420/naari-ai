@@ -63,7 +63,13 @@ def main() -> int:
         return 0
 
     try:
-        git("checkout", "-B", DEPLOY_BRANCH, "HEAD", capture=True)
+        # An ORPHAN branch, not a normal one: Hugging Face scans every commit in
+        # a push, so deleting the logo at the tip is not enough -- the blob is
+        # still reachable through the merge that introduced it, and the push is
+        # rejected all the same. The Space is a deploy target rather than a repo
+        # of record, so it gets exactly one parentless commit with the tree we
+        # want it to run.
+        git("checkout", "--orphan", DEPLOY_BRANCH, capture=True)
         for d in STRIP:
             # -r --cached leaves the working tree alone; only the commit loses it
             subprocess.run(["git", "rm", "-r", "--cached", d, "--quiet"],
@@ -75,7 +81,10 @@ def main() -> int:
                        check=True, text=True)
         print("pushed -- the Space will rebuild")
     finally:
-        git("checkout", source, capture=True)
+        # -f because `git rm --cached` leaves those paths untracked in the
+        # working tree, and a plain checkout refuses to overwrite untracked
+        # files. They are byte-identical to what the source branch tracks.
+        git("checkout", "-f", source, capture=True)
         subprocess.run(["git", "branch", "-D", DEPLOY_BRANCH],
                        text=True, capture_output=True)
         print(f"back on {source}")
