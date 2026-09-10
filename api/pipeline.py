@@ -18,12 +18,6 @@ _logger = logging.getLogger("naari.pipeline")
 
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
 
-# Model names are env-overridable because hardcoding them is exactly how the
-# generation path broke: "gemini-2.5-flash" was retired ("no longer available
-# to new users") and "llama-3.3-70b-versatile" stopped resolving, and because
-# both failures were swallowed, production just served the refusal string.
-# gemini-flash-latest is an alias Google keeps pointing at a current model, so
-# it survives the next retirement instead of 404ing.
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
@@ -34,8 +28,7 @@ def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session
         log_query(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id)
     except Exception:
         pass
-# 0.2034 is calibrated: 90/100 of eval/negative_set_100.csv falls below it.
-# The old 0.40 was a placeholder that refused correct answers.
+
 TAU_LOW = float(os.getenv("TAU_LOW", "0.2034"))
 
 
@@ -61,6 +54,8 @@ def run_pipeline(request: AskRequest) -> AskResponse:
 
     # Stage 01: scope classifier
     if gate.scope_block:
+        latency = round((time.time() - t0) * 1000, 2)
+        _log(query, [], [], BAND_HIGH, "referral", latency, "scope", request.session_id)
         return AskResponse(
             answer=gate.response,
             audio_url=None,
@@ -69,7 +64,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[],
-            latency_ms=round((time.time() - t0) * 1000, 2),
+            latency_ms=latency,
         )
 
     # Stage 02: retrieval
@@ -92,6 +87,8 @@ def run_pipeline(request: AskRequest) -> AskResponse:
 
     # Stage 04: low band -> refusal
     if band == BAND_LOW:
+        latency = round((time.time() - t0) * 1000, 2)
+        _log(query, [], [top_score], BAND_LOW, "refusal", latency, "none", request.session_id)
         return AskResponse(
             answer="معاف ڪجو، مون وٽ هن سوال جو جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو.",
             audio_url=None,
@@ -100,12 +97,14 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[],
-            latency_ms=round((time.time() - t0) * 1000, 2),
+            latency_ms=latency,
         )
 
     # Stage 05: high band -> verbatim
     if band == BAND_HIGH:
         top = chunks[0]
+        latency = round((time.time() - t0) * 1000, 2)
+        _log(query, [c["id"] for c in chunks], [top_score], BAND_HIGH, "verbatim", latency, "kb", request.session_id)
         return AskResponse(
             answer=top["text"],
             audio_url=top.get("audio_url"),
@@ -114,7 +113,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[c["id"] for c in chunks],
-            latency_ms=round((time.time() - t0) * 1000, 2),
+            latency_ms=latency,
         )
 
     # Stage 06: mid band -> constrained generation
@@ -124,7 +123,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     answer = output_filter(answer)
 
     latency = round((time.time() - t0) * 1000, 2)
-    _log(query, [c["id"] for c in chunks], [], BAND_MID, "generated", latency, "llm", request.session_id)
+    _log(query, [c["id"] for c in chunks], [top_score], BAND_MID, "generated", latency, "llm", request.session_id)
     return AskResponse(
         answer=answer,
         audio_url=None,
@@ -164,13 +163,6 @@ Answer in Sindhi:"""
 
 
 def _try_gemini(prompt: str) -> str:
-    """Try Gemini — returns None on any failure.
-
-    The failure is logged rather than swallowed silently. When this returned
-    None quietly, a broken generation path was indistinguishable in
-    production from a working one: the mid band just served the static
-    fallback ("جواب ڏيڻ ممڪن ناهي") and looked like a deliberate refusal.
-    """
     key = os.getenv("GEMINI_API_KEY")
     if not key:
         _logger.warning("gemini: GEMINI_API_KEY not set, skipping")
@@ -187,7 +179,6 @@ def _try_gemini(prompt: str) -> str:
 
 
 def _try_groq(prompt: str) -> str:
-    """Try Groq Llama — returns None on any failure."""
     key = os.getenv("GROQ_API_KEY")
     if not key:
         _logger.warning("groq: GROQ_API_KEY not set, skipping")
@@ -210,11 +201,9 @@ def output_filter(text: str) -> str:
     """Stage 07: block medicine names, doses, diagnosis phrasing."""
     REFUSAL = "معاف ڪجو، مون وٽ هن سوال جو جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو."
 
-    # Dose patterns — mg, ml, tablet, capsule
     if re.search(r"\d+\s*(mg|ml|mcg|tablet|tablets|cap|capsule|dose)", text, re.IGNORECASE):
         return REFUSAL
 
-    # False reassurance phrases
     bad_phrases = [
         "nothing to worry", "don't worry", "it's normal", "just relax",
         "no need to worry", "probably nothing", "should be fine"
