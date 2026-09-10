@@ -77,6 +77,8 @@ type AskResponse = {
   confidence_band: string;
   retrieved_ids: number[];
   latency_ms: number;
+  did_you_mean?: string | null;
+  alternatives?: string[];
 };
 
 /** Pull the payload out of Gradio's SSE stream. Frames are an "event:" line
@@ -209,11 +211,48 @@ function NearestFacilities() {
 
 export default function Home() {
   const [messages, setMessages] = useState<
-    { role: string; text: string; escalated?: boolean }[]
+    {
+      role: string;
+      text: string;
+      escalated?: boolean;
+      // Set on the high-confidence path: the KB question we matched. The
+      // answer is already in `text` but stays hidden until she confirms the
+      // question is really what she asked.
+      confirmQuestion?: string;
+      alternatives?: string[];
+      confirmed?: boolean;
+    }[]
   >([]);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  /**
+   * Resolve a "did you mean" offer.
+   *
+   * The answer was already returned with the original response, so "yes" just
+   * reveals it -- no second request, which would cost another few seconds on a
+   * rural connection for data we already hold. "No" replaces the offer with
+   * the other candidate questions she can tap, or an honest refusal.
+   */
+  function confirmAnswer(index: number, yes: boolean) {
+    setMessages((prev) =>
+      prev.map((m, i) => {
+        if (i !== index) return m;
+        if (yes) return { ...m, confirmed: true };
+        const alts = m.alternatives ?? [];
+        return {
+          ...m,
+          confirmed: true,
+          confirmQuestion: undefined,
+          text: alts.length
+            ? "معاف ڪجو. ڇا هيٺين مان ڪو سوال توهان جو آهي؟\n\n" +
+              alts.map((a) => "• " + a).join("\n")
+            : "معاف ڪجو، مون وٽ هن سوال جو صحيح جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو.",
+        };
+      })
+    );
+  }
 
   async function sendMessage(customQuery?: string) {
     const query = customQuery ?? input;
@@ -269,6 +308,9 @@ export default function Home() {
           // afterwards as an enhancement -- if the lookup fails, the
           // escalation itself is untouched.
           escalated: data.path === "danger",
+          confirmQuestion:
+            data.path === "confirm" ? data.did_you_mean ?? undefined : undefined,
+          alternatives: data.alternatives ?? [],
         },
       ]);
     } catch (error) {
@@ -564,7 +606,39 @@ export default function Home() {
                   whiteSpace: "pre-wrap",
                 }}
               >
-                {message.text}
+                {message.confirmQuestion && !message.confirmed ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <span style={{ fontSize: "15px", color: "#7A6169" }}>
+                      ڇا توهان اهو پڇي رهيا آهيو؟
+                    </span>
+                    <span style={{ fontWeight: 600 }}>{message.confirmQuestion}</span>
+                    <span style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => confirmAnswer(index, true)}
+                        style={{
+                          background: "#4A1942", color: "#FFFFFF", border: "none",
+                          borderRadius: "12px", padding: "9px 20px", fontSize: "15px",
+                          fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+                        }}
+                      >
+                        ها
+                      </button>
+                      <button
+                        onClick={() => confirmAnswer(index, false)}
+                        style={{
+                          background: "#FFFFFF", color: "#4A1942",
+                          border: "1px solid #F0DDD7", borderRadius: "12px",
+                          padding: "9px 20px", fontSize: "15px", fontWeight: 600,
+                          fontFamily: "inherit", cursor: "pointer",
+                        }}
+                      >
+                        نه
+                      </button>
+                    </span>
+                  </div>
+                ) : (
+                  message.text
+                )}
                 {message.escalated && <NearestFacilities />}
               </div>
             </div>

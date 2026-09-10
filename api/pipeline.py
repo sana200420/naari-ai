@@ -18,6 +18,21 @@ _logger = logging.getLogger("naari.pipeline")
 
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
 
+# The high band used to assert the stored answer as fact. Cross-validation
+# (eval/results.md, Diagnostic 4) showed no threshold reaches 0.95 precision --
+# the ceiling is 83.6% at 24.6% coverage, and it *drops* at stricter cutoffs,
+# which is the signature of a real ceiling rather than an unexplored tradeoff.
+# Live, 4 of 11 menstruation questions came back verbatim/high and wrong: a
+# woman asking about nausea in her period was told about breastfeeding, stated
+# as fact.
+#
+# 83.6% precision is unacceptable for asserting and perfectly fine for
+# suggesting, so the high band now offers the matched question back for
+# confirmation. Set CONFIRM_HIGH_BAND=false to restore the old assert-verbatim
+# behaviour; it is a flag rather than a rewrite so the change is reversible
+# from a Space setting during a demo.
+CONFIRM_HIGH_BAND = os.getenv("CONFIRM_HIGH_BAND", "true").strip().lower() not in ("false", "0", "no")
+
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
@@ -72,7 +87,8 @@ def run_pipeline(request: AskRequest) -> AskResponse:
 
     retrieval_result = retrieval_search(query)
     chunks = [
-        {"id": r["answer_id"], "text": r["answer"], "score": r["score"]}
+        {"id": r["answer_id"], "text": r["answer"], "score": r["score"],
+         "question": r.get("question", "")}
         for r in retrieval_result["results"]
     ]
     top_score = chunks[0]["score"] if chunks else 0.0
@@ -100,20 +116,29 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             latency_ms=latency,
         )
 
-    # Stage 05: high band -> verbatim
+    # Stage 05: high band -> confirm, then serve verbatim
     if band == BAND_HIGH:
         top = chunks[0]
         latency = round((time.time() - t0) * 1000, 2)
-        _log(query, [c["id"] for c in chunks], [top_score], BAND_HIGH, "verbatim", latency, "kb", request.session_id)
+        path = "confirm" if (CONFIRM_HIGH_BAND and top.get("question")) else "verbatim"
+        _log(query, [c["id"] for c in chunks], [top_score], BAND_HIGH, path, latency, "kb", request.session_id)
         return AskResponse(
             answer=top["text"],
             audio_url=top.get("audio_url"),
-            path="verbatim",
+            path=path,
             confidence_band=BAND_HIGH,
             escalated=False,
+            # A confirmed match is a verified KB row, so no disclaimer -- the
+            # hedging is carried by the question being shown first.
             disclaimer=False,
             retrieved_ids=[c["id"] for c in chunks],
             latency_ms=latency,
+            did_you_mean=top.get("question") if path == "confirm" else None,
+            # The answer is already retrieved, so it ships with this response
+            # and the frontend reveals it on "yes". A second round-trip would
+            # cost another ~4s on a rural connection for data we already hold.
+            alternatives=[c["question"] for c in chunks[1:4] if c.get("question")]
+            if path == "confirm" else [],
         )
 
     # Stage 06: mid band -> constrained generation

@@ -20,6 +20,12 @@ class AskResponse(BaseModel):
     disclaimer: bool
     retrieved_ids: list[int]
     latency_ms: Optional[float]
+    # Set on the high-confidence path: the KB question we matched, offered
+    # back for confirmation instead of asserting its answer. `alternatives`
+    # holds the next-best questions so "no" has somewhere to go. Both default
+    # to empty, so every other path is unchanged for existing callers.
+    did_you_mean: Optional[str] = None
+    alternatives: list[str] = []
 
 
 @router.post("/ask", response_model=AskResponse)
