@@ -11,7 +11,8 @@ v2:
 """
 
 import re
-import unicodedata
+import logging
+from retrieval.normalize import normalize_sd
 from dataclasses import dataclass
 from typing import Optional
 
@@ -265,7 +266,8 @@ def _load_embedder():
         _danger_phrase_embeddings = _embedder.encode(
             _danger_phrases, normalize_embeddings=True
         )
-    except Exception:
+    except Exception as e:
+        logging.warning(f"Danger gate embedder failed to load, falling back to keyword-only: {e}")
         _embedder = None
 
 
@@ -283,19 +285,12 @@ def _embedding_match(text: str) -> Optional[str]:
         best_idx = int(np.argmax(scores))
         if scores[best_idx] >= EMBEDDING_THRESHOLD:
             return _danger_phrases[best_idx]
-    except Exception:
-        pass
+    except Exception as e:
+        logging.warning(f"Danger gate embedding match failed: {e}")
     return None
 
 
 # ── Normaliser ─────────────────────────────────────────────────────────────────
-def normalise(text: str) -> str:
-    """Lowercase, strip diacritics, collapse whitespace."""
-    text = text.lower().strip()
-    text = unicodedata.normalize("NFKD", text)
-    text = re.sub(r"\s+", " ", text)
-    return text
-
 
 # ── Result dataclass ───────────────────────────────────────────────────────────
 @dataclass
@@ -315,7 +310,7 @@ def run_danger_gate(text: str, use_embedding: bool = True) -> GateResult:
     Returns GateResult with escalate=True if any danger keyword matches.
     use_embedding=True enables semantic fallback when keyword misses.
     """
-    norm = normalise(text)
+    norm = normalize_sd(text)
 
     # 1. Keyword check — fast, no model needed
     for cat_name, cat in DANGER_CATEGORIES.items():
@@ -325,7 +320,7 @@ def run_danger_gate(text: str, use_embedding: bool = True) -> GateResult:
             + cat.get("keywords_urdu", [])
         )
         for kw in all_keywords:
-            if normalise(kw) in norm:
+            if normalize_sd(kw) in norm:
                 return GateResult(
                     escalate=True,
                     category=cat_name,
@@ -352,7 +347,7 @@ def run_danger_gate(text: str, use_embedding: bool = True) -> GateResult:
     # 3. Scope classifier
     for scope_name, scope in SCOPE_REFERRALS.items():
         for kw in scope["keywords"]:
-            if normalise(kw) in norm:
+            if normalize_sd(kw) in norm:
                 return GateResult(
                     escalate=False,
                     category=None,
