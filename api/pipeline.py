@@ -143,9 +143,16 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             # output_filter returns the refusal string when it blocks something.
             # On the high band we hold a verified row, so a blocked expansion
             # falls back to that row rather than refusing outright.
-            if expanded and expanded != _REFUSAL:
+            # Only claim "expanded" if the text actually changed. elaborate()
+            # falls back to the stored row when both LLMs fail, and labelling
+            # that as expanded hid a silent failure behind a success label --
+            # which is how the empty-content Groq bug went unnoticed.
+            if expanded and expanded != _REFUSAL and expanded != top["text"]:
                 answer_text = expanded
                 path = "expanded" if path == "verbatim" else path
+            elif expanded == top["text"]:
+                _logger.warning("elaboration fell back to the stored answer "
+                                "(both LLMs unavailable)")
             latency = round((time.time() - t0) * 1000, 2)
 
         _log(query, [c["id"] for c in chunks], [top_score], BAND_HIGH, path, latency, "kb", request.session_id)
@@ -298,12 +305,25 @@ def _try_groq(prompt: str) -> str:
     try:
         from groq import Groq
         client = Groq(api_key=key)
+        # gpt-oss-120b is a REASONING model: it writes an internal monologue
+        # into `reasoning` before `content`, and both come out of the same
+        # token budget. At 512 it spent the lot thinking and returned an empty
+        # string with finish_reason="length" -- which read as "Groq failed"
+        # and silently fell through to the static answer. Low effort plus a
+        # real budget leaves room for the reply itself.
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_completion_tokens=512,
+            max_completion_tokens=2048,
+            reasoning_effort="low",
         )
-        return response.choices[0].message.content.strip()
+        text = (response.choices[0].message.content or "").strip()
+        if not text:
+            _logger.warning("groq returned empty content (finish_reason=%s); "
+                            "the model likely spent its budget reasoning",
+                            response.choices[0].finish_reason)
+            return None
+        return text
     except Exception as exc:
         _logger.warning("groq failed: %s: %s", type(exc).__name__, exc)
         return None
