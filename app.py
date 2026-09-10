@@ -50,6 +50,7 @@ _PATH_LABEL = {
     "generated": "✍️ ذخيري جي بنياد تي ٺاهيل (grounded generation)",
     # The high band no longer asserts -- see api/pipeline.py CONFIRM_HIGH_BAND.
     "confirm": "✅ ڄاڻ جي ذخيري مان، تصديق سان (confirm)",
+    "expanded": "✅ ڄاڻ جي ذخيري مان، کولي بيان ڪيل (expanded)",
 }
 
 

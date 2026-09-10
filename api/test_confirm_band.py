@@ -35,6 +35,9 @@ def pipeline(monkeypatch):
     # keyword-only danger gate: the embedding fallback would load a model
     import api.safety.danger_gate as dg
     monkeypatch.setattr(p, "run_danger_gate", lambda t: dg.run_danger_gate(t, use_embedding=False))
+    # Elaboration is a separate concern with its own tests; leaving it on would
+    # rewrite every high-band answer here and turn path into "expanded".
+    monkeypatch.setattr(p, "ELABORATE_ANSWERS", False)
     return p
 
 

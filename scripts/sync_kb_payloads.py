@@ -29,6 +29,12 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--allow-question-drift", action="store_true",
+                    help="also update rows whose QUESTION changed. The stored "
+                         "vector still encodes the old wording, so retrieval is "
+                         "unchanged -- only the displayed text is corrected. "
+                         "Use when the edit is a spelling or terminology fix "
+                         "that must not wait for a re-embed.")
     args = ap.parse_args()
 
     load_dotenv()
@@ -61,29 +67,45 @@ def main() -> int:
         if p is None:
             missing.append(aid)
             continue
-        if str(p.payload.get("question", "")).strip() != str(row["question"]).strip():
+        q_drift = str(p.payload.get("question", "")).strip() != str(row["question"]).strip()
+        a_drift = str(p.payload.get("answer", "")).strip() != str(row["answer"]).strip()
+        if q_drift and not args.allow_question_drift:
             question_drift.append(aid)
             continue
-        if str(p.payload.get("answer", "")).strip() != str(row["answer"]).strip():
-            changed.append((p.id, str(row["answer"])))
+        payload = {}
+        if a_drift:
+            payload["answer"] = str(row["answer"])
+        if q_drift:
+            # Displayed text only. The embedding is not touched, so retrieval
+            # behaves exactly as before until the notebook is re-run.
+            payload["question"] = str(row["question"])
+            question_drift.append(aid)
+        if payload:
+            changed.append((p.id, payload))
 
-    print(f"answers differing from the CSV : {len(changed)}")
-    print(f"questions differing (skipped)  : {len(question_drift)}")
+    label = "updated too" if args.allow_question_drift else "skipped"
+    print(f"points to update               : {len(changed)}")
+    print(f"questions differing ({label:12}): {len(question_drift)}")
     print(f"ids absent from the collection : {len(missing)}")
     if question_drift:
-        print("  -- a changed question needs a re-embed, not a payload update;")
-        print(f"     re-run the embedding notebook for: {question_drift[:10]}")
-    for pid, ans in changed[:5]:
-        print(f"  point {pid}: {ans[:70]}")
+        if args.allow_question_drift:
+            print("  -- their payload text is corrected, but the stored VECTOR still")
+            print("     encodes the old wording. Re-run the embedding notebook to")
+            print(f"     finish the job for: {question_drift[:10]}")
+        else:
+            print("  -- a changed question needs a re-embed, not a payload update;")
+            print(f"     re-run the embedding notebook for: {question_drift[:10]}")
+    for pid, payload in changed[:5]:
+        print(f"  point {pid}: {list(payload)} {str(list(payload.values())[0])[:52]}")
 
     if not args.apply:
         print("\ndry run -- nothing written. Re-run with --apply.")
         return 0
 
     for i in range(0, len(changed), BATCH):
-        for pid, ans in changed[i:i + BATCH]:
+        for pid, payload in changed[i:i + BATCH]:
             client.set_payload(collection_name=COLLECTION,
-                               payload={"answer": ans}, points=[pid], wait=False)
+                               payload=payload, points=[pid], wait=False)
         print(f"  updated {min(i + BATCH, len(changed))}/{len(changed)}")
     print(f"done -- {len(changed)} payloads updated")
     return 0

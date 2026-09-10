@@ -14,6 +14,9 @@ BAND_HIGH = "high"
 BAND_MID = "mid"
 BAND_LOW = "low"
 
+# One definition, because two paths need to *recognise* it, not just emit it.
+_REFUSAL = "معاف ڪجو، مون وٽ هن سوال جو جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو."
+
 _logger = logging.getLogger("naari.pipeline")
 
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
@@ -32,6 +35,18 @@ TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
 # behaviour; it is a flag rather than a rewrite so the change is reversible
 # from a Space setting during a demo.
 CONFIRM_HIGH_BAND = os.getenv("CONFIRM_HIGH_BAND", "true").strip().lower() not in ("false", "0", "no")
+
+# KB answers are one or two sentences, which reads as curt for a health
+# question. Elaboration expands the retrieved text to 5-6 lines.
+#
+# This is a real change to the safety posture and worth stating plainly: with
+# it on, an LLM touches the high-confidence path, which previously served
+# stored text untouched. It is constrained to rephrasing and structuring the
+# retrieved rows -- forbidden from adding any fact not in them -- and its
+# output still goes through output_filter(). On any failure it falls back to
+# the verbatim KB text, so a broken LLM degrades to the old behaviour rather
+# than to nothing.
+ELABORATE_ANSWERS = os.getenv("ELABORATE_ANSWERS", "true").strip().lower() not in ("false", "0", "no")
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
@@ -121,9 +136,21 @@ def run_pipeline(request: AskRequest) -> AskResponse:
         top = chunks[0]
         latency = round((time.time() - t0) * 1000, 2)
         path = "confirm" if (CONFIRM_HIGH_BAND and top.get("question")) else "verbatim"
+
+        answer_text = top["text"]
+        if ELABORATE_ANSWERS:
+            expanded = output_filter(elaborate(query, chunks))
+            # output_filter returns the refusal string when it blocks something.
+            # On the high band we hold a verified row, so a blocked expansion
+            # falls back to that row rather than refusing outright.
+            if expanded and expanded != _REFUSAL:
+                answer_text = expanded
+                path = "expanded" if path == "verbatim" else path
+            latency = round((time.time() - t0) * 1000, 2)
+
         _log(query, [c["id"] for c in chunks], [top_score], BAND_HIGH, path, latency, "kb", request.session_id)
         return AskResponse(
-            answer=top["text"],
+            answer=answer_text,
             audio_url=top.get("audio_url"),
             path=path,
             confidence_band=BAND_HIGH,
@@ -161,6 +188,47 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     )
 
 
+def elaborate(query: str, chunks: list) -> str:
+    """Expand a retrieved KB answer into a fuller reply, adding no new facts.
+
+    The high band has a verified row in hand, so the job here is presentation,
+    not research: say the same thing in 5-6 lines a woman can act on. The
+    prompt names that boundary repeatedly because it is the only thing keeping
+    this path as safe as the verbatim one it replaces.
+    """
+    primary = chunks[0]["text"]
+    supporting = "\n".join(c["text"] for c in chunks[1:3])
+    prompt = f"""You are NaariAI, a Sindhi women's health assistant.
+
+Rewrite the VERIFIED ANSWER below so it is fuller and easier to act on.
+
+Rules, all mandatory:
+- Use ONLY the facts in the verified answer and supporting notes. Add nothing.
+- Do NOT introduce any symptom, cause, treatment, medicine, dose or timeframe
+  that is not already written below.
+- Do NOT diagnose. Do NOT say symptoms are normal or nothing to worry about.
+- Write 5 to 6 short lines in simple Sindhi a village reader understands.
+- Keep any advice to see a health worker, and keep it prominent.
+
+VERIFIED ANSWER:
+{primary}
+
+SUPPORTING NOTES (context only, may be unrelated -- ignore if so):
+{supporting}
+
+Her question: {query}
+
+Fuller answer in Sindhi:"""
+
+    for attempt in (_try_gemini, _try_groq):
+        out = attempt(prompt)
+        if out:
+            return out
+    # Both LLMs down: the stored answer is short but correct, which beats a
+    # refusal on a path where we have a verified row.
+    return primary
+
+
 def generate(query: str, chunks: list) -> str:
     """Stage 06: constrained generation — Gemini -> Groq -> static fallback."""
     context = "\n".join(c["text"] for c in chunks)
@@ -168,6 +236,7 @@ def generate(query: str, chunks: list) -> str:
 Answer ONLY using the context below. If the context does not contain the answer, say you don't know.
 Do NOT use your own knowledge. Do NOT diagnose. Do NOT name medicines or doses.
 Do NOT reassure the user that symptoms are normal or nothing to worry about.
+Write 5 to 6 short lines in simple Sindhi a village reader understands.
 
 Context:
 {context}
@@ -224,7 +293,7 @@ def _try_groq(prompt: str) -> str:
 
 def output_filter(text: str) -> str:
     """Stage 07: block medicine names, doses, diagnosis phrasing."""
-    REFUSAL = "معاف ڪجو، مون وٽ هن سوال جو جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو."
+    REFUSAL = _REFUSAL
 
     if re.search(r"\d+\s*(mg|ml|mcg|tablet|tablets|cap|capsule|dose)", text, re.IGNORECASE):
         return REFUSAL
