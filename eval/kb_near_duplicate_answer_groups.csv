@@ -1,0 +1,9 @@
+group_id,answer_ids,category,note
+1,836;976,پي سي او ايس ۽ هارموني صحت,"""is talking about periods shameful"" asked two ways -- identical answer text (jaccard=1.000)"
+2,835;975,پي سي او ايس ۽ هارموني صحت,"period pain shouldn't just be endured, treatment exists -- same meaning (jaccard=0.872)"
+3,593;733,حمل ۽ ماءُ جي صحت,"hand/face swelling = BP danger sign, go to health center now -- same advice (jaccard=0.800)"
+4,1279;1499,مينوپاز ۽ مينوپاسل صحت,"pregnancy still possible during perimenopause, ovulation still irregular -- same claim (jaccard=0.800)"
+5,1122;1174,عورتن جي غذائيت ۽ صحت,"physical activity's role in weight management -- same content (jaccard=0.739)"
+6,1306;1319,مينوپاز ۽ مينوپاسل صحت,"perimenopause hormone changes causing breast tenderness -- same content (jaccard=0.738)"
+7,868;943,پي سي او ايس ۽ هارموني صحت,"PCOS + weight struggle, don't self-blame, ask for practical help -- near-identical (jaccard=0.729)"
+8,513;731,حمل ۽ ماءُ جي صحت,"any bleeding in pregnancy -> go to health center now, don't wait -- same practical advice (jaccard=0.718)"

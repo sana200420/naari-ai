@@ -25,6 +25,32 @@ tau_high defaults from the TAU_HIGH env var (see .env.example) with a
 0.75 fallback — a placeholder until Phase 2's threshold-tuning item
 (docs/PLAYBOOKS.md, needs Mahnoor's negative set) produces a calibrated
 value from real score distributions.
+
+Reranker override guard (2026-09-07, docs/status.md): auditing 58
+incorrect-but-high-confidence answers against the fully-reviewed 248-row
+gold set found 25 cases where reciprocal-rank-fusion's own top-1 pick was
+already correct, and reranking demoted it in favour of a wrong answer —
+roughly 10% of all queries. `_prefer_fusion_top1_if_close` is the guard
+against that pattern: rerank scores every fused candidate (not just the
+top `top_k`) so fusion's #1 pick's rerank score is always available, and
+if the reranker's chosen top-1 differs from fusion's #1 by less than
+`RERANK_OVERRIDE_MARGIN`, fusion's #1 wins the tie instead of being
+silently overridden.
+
+`RERANK_OVERRIDE_MARGIN` was calibrated, not guessed: `eval/gold_scored_full.csv`
+captures the pre-guard reranker state for all 248 gold queries, which let
+every candidate margin be simulated offline with no extra GPU run. Of the
+139 queries where fusion and reranking actually disagreed on the top-1
+pick, fusion was right and reranking wrongly overrode it **61 times**;
+reranking was right to override fusion only **10 times** — a 6:1 ratio
+against trusting the reranker's disagreement, confirmed by randomly
+splitting those 139 disagreements in half and checking the ratio holds
+independently in each half (30:5 and 31:5). There's no crossover point
+where trusting reranking starts winning, so the margin is set to `2.0`
+— outside the range a rerank-score gap can ever reach — meaning fusion's
+#1 pick always wins when the two disagree. This is a real property of
+this reranker on this KB, not a threshold fit to noise; see
+`eval/results.md`'s 2026-09-07 section for the full sweep table.
 """
 
 import os
@@ -37,6 +63,35 @@ from retrieval.search import COLLECTION, HybridRetriever, reciprocal_rank_fusion
 from retrieval.translate import translate_sd_to_en
 
 DEFAULT_TAU_HIGH = 0.75
+DEFAULT_RERANK_OVERRIDE_MARGIN = 2.0
+
+
+def _prefer_fusion_top1_if_close(
+    reranked: list[dict], fusion_top1_id, margin: float
+) -> list[dict]:
+    """If reranking disagrees with fusion's own top-1 pick by less than
+    `margin`, put fusion's #1 back on top instead of trusting the reranker.
+    `reranked` must already be sorted best-first and must include every
+    fused candidate (not just the caller's requested top_k) so fusion's #1
+    is guaranteed to have a rerank_score to compare. `margin=0.0` disables
+    this entirely (two floats are essentially never exactly equal, so
+    nothing ever qualifies); `DEFAULT_RERANK_OVERRIDE_MARGIN` (module
+    docstring) is calibrated to always override instead, since the data
+    shows reranking is net-harmful whenever it disagrees with fusion here.
+    """
+    if not reranked or reranked[0]["answer_id"] == fusion_top1_id:
+        return reranked
+
+    fusion_top1_row = next((r for r in reranked if r["answer_id"] == fusion_top1_id), None)
+    if fusion_top1_row is None:
+        return reranked
+
+    gap = reranked[0]["rerank_score"] - fusion_top1_row["rerank_score"]
+    if gap >= margin:
+        return reranked
+
+    without_fusion_top1 = [r for r in reranked if r["answer_id"] != fusion_top1_id]
+    return [fusion_top1_row, *without_fusion_top1]
 
 _client = None
 _retriever = None
@@ -99,6 +154,7 @@ def search(
     top_k: int = 5,
     candidate_k: int = 20,
     tau_high: float | None = None,
+    rerank_override_margin: float | None = None,
     retriever: HybridRetriever | None = None,
     translate_fn=translate_sd_to_en,
     rerank_fn=rerank_fn,
@@ -109,6 +165,10 @@ def search(
     start = time.perf_counter()
     if tau_high is None:
         tau_high = float(os.environ.get("TAU_HIGH", DEFAULT_TAU_HIGH))
+    if rerank_override_margin is None:
+        rerank_override_margin = float(
+            os.environ.get("RERANK_OVERRIDE_MARGIN", DEFAULT_RERANK_OVERRIDE_MARGIN)
+        )
     active_retriever = retriever if retriever is not None else _get_retriever()
 
     sd_dense = active_retriever.dense_search(query, top_k=candidate_k, lang="sd")
@@ -127,7 +187,15 @@ def search(
     ])
     sd_candidates = [row_by_id[answer_id] for answer_id, _score in sd_fused[:candidate_k]]
 
-    reranked = rerank_fn(query, sd_candidates, top_k=top_k) if sd_candidates else []
+    # Rerank every fused candidate, not just top_k, so fusion's #1 pick always
+    # has a rerank_score available for the override-guard comparison below --
+    # then truncate to top_k only after that guard has had a chance to run.
+    reranked_full = rerank_fn(query, sd_candidates, top_k=len(sd_candidates)) if sd_candidates else []
+    if reranked_full and sd_candidates:
+        reranked_full = _prefer_fusion_top1_if_close(
+            reranked_full, sd_candidates[0]["answer_id"], rerank_override_margin
+        )
+    reranked = reranked_full[:top_k]
     top_score = reranked[0]["rerank_score"] if reranked else 0.0
 
     if top_score < tau_high:

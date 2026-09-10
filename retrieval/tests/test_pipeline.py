@@ -181,6 +181,58 @@ def test_warmup_loads_all_three_models_and_the_retriever(monkeypatch):
     assert kinds == ["embed", "translate", "rerank", "retriever"]
 
 
+def test_search_default_margin_always_prefers_fusions_top1_on_disagreement():
+    # DEFAULT_RERANK_OVERRIDE_MARGIN is 2.0, calibrated from eval/gold_scored_full.csv
+    # (fusion right 61/139 times reranking disagreed with it, reranking right only
+    # 10/139) -- a real change here would be a silent regression back to trusting
+    # a reranker that's net-harmful on disagreement for this KB.
+    retriever = _FakeRetriever(sd_dense=[_row(1, score=0.9), _row(2, score=0.8)])
+
+    result = search(
+        "query", retriever=retriever,
+        rerank_fn=_fake_rerank({1: 0.10, 2: 0.95}),  # even a decisive-looking gap
+        translate_fn=_fake_translate, tau_high=0.0,
+    )
+
+    assert result["results"][0]["answer_id"] == 1  # fusion's #1 still wins by default
+
+
+def test_search_rerank_override_margin_zero_opts_out_and_trusts_reranker():
+    retriever = _FakeRetriever(sd_dense=[_row(1, score=0.9), _row(2, score=0.8)])
+
+    result = search(
+        "query", retriever=retriever,
+        rerank_fn=_fake_rerank({1: 0.80, 2: 0.81}),  # fusion's #1 (id 1) barely loses
+        translate_fn=_fake_translate, tau_high=0.0, rerank_override_margin=0.0,
+    )
+
+    assert result["results"][0]["answer_id"] == 2  # explicit opt-out restores old behaviour
+
+
+def test_search_rerank_override_margin_restores_fusions_top1_on_a_close_call():
+    retriever = _FakeRetriever(sd_dense=[_row(1, score=0.9), _row(2, score=0.8)])
+
+    result = search(
+        "query", retriever=retriever,
+        rerank_fn=_fake_rerank({1: 0.80, 2: 0.81}),  # gap of 0.01
+        translate_fn=_fake_translate, tau_high=0.0, rerank_override_margin=0.05,
+    )
+
+    assert result["results"][0]["answer_id"] == 1  # fusion's #1 wins the close call
+
+
+def test_search_rerank_override_margin_does_not_override_a_decisive_gap():
+    retriever = _FakeRetriever(sd_dense=[_row(1, score=0.9), _row(2, score=0.8)])
+
+    result = search(
+        "query", retriever=retriever,
+        rerank_fn=_fake_rerank({1: 0.10, 2: 0.95}),  # gap of 0.85 -- not a close call
+        translate_fn=_fake_translate, tau_high=0.0, rerank_override_margin=0.05,
+    )
+
+    assert result["results"][0]["answer_id"] == 2  # reranker's decisive pick stands
+
+
 def test_search_respects_top_k():
     rows = [_row(i, score=1.0 / i) for i in range(1, 10)]
     retriever = _FakeRetriever(sd_dense=rows)

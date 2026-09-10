@@ -24,7 +24,9 @@ _model_lock = threading.Lock()
 def _load_model():
     from FlagEmbedding import FlagReranker
 
-    return FlagReranker(MODEL_NAME, use_fp16=True)
+    from retrieval.device import device, use_fp16
+
+    return FlagReranker(MODEL_NAME, use_fp16=use_fp16(), devices=device())
 
 
 def _get_model():

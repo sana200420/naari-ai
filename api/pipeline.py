@@ -2,6 +2,7 @@
 Phase 2 — Main pipeline: stages 00-08
 Danger gate short-circuits everything — a danger query never reaches retrieval or LLM.
 """
+import logging
 import time
 import os
 import re
@@ -13,7 +14,18 @@ BAND_HIGH = "high"
 BAND_MID = "mid"
 BAND_LOW = "low"
 
+_logger = logging.getLogger("naari.pipeline")
+
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
+
+# Model names are env-overridable because hardcoding them is exactly how the
+# generation path broke: "gemini-2.5-flash" was retired ("no longer available
+# to new users") and "llama-3.3-70b-versatile" stopped resolving, and because
+# both failures were swallowed, production just served the refusal string.
+# gemini-flash-latest is an alias Google keeps pointing at a current model, so
+# it survives the next retirement instead of 404ing.
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
 # Logger — never import at top level to avoid circular imports
 def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id=None):
@@ -22,7 +34,9 @@ def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session
         log_query(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id)
     except Exception:
         pass
-TAU_LOW = float(os.getenv("TAU_LOW", "0.40"))
+# 0.2034 is calibrated: 90/100 of eval/negative_set_100.csv falls below it.
+# The old 0.40 was a placeholder that refused correct answers.
+TAU_LOW = float(os.getenv("TAU_LOW", "0.2034"))
 
 
 def run_pipeline(request: AskRequest) -> AskResponse:
@@ -58,9 +72,15 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             latency_ms=round((time.time() - t0) * 1000, 2),
         )
 
-    # Stage 02: retrieval (stub — Sana replaces with real KB retrieval)
-    chunks = []
-    top_score = 0.0
+    # Stage 02: retrieval
+    from retrieval.pipeline import search as retrieval_search
+
+    retrieval_result = retrieval_search(query)
+    chunks = [
+        {"id": r["answer_id"], "text": r["answer"], "score": r["score"]}
+        for r in retrieval_result["results"]
+    ]
+    top_score = chunks[0]["score"] if chunks else 0.0
 
     # Stage 03: confidence band decision
     if top_score >= TAU_HIGH and chunks:
@@ -144,17 +164,25 @@ Answer in Sindhi:"""
 
 
 def _try_gemini(prompt: str) -> str:
-    """Try Gemini 2.5 Flash — returns None on any failure."""
+    """Try Gemini — returns None on any failure.
+
+    The failure is logged rather than swallowed silently. When this returned
+    None quietly, a broken generation path was indistinguishable in
+    production from a working one: the mid band just served the static
+    fallback ("جواب ڏيڻ ممڪن ناهي") and looked like a deliberate refusal.
+    """
     key = os.getenv("GEMINI_API_KEY")
     if not key:
+        _logger.warning("gemini: GEMINI_API_KEY not set, skipping")
         return None
     try:
         import google.generativeai as genai
         genai.configure(api_key=key)
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel(GEMINI_MODEL)
         response = model.generate_content(prompt)
         return response.text.strip()
-    except Exception:
+    except Exception as exc:
+        _logger.warning("gemini failed: %s: %s", type(exc).__name__, exc)
         return None
 
 
@@ -162,17 +190,19 @@ def _try_groq(prompt: str) -> str:
     """Try Groq Llama — returns None on any failure."""
     key = os.getenv("GROQ_API_KEY")
     if not key:
+        _logger.warning("groq: GROQ_API_KEY not set, skipping")
         return None
     try:
         from groq import Groq
         client = Groq(api_key=key)
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=512,
+            max_completion_tokens=512,
         )
         return response.choices[0].message.content.strip()
-    except Exception:
+    except Exception as exc:
+        _logger.warning("groq failed: %s: %s", type(exc).__name__, exc)
         return None
 
 

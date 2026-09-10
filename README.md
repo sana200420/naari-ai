@@ -1,3 +1,14 @@
+---
+title: Naari AI
+emoji: 🌸
+colorFrom: pink
+colorTo: purple
+sdk: gradio
+app_file: app.py
+pinned: false
+short_description: Sindhi women's health assistant, RAG over a verified KB
+---
+
 # Naari AI — نارِي اي آءِ
 
 A Sindhi-first women's health assistant for rural Sindh. Answers come from a

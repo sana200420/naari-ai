@@ -11,6 +11,7 @@ import {
   HeartHandshake,
   Sparkles,
   Send,
+  ArrowRight,
 } from "lucide-react";
 
 const categories = [
@@ -56,6 +57,34 @@ const categories = [
   },
 ];
 
+// The backend is a Hugging Face Space (Gradio SDK). Override if it moves.
+const SPACE_URL =
+  process.env.NEXT_PUBLIC_SPACE_URL ?? "https://sanapalijo-naari-ai.hf.space";
+
+type AskResponse = {
+  answer: string;
+  path: string;
+  confidence_band: string;
+  retrieved_ids: number[];
+  latency_ms: number;
+};
+
+/** Pull the payload out of Gradio's SSE stream. Frames are an "event:" line
+ *  followed by a "data:" line holding a JSON array whose single element is
+ *  itself a JSON string -- hence the double parse. */
+function parseGradioSse(raw: string): AskResponse {
+  let event: string | null = null;
+  for (const rawLine of raw.split("\n")) {
+    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+    if (line.startsWith("event:")) {
+      event = line.slice(6).trim();
+    } else if (line.startsWith("data:") && event === "complete") {
+      return JSON.parse(JSON.parse(line.slice(5).trim())[0]) as AskResponse;
+    }
+  }
+  throw new Error("no complete event in Gradio stream");
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<
     { role: string; text: string }[]
@@ -81,25 +110,31 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "https://naari-ai-production.up.railway.app/ask",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query,
-            language: "sindhi",
-          }),
-        }
-      );
+      // Gradio exposes each endpoint as a two-step REST call: POST queues the
+      // job and returns an event_id, then GET streams the result back as SSE.
+      const post = await fetch(`${SPACE_URL}/gradio_api/call/ask`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ data: [query, "sindhi"] }),
+      });
 
-      if (!res.ok) {
-        throw new Error("Backend request failed");
+      if (!post.ok) {
+        throw new Error(`queue failed: HTTP ${post.status}`);
       }
 
-      const data = await res.json();
+      const { event_id } = await post.json();
+
+      const stream = await fetch(
+        `${SPACE_URL}/gradio_api/call/ask/${event_id}`
+      );
+
+      if (!stream.ok) {
+        throw new Error(`stream failed: HTTP ${stream.status}`);
+      }
+
+      const data = parseGradioSse(await stream.text());
 
       setMessages((prev) => [
         ...prev,
@@ -111,6 +146,8 @@ export default function Home() {
         },
       ]);
     } catch (error) {
+      // Her Sindhi message still shows; the real cause goes to the console.
+      console.error("[naari] ask failed:", error);
       setMessages((prev) => [
         ...prev,
         {
@@ -205,6 +242,42 @@ export default function Home() {
             عورتن جي صحت بابت سوالن جا جواب
           </p>
         </header>
+
+        {/* ================= BACK ================= */}
+        {/* Only one route exists, so "back" means leaving the conversation
+            and returning to the category screen. Hidden on the welcome
+            screen, where there is nothing to go back to. */}
+
+        {messages.length > 0 && (
+          <button
+            onClick={() => {
+              setMessages([]);
+              setInput("");
+            }}
+            disabled={loading}
+            aria-label="واپس وڃو"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "#FFFFFF",
+              border: "1px solid #F0DDD7",
+              borderRadius: "14px",
+              padding: "10px 16px",
+              marginBottom: "16px",
+              color: "#4A1942",
+              fontSize: "15px",
+              fontWeight: 600,
+              fontFamily: "inherit",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.5 : 1,
+              boxShadow: "0 5px 18px rgba(74, 25, 66, 0.05)",
+            }}
+          >
+            <ArrowRight size={18} />
+            واپس
+          </button>
+        )}
 
         {/* ================= WELCOME ================= */}
 
