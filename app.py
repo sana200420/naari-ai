@@ -67,6 +67,38 @@ def _noop():
     in the main process, so no GPU is ever requested and no quota is spent."""
 
 
+# Paths worth caching. Danger is already 0.05ms and must always run fresh;
+# a refusal is not worth pinning for 24 hours, since the knowledge base may
+# gain the missing row tomorrow.
+_CACHEABLE = {"verbatim", "expanded", "generated", "confirm"}
+
+
+class _AsObj:
+    """Dotted access over the cached dict, so the chat rendering below reads
+    the same whether the response came from the cache or the pipeline."""
+
+    def __init__(self, d): self.__dict__.update(d)
+
+
+def _answer_cached(query: str, language: str = "sindhi") -> dict:
+    """run_pipeline with Sabiha's 24h response cache in front of it.
+
+    api/routers/ask.py wraps run_pipeline in that cache, but Gradio serves this
+    app, not FastAPI, so nothing was hitting it -- every repeat of a question
+    paid the full 6-9s again. That is most visible in a demo, where the same
+    handful of questions get asked repeatedly.
+    """
+    from api.phase3_cache import cache_get, cache_set
+
+    hit = cache_get(query)
+    if hit:
+        return hit
+    result = run_pipeline(AskRequest(query=query, language=language)).model_dump()
+    if result.get("path") in _CACHEABLE:
+        cache_set(query, result)
+    return result
+
+
 def answer(message: str, history) -> str:
     if not message or not message.strip():
         return "مهرباني ڪري سوال لکو."
@@ -131,8 +163,7 @@ def ask_api(query: str, language: str = "sindhi") -> str:
     """
     if not query or not query.strip():
         return json.dumps({"error": "empty query"}, ensure_ascii=False)
-    result = run_pipeline(AskRequest(query=query, language=language)).model_dump()
-    return json.dumps(result, ensure_ascii=False)
+    return json.dumps(_answer_cached(query, language), ensure_ascii=False)
 
 
 # Everything is built inside a single Blocks context. Re-entering `with demo:`
