@@ -13,12 +13,13 @@ process so `torch.cuda.is_available()` answers True with no GPU attached.
 `retrieval/device.py` deliberately ignores that and pins everything to CPU --
 see its docstring.
 
-This mounts the existing FastAPI app rather than replacing it, so `/ask`,
-`/health` and `/ready` keep the exact shape `docs/contracts/retrieval.json`
-and Tooba's frontend already depend on, with Gradio's chat UI at `/`.
+Gradio serves this, not FastAPI -- mounting the API app onto it was tried and
+does not work here (see the note above `demo.launch` at the bottom). The REST
+surface the frontend needs is exposed through `gr.api` instead: `/ask` returns
+the full AskResponse, `/retrieve` returns the raw shortlist for evaluation.
 
-Startup warmup still runs in api/main.py's background thread: the port opens
-immediately, `/ready` reports when the models have finished loading.
+Warmup is kicked off at module scope via `ensure_warm()`, because FastAPI's
+startup event never fires when Gradio is the server.
 """
 
 import spaces  # must precede anything that touches torch/CUDA
@@ -47,6 +48,8 @@ _PATH_LABEL = {
     "refusal": "🚫 ڀروسي لائق جواب ناهي (low confidence)",
     "verbatim": "✅ ڄاڻ جي ذخيري مان لفظ به لفظ (verbatim)",
     "generated": "✍️ ذخيري جي بنياد تي ٺاهيل (grounded generation)",
+    # The high band no longer asserts -- see api/pipeline.py CONFIRM_HIGH_BAND.
+    "confirm": "✅ ڄاڻ جي ذخيري مان، تصديق سان (confirm)",
 }
 
 
@@ -80,6 +83,32 @@ def answer(message: str, history) -> str:
             f"رابطو ڪريو.<br>{label} · {response.latency_ms:.0f}ms</sub>"
         )
     return response.answer + footer
+
+
+def retrieve_api(query: str, top_k: int = 20) -> str:
+    """Raw retrieval, for evaluation. Not part of the user-facing contract.
+
+    /ask returns the five results the UI needs. Diagnosing *why* a category
+    fails needs the whole shortlist: whether the correct row is absent from
+    retrieval entirely, or present but ranked badly, are different problems
+    with different owners -- missing content is Mahnoor's, bad ranking is
+    mine. Without the deeper list they are indistinguishable from outside.
+
+    Skips the danger gate and the band logic on purpose: this measures
+    retrieval, not the pipeline wrapped around it.
+    """
+    from retrieval.pipeline import search
+
+    if not query or not query.strip():
+        return json.dumps({"error": "empty query"}, ensure_ascii=False)
+    out = search(query, top_k=int(top_k), candidate_k=max(int(top_k), 20))
+    return json.dumps({
+        "query_normalised": out["query_normalised"],
+        "latency_ms": out["latency_ms"],
+        "results": [{"answer_id": r["answer_id"], "score": r["score"],
+                     "category": r["category"], "path": r["path"]}
+                    for r in out["results"]],
+    }, ensure_ascii=False)
 
 
 def ask_api(query: str, language: str = "sindhi") -> str:
@@ -122,6 +151,7 @@ with gr.Blocks(title=TITLE) as demo:
         ],
     )
     gr.api(ask_api, api_name="ask")
+    gr.api(retrieve_api, api_name="retrieve")
 
 
 # Serve via Gradio's own launcher -- the canonical Gradio-SDK Space entrypoint.
