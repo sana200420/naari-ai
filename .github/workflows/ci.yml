@@ -26,4 +26,4 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest retrieval/
       - run: pytest api/
-      - run: python eval/run_eval.py --ci
+      - run: python eval/run_danger_gate_eval.py --ci
