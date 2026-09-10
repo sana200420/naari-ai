@@ -188,6 +188,22 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     )
 
 
+def _as_paragraph(text: str) -> str:
+    """Collapse an answer to continuous prose.
+
+    The prompt asks for a paragraph, but models drift back to bullets and line
+    breaks, and the chat bubble renders those as a list. Rather than trust the
+    instruction, join the lines and strip any leading list markers -- Sindhi
+    prose reads badly as fragments, and a bulleted health answer looks like a
+    checklist rather than advice.
+    """
+    import re
+
+    lines = [re.sub(r"^[\s\-\*•\d\.\)]+", "", ln).strip()
+             for ln in str(text).splitlines()]
+    return " ".join(ln for ln in lines if ln)
+
+
 def elaborate(query: str, chunks: list) -> str:
     """Expand a retrieved KB answer into a fuller reply, adding no new facts.
 
@@ -207,8 +223,10 @@ Rules, all mandatory:
 - Do NOT introduce any symptom, cause, treatment, medicine, dose or timeframe
   that is not already written below.
 - Do NOT diagnose. Do NOT say symptoms are normal or nothing to worry about.
-- Write 5 to 6 short lines in simple Sindhi a village reader understands.
-- Keep any advice to see a health worker, and keep it prominent.
+- Write ONE flowing paragraph of 5 to 6 sentences in simple Sindhi a village
+  reader understands. Do NOT use bullet points, numbered lists, dashes, or
+  line breaks. It must read as continuous prose.
+- Keep any advice to see a health worker, and keep it in the paragraph.
 
 VERIFIED ANSWER:
 {primary}
@@ -223,7 +241,7 @@ Fuller answer in Sindhi:"""
     for attempt in (_try_gemini, _try_groq):
         out = attempt(prompt)
         if out:
-            return out
+            return _as_paragraph(out)
     # Both LLMs down: the stored answer is short but correct, which beats a
     # refusal on a path where we have a verified row.
     return primary
@@ -236,7 +254,7 @@ def generate(query: str, chunks: list) -> str:
 Answer ONLY using the context below. If the context does not contain the answer, say you don't know.
 Do NOT use your own knowledge. Do NOT diagnose. Do NOT name medicines or doses.
 Do NOT reassure the user that symptoms are normal or nothing to worry about.
-Write 5 to 6 short lines in simple Sindhi a village reader understands.
+Write ONE flowing paragraph of 5 to 6 sentences in simple Sindhi a village reader understands. No bullet points, no numbered lists, no line breaks.
 
 Context:
 {context}
@@ -247,11 +265,11 @@ Answer in Sindhi:"""
 
     answer = _try_gemini(prompt)
     if answer:
-        return answer
+        return _as_paragraph(answer)
 
     answer = _try_groq(prompt)
     if answer:
-        return answer
+        return _as_paragraph(answer)
 
     return "معاف ڪجو، في الحال جواب ڏيڻ ممڪن ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو."
 
