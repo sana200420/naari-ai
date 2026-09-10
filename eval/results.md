@@ -452,3 +452,68 @@ Combined embed+rerank p95: fp32 192ms, int8 292ms (target: under 1500ms; exclude
 Recall@1 fp32: 0.351. Recall@1 int8: 0.327. Drop: 2.42 percentage points (target: within 1.0 point).
 
 **Verdict: latency PASS, recall FAIL.**
+
+---
+
+# Phase 3 — variant batch assessed, and a prefix-robustness result (2026-09-10)
+
+## The variant batch cannot be indexed
+
+`variant_review_queue_FINAL.csv` (Mahnoor, 2026-09-10): 10,059 variants covering all
+2,000 KB rows, ~5 each, evenly spread across the eight categories, all
+`review_status=pending`.
+
+**All 10,059 reuse the original question's core string verbatim.** They are roughly 95
+politeness/context prefix templates wrapped around an unchanged question — median 6 new
+words per variant, every one of them from the template:
+
+| template | count | reads as |
+|---|---:|---|
+| `…، ذرا ٻڌايو` | 1,295 | "…, do tell" |
+| `مهرباني ڪري ٻڌايو ته…` | 554 | "Please tell me that…" |
+| `سهيلي کان اهو سوال پڇيو…` | 267 | "A friend was asked this…" |
+| `سوشل ميڊيا تي هڪ پوسٽ ۾…` | 165 | "In a social media post…" |
+
+A naive substring test reports 50.5%, because half the templates drop the leading
+interrogative particle `ڇا` before prefixing. Stripping interrogatives first gives 100.0%.
+
+Indexing these would grow the collection from 4,000 to ~14,000 points with near-duplicates,
+let sparse retrieval match trivially on the unchanged tokens, and make any evaluation run
+against them optimistic. Phase 3 items 1–3 remain blocked — for a different reason than
+"only 30 are done".
+
+## What the batch is good for: a prefix-robustness probe
+
+If the templates add no phrasing diversity, the useful question becomes whether they *cost*
+anything — does a politeness prefix break retrieval? 96 matched pairs (12 per category, one
+KB row each, asked plain and prefixed against the live Space):
+
+| phrasing | Recall@1 |
+|---|---:|
+| original question | **0.979** (94/96) |
+| prefixed variant | **0.969** (93/96) |
+| same top-1 both ways | 0.990 (95/96) |
+
+**Retrieval is prefix-robust.** A 1.0-point delta at n=96 is noise, and 95 of 96 pairs
+returned the identical top-1. Normalisation and RRF absorb the wrapper. So the batch is
+redundant rather than harmful — it neither helps nor hurts.
+
+**The more important number here is 0.979 against the gold set's 0.540.** These questions
+are the KB's own `original_question` strings, so this measures asking the knowledge base a
+question it already contains word-for-word — near-perfect, as it should be. The gold set
+asks the same things in a *user's* words and scores 0.540. That 44-point gap is precisely
+what genuine variants are supposed to close, and precisely what prefix templates do not
+touch. It is the strongest available argument for what the next variant batch must contain:
+different word choice, dialect, partial and misspelled questions — not politeness wrappers.
+
+## Content localisation gap
+
+38 of 2,000 KB rows name foods that are not realistically available or affordable in rural
+Sindh — avocado, quinoa, kale, salmon, tofu, fortified orange juice, whole-grain pasta.
+These read as Western dietary guidance translated into Sindhi. Local equivalents exist and
+are better answers: مسٽرڊ آئل and تِر for unsaturated fats, پلو and رهو for omega-3,
+ساڳ / ڏُڌ / ڏهي for calcium, دال / ڳُڙ for iron, باجرو / جوئر for whole grains.
+
+Proposed review rule for the corpus: **every nutrition answer must name a food buyable at a
+village shop or grown locally.** The same test applies to advice generally — "keep it
+refrigerated" fails where power is intermittent.
