@@ -25,11 +25,12 @@ _model_lock = threading.Lock()
 
 
 def _load_model():
-    import torch
     from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
+    from retrieval.device import device as resolve_device
+
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, src_lang=SRC_LANG)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = resolve_device()
     model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME).to(device)
     return model, tokenizer, device
 
