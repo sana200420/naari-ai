@@ -46,7 +46,7 @@ def log_query(
     row = {
         "query": query[:500],  # cap length
         "band": band,
-        "PATH": path,
+        "path": path,
         "latency_ms": round(latency_ms, 2),
         "provider": provider,
         "session_id": session_id,

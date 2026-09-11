@@ -35,3 +35,7 @@ Thumbs.db
 slidedeck/
 assets/*.mp4
 assets/*.pptx
+
+# ---- generated eval reports ----
+eval/danger_gate_misses.csv
+eval/negative_set_false_positives.csv
