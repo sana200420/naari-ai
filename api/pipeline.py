@@ -49,6 +49,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=True,
             disclaimer=False,
             retrieved_ids=[],
+            sources=[],
             latency_ms=latency,
         )
 
@@ -64,6 +65,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[],
+            sources=[],
             latency_ms=latency,
         )
 
@@ -72,7 +74,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
 
     retrieval_result = retrieval_search(query)
     chunks = [
-        {"id": r["answer_id"], "text": r["answer"], "score": r["score"]}
+        {"id": r["answer_id"], "text": r["answer"], "score": r["score"], "source": r.get("source", "")}
         for r in retrieval_result["results"]
     ]
     top_score = chunks[0]["score"] if chunks else 0.0
@@ -97,6 +99,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[],
+            sources=[],
             latency_ms=latency,
         )
 
@@ -113,6 +116,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[c["id"] for c in chunks],
+            sources=[c["source"] for c in chunks],
             latency_ms=latency,
         )
 
@@ -132,6 +136,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
         escalated=False,
         disclaimer=True,
         retrieved_ids=[c["id"] for c in chunks],
+            sources=[c["source"] for c in chunks],
         latency_ms=latency,
     )
 

@@ -1,3 +1,5 @@
+
+
 {
   "description": "/ask endpoint contract — Sabiha (backend) → Tooba (UI)",
   "request": {
@@ -13,6 +15,7 @@
     "escalated": "boolean — true if danger-sign gate triggered",
     "disclaimer": "boolean — true if Tier B disclosure required",
     "retrieved_ids": "array[int] — KB row IDs used in answer",
+     "sources": "array[string] - source names for retrieved rows",
     "latency_ms": "float | null — request latency in milliseconds"
   },
   "notes": [

@@ -19,6 +19,7 @@ class AskResponse(BaseModel):
     escalated: bool
     disclaimer: bool
     retrieved_ids: list[int]
+    sources: list[str]
     latency_ms: Optional[float]
 
 
