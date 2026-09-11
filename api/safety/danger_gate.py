@@ -58,7 +58,7 @@ DANGER_CATEGORIES = {
         "description": "Blurred vision or darkness before eyes",
         "keywords_sindhi": [
             "اکين اڳيان ڌنڌ يا اونداهي", "اکين اڳيان اونداهي",
-            "نظر ڌنڌلو", "وڄ جون چمڪون", "پاڇولا",
+            "نظر ڌنڌلو", "وڄ جون چمڪون", "پاڇولا", "ٻٽو نظر",
         ],
         "keywords_english": [
             "blurred vision", "blurred vision pregnancy", "darkness before eyes",
@@ -70,7 +70,8 @@ DANGER_CATEGORIES = {
         "description": "Severe abdominal or pelvic pain",
         "keywords_sindhi": [
             "پيٽ ۾ سخت سور", "سخت درد", "تيز درد", "اڻ سهڻو درد",
-            "سيخ وانگر سور", "نچوڙيندڙ سور", "هٿ لائڻ نٿو ڏئي",
+            "سيخ وانگر", "نچوڙيندڙ سور", "هٿ لائڻ نٿو ڏئي",
+            "پيٽ پٿر وانگر سخت", "بي انتها سور",
         ],
         "keywords_english": [
             "severe pain", "unbearable pain", "sudden pain",
@@ -107,7 +108,7 @@ DANGER_CATEGORIES = {
         "description": "Reduced or absent fetal movement",
         "keywords_sindhi": [
             "ٻار جو چرپر گهٽ ٿيڻ", "ٻار نٿو چري",
-            "ٻار جي حرڪت", "حرڪت محسوس ناهي",
+            "ٻار جي حرڪت", "حرڪت محسوس ناهي", "ناهي چريو",
         ],
         "keywords_english": [
             "baby not moving", "no fetal movement", "reduced fetal movement",
@@ -119,7 +120,8 @@ DANGER_CATEGORIES = {
         "description": "Difficulty breathing",
         "keywords_sindhi": [
             "ساهه کڻڻ ۾ تڪليف", "ساهه نٿو اچي", "ساهه گھٽجڻ",
-            "ساهه بلڪل بند", "ساهه ٻوسڻ",
+            "ساهه بلڪل بند", "ساهه ٻوسڻ", "ساهه بي انتها بند",
+            "سيٽيءَ جهڙو آواز",
         ],
         "keywords_english": [
             "can't breathe", "difficulty breathing", "shortness of breath",
@@ -157,6 +159,7 @@ DANGER_CATEGORIES = {
         "description": "Danger signs in newborn",
         "keywords_sindhi": [
             "نوزائيده خطرو", "کير پيئڻ ڇڏي ڏنو", "تليون پيليون",
+            "ڇاتي اندر ڍري وڃي", "گرنٽنگ جهڙو آواز",
         ],
         "keywords_english": [
             "baby not breathing", "newborn not feeding", "baby yellow",
@@ -245,6 +248,26 @@ DANGER_CATEGORIES = {
             "postpartum insomnia severe", "hearing voices postpartum", "detached from baby",
         ],
         "keywords_urdu": ["ڈلیوری کے بعد نیند نہیں", "بچے سے لگاؤ نہیں"]
+    },
+    "neurological_emergency": {
+        "description": "Signs of stroke — limb numbness/weakness with slurred speech",
+        "keywords_sindhi": [
+            "هٿ ۽ پير سُڃا ٿي ويا آهن", "ٻولي ٻُٿي ٿئي", "چڪرائي پئي آهيان",
+        ],
+        "keywords_english": [
+            "limb numbness", "slurred speech", "sudden weakness one side",
+        ],
+        "keywords_urdu": ["ہاتھ پاؤں سن ہونا", "بولنے میں لڑکھڑاہٹ"]
+    },
+    "postpartum_septic_shock": {
+        "description": "Signs of septic shock — body turning cold, bluish/pale skin",
+        "keywords_sindhi": [
+            "جسم يخ ٿي ويو آهي", "چمڙي پيلي نيري پئجي وئي آهي",
+        ],
+        "keywords_english": [
+            "body turning cold", "bluish pale skin", "postpartum septic shock",
+        ],
+        "keywords_urdu": ["جسم ٹھنڈا ہو رہا ہے", "جلد کا رنگ نیلا پڑنا"]
     },
 }
 
