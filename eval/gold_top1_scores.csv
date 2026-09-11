@@ -5,245 +5,244 @@ gold_4,مون کي بار بار الٽي جهڙو لڳي ٿو، ان کي گه�
 gold_5,مان ٿورو هلان ٿي ته ڏاڍي ٿڪي پوان ٿي، ڇا اهو حمل جي ڪري ٿي سگهي ٿو؟,Pregnancy & Maternal Health,589,589,0.98138,True
 gold_6,مون کي تازو خبر پئي آهي ته مان حامله آهيان، پهريون چيڪ اپ ڪڏهن ڪرائڻ گهرجي؟,Pregnancy & Maternal Health,504,810,0.82689,False
 gold_7,حمل دوران مون کي ڪيترا ڀيرا ڊاڪٽر وٽ وڃڻ گهرجي؟,Pregnancy & Maternal Health,505,505,0.99225,True
-gold_9,حمل دوران ڪهڙا ٽيسٽ ڪرائڻ ضروري هوندا آهن؟,Pregnancy & Maternal Health,557,505,0.96778,False
+gold_9,حمل دوران ڪهڙا ٽيسٽ ڪرائڻ ضروري هوندا آهن؟,Pregnancy & Maternal Health,557,557,0.58249,True
 gold_10,هر چيڪ اپ تي بلڊ پريشر ڇو چيڪ ڪيو ويندو آهي؟,Pregnancy & Maternal Health,520,520,0.99991,True
 gold_11,حمل دوران مون کي ڪهڙيون شيون وڌيڪ کائڻ گهرجن؟,Pregnancy & Maternal Health,610,610,0.99959,True
 gold_12,ڊاڪٽر مون کي فولڪ ايسڊ ڏنو آهي، اهو ڇو ضروري آهي؟,Pregnancy & Maternal Health,512,512,0.95444,True
-gold_13,مون کي چانهه پيئڻ جي عادت آهي، حمل دوران گهڻي چانهه پيئڻ ٺيڪ آهي ڇا؟,Pregnancy & Maternal Health,616,621,0.14043,False
+gold_13,مون کي چانهه پيئڻ جي عادت آهي، حمل دوران گهڻي چانهه پيئڻ ٺيڪ آهي ڇا؟,Pregnancy & Maternal Health,616,610,0.01072,False
 gold_14,حمل دوران مون کي روزانو ڪيترو پاڻي پيئڻ گهرجي؟,Pregnancy & Maternal Health,621,621,0.99984,True
 gold_15,حمل دوران ڪهڙيون شيون کائڻ کان پاسو ڪرڻ گهرجي؟,Pregnancy & Maternal Health,623,610,0.85134,False
 gold_16,منهنجو وزن تيزي سان وڌي رهيو آهي، ڇا حمل دوران ائين ٿيڻ عام آهي؟,Pregnancy & Maternal Health,532,532,0.80125,True
 gold_17,منهنجي پٺ ۾ سور رهي ٿو، ڇا اهو حمل جي ڪري ٿي سگهي ٿو؟,Pregnancy & Maternal Health,585,585,0.99762,True
 gold_18,منهنجن پيرن ۽ ٽنگن ۾ سوج اچي وئي آهي، ڇا اهو حمل ۾ عام هوندو آهي؟,Pregnancy & Maternal Health,537,537,0.99867,True
 gold_20,مان ٿورو هلان ٿي ته ساهه چڙهي وڃي ٿو، ڇا اهو حمل جي ڪري ٿي سگهي ٿو؟,Pregnancy & Maternal Health,737,737,0.94118,True
-gold_23,مون کي رات جو ننڊ نٿي اچي، مان ڇا ڪريان؟,Pregnancy & Maternal Health,546,630,0.75948,False
+gold_23,مون کي رات جو ننڊ نٿي اچي، مان ڇا ڪريان؟,Pregnancy & Maternal Health,546,584,0.00019,False
 gold_24,حمل دوران ڪهڙي پاسي سمهڻ بهتر هوندو آهي؟,Pregnancy & Maternal Health,534,534,0.97536,True
 gold_26,مون کي حمل دوران رت جا ڦڙا اچي رهيا آهن، ڇا مون کي پريشان ٿيڻ گهرجي؟,Pregnancy & Maternal Health,513,513,0.99986,True
 gold_27,مون کي شديد پيٽ جو سور ٿي رهيو آهي، مان ڇا ڪريان؟,Pregnancy & Maternal Health,734,734,0.99789,True
 gold_28,مون کي تمام گهڻو مٿي جو سور آهي، ڇا اها پريشاني جي ڳالهه آهي؟,Pregnancy & Maternal Health,732,732,0.98612,True
-gold_29,مون کي ٻار جي حرڪت اڳ کان گهٽ محسوس ٿي رهي آهي، ڇا مان پريشان ٿيان؟,Pregnancy & Maternal Health,519,519,0.84176,True
 gold_31,مون کي ڪيئن خبر پوندي ته ويم شروع ٿي ويو آهي؟,Pregnancy & Maternal Health,643,643,0.96967,True
-gold_32,ويم کان اڳ مون کي ڪهڙيون تياريون ڪرڻ گهرجن؟,Pregnancy & Maternal Health,538,663,0.30663,False
+gold_32,ويم کان اڳ مون کي ڪهڙيون تياريون ڪرڻ گهرجن؟,Pregnancy & Maternal Health,538,538,0.11183,True
 gold_34,ٻار ڄمڻ کان پوءِ جسم کي ٺيڪ ٿيڻ ۾ ڪيترو وقت لڳي سگهي ٿو؟,Pregnancy & Maternal Health,679,679,0.99998,True
-gold_35,ويم کان پوءِ مون کي ڪهڙين ڳالهين جو خاص خيال رکڻ گهرجي؟,Pregnancy & Maternal Health,668,1870,0.07278,False
+gold_35,ويم کان پوءِ مون کي ڪهڙين ڳالهين جو خاص خيال رکڻ گهرجي؟,Pregnancy & Maternal Health,668,1799,0.04886,False
 gold_36,منهنجي ماهواري ڪڏهن وقت تي اچي ٿي ته ڪڏهن هڪ يا ٻه مهينا دير سان، ڇا اهو پي سي او ايس جي نشاني ٿي سگهي ٿو؟,PCOS & Hormonal Health,753,780,0.99711,False
 gold_37,منهنجي ماهواري ڪيترن مهينن کان بند آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,PCOS & Hormonal Health,818,818,0.98361,True
 gold_38,منهنجي ماهواري هر دفعي مختلف تاريخ تي اچي ٿي، ڇا اهو عام آهي؟,PCOS & Hormonal Health,817,817,0.99354,True
-gold_41,منهنجي چهري تي وار اڳ کان وڌيڪ نڪري رهيا آهن، ان جو سبب ڇا ٿي سگهي ٿو؟,PCOS & Hormonal Health,753,883,0.11635,False
+gold_41,منهنجي چهري تي وار اڳ کان وڌيڪ نڪري رهيا آهن، ان جو سبب ڇا ٿي سگهي ٿو؟,PCOS & Hormonal Health,753,892,0.02432,False
 gold_42,منهنجي ٿوڏي ۽ مٿئين چپ تي وار اچڻ شروع ٿي ويا آهن، ڇا اهو پي سي او ايس سان لاڳاپيل ٿي سگهي ٿو؟,PCOS & Hormonal Health,796,796,0.98629,True
-gold_43,مون کي بار بار دانا نڪرن ٿا، ڇا اهو هارمونن جي خرابي سبب ٿي سگهي ٿو؟,PCOS & Hormonal Health,771,510,0.44591,False
-gold_44,منهنجي چمڙي تمام گهڻي تيل واري ٿي وئي آهي، ان جو سبب ڇا آهي؟,PCOS & Hormonal Health,885,1286,0.64221,False
-gold_45,منهنجا وار گهڻو ڪري رهيا آهن، ڇا پي سي او ايس سبب ٿي سگهي ٿو؟,PCOS & Hormonal Health,770,820,0.99836,False
+gold_43,مون کي بار بار دانا نڪرن ٿا، ڇا اهو هارمونن جي خرابي سبب ٿي سگهي ٿو؟,PCOS & Hormonal Health,771,1687,0.04357,False
+gold_44,منهنجي چمڙي تمام گهڻي تيل واري ٿي وئي آهي، ان جو سبب ڇا آهي؟,PCOS & Hormonal Health,885,1295,0.08958,False
+gold_45,منهنجا وار گهڻو ڪري رهيا آهن، ڇا پي سي او ايس سبب ٿي سگهي ٿو؟,PCOS & Hormonal Health,770,796,0.68121,False
 gold_46,مان وزن گهٽائڻ جي تمام گهڻي ڪوشش ڪريان ٿي پر وزن نٿو گهٽجي، ڇا اهو پي سي او ايس جي ڪري ٿي سگهي ٿو؟,PCOS & Hormonal Health,846,971,0.92459,False
-gold_47,منهنجو وزن تيزي سان وڌي رهيو آهي، ڇا هارمونن جي خرابي سبب ٿي سگهي ٿو؟,PCOS & Hormonal Health,760,1406,0.36332,False
+gold_47,منهنجو وزن تيزي سان وڌي رهيو آهي، ڇا هارمونن جي خرابي سبب ٿي سگهي ٿو؟,PCOS & Hormonal Health,760,1687,0.14783,False
 gold_48,پي سي او ايس هجي ته وزن گهٽائڻ لاءِ ڇا ڪرڻ گهرجي؟,PCOS & Hormonal Health,971,971,0.87059,True
 gold_49,پي سي او ايس ۾ ڪهڙي قسم جي ورزش فائديمند هوندي آهي؟,PCOS & Hormonal Health,939,939,0.99995,True
 gold_50,مون کي پي سي او ايس آهي، ڇا روزانو هلڻ سان فائدو ٿيندو؟,PCOS & Hormonal Health,865,962,0.78656,False
-gold_51,پي سي او ايس ۾ مون کي ڪهڙيون شيون وڌيڪ کائڻ گهرجن؟,PCOS & Hormonal Health,935,935,0.9594,True
-gold_52,پي سي او ايس هجي ته ڪهڙين شين کان پاسو ڪرڻ گهرجي؟,PCOS & Hormonal Health,936,797,0.86041,False
+gold_51,پي سي او ايس ۾ مون کي ڪهڙيون شيون وڌيڪ کائڻ گهرجن؟,PCOS & Hormonal Health,935,945,0.20233,False
+gold_52,پي سي او ايس هجي ته ڪهڙين شين کان پاسو ڪرڻ گهرجي؟,PCOS & Hormonal Health,936,999,0.19132,False
 gold_53,ڇا مٺيون شيون گهٽ کائڻ سان پي سي او ايس ۾ فائدو ٿي سگهي ٿو؟,PCOS & Hormonal Health,935,945,0.6423,False
 gold_54,پي سي او ايس ۾ ناشتو ڇڏڻ ٺيڪ آهي ڇا؟,PCOS & Hormonal Health,1015,962,0.68937,False
 gold_55,مون کي پي سي او ايس آهي، ڇا مون کي وڌيڪ پاڻي پيئڻ گهرجي؟,PCOS & Hormonal Health,1103,621,0.90036,False
 gold_56,مون کي پي سي او ايس آهي، ڇا مان حامله ٿي سگهان ٿي؟,PCOS & Hormonal Health,759,759,0.97502,True
 gold_57,پي سي او ايس هجڻ سان حمل ٿيڻ ڏکيو ٿي ويندو آهي ڇا؟,PCOS & Hormonal Health,758,773,0.94893,False
 gold_58,مان ڪافي عرصي کان حمل جي ڪوشش ڪري رهي آهيان پر ڪاميابي نٿي ملي، ڇا پي سي او ايس سبب ٿي سگهي ٿو؟,PCOS & Hormonal Health,758,773,0.91895,False
-gold_59,پي سي او ايس ۾ بيضه ڇڏڻ هر مهيني ٿيندو آهي ڇا؟,PCOS & Hormonal Health,832,884,0.8939,False
+gold_59,پي سي او ايس ۾ بيضه ڇڏڻ هر مهيني ٿيندو آهي ڇا؟,PCOS & Hormonal Health,832,754,0.02417,False
 gold_60,جيڪڏهن مون کي پي سي او ايس هجي ته حمل لاءِ ڪڏهن ڊاڪٽر سان رابطو ڪرڻ گهرجي؟,PCOS & Hormonal Health,1542,1542,0.97496,True
 gold_61,پي سي او ايس جي پڪ ڪيئن ٿيندي آهي؟,PCOS & Hormonal Health,782,782,0.99913,True
-gold_62,ڇا صرف الٽراسائونڊ سان پي سي او ايس جي سڃاڻپ ٿي سگهي ٿي؟,PCOS & Hormonal Health,782,787,0.96464,False
+gold_62,ڇا صرف الٽراسائونڊ سان پي سي او ايس جي سڃاڻپ ٿي سگهي ٿي؟,PCOS & Hormonal Health,782,782,0.12316,True
 gold_63,پي سي او ايس لاءِ ڪهڙا ٽيسٽ ڪرايا ويندا آهن؟,PCOS & Hormonal Health,786,786,0.99014,True
 gold_64,پي سي او ايس مڪمل طور ٺيڪ ٿي سگهي ٿو ڇا؟,PCOS & Hormonal Health,953,953,0.9987,True
-gold_65,مون کي پي سي او ايس آهي، مان پنهنجي حالت کي بهتر ڪرڻ لاءِ ڇا ڪريان؟,PCOS & Hormonal Health,965,965,0.91945,True
+gold_65,مون کي پي سي او ايس آهي، مان پنهنجي حالت کي بهتر ڪرڻ لاءِ ڇا ڪريان؟,PCOS & Hormonal Health,965,781,0.09503,False
 gold_66,ڇا صرف وزن گهٽائڻ سان پي سي او ايس ۾ فرق پئجي سگهي ٿو؟,PCOS & Hormonal Health,971,971,0.99909,True
-gold_67,مون کي پي سي او ايس آهي، ڇا مون کي روزانو ورزش ڪرڻ گهرجي؟,PCOS & Hormonal Health,862,946,0.98186,False
+gold_67,مون کي پي سي او ايس آهي، ڇا مون کي روزانو ورزش ڪرڻ گهرجي؟,PCOS & Hormonal Health,862,862,0.72483,True
 gold_68,ڇا گهٽ ننڊ پي سي او ايس جي علامتن کي وڌيڪ خراب ڪري سگهي ٿي؟,PCOS & Hormonal Health,774,774,0.87864,True
 gold_69,مون کي تمام گهڻو ذهني دٻاءُ رهي ٿو، ڇا ان جو اثر پي سي او ايس تي پئجي سگهي ٿو؟,PCOS & Hormonal Health,994,994,0.99888,True
 gold_70,پي سي او ايس سان گڏ صحتمند زندگي گذارڻ لاءِ مون کي ڪهڙين ڳالهين جو خيال رکڻ گهرجي؟,PCOS & Hormonal Health,965,965,0.82406,True
 gold_71,مان ڪافي مهينن کان حمل جي ڪوشش ڪري رهي آهيان پر ڪاميابي نٿي ملي، مان ڇا ڪريان؟,Fertility & Reproductive Health,1592,956,0.86394,False
 gold_72,حمل ٿيڻ جا امڪان وڌائڻ لاءِ مون کي ڇا ڪرڻ گهرجي؟,Fertility & Reproductive Health,1592,956,0.96196,False
-gold_73,حمل لاءِ ڪوشش شروع ڪرڻ کان اڳ مون کي ڪهڙين ڳالهين جو خيال رکڻ گهرجي؟,Fertility & Reproductive Health,1589,956,0.87131,False
+gold_73,حمل لاءِ ڪوشش شروع ڪرڻ کان اڳ مون کي ڪهڙين ڳالهين جو خيال رکڻ گهرجي؟,Fertility & Reproductive Health,1589,1589,0.06795,True
 gold_74,مان پهريون ڀيرو حمل جي ڪوشش ڪري رهي آهيان، مون کي ڪهڙي تياري ڪرڻ گهرجي؟,Fertility & Reproductive Health,1589,956,0.99685,False
-gold_75,حمل ٿيڻ لاءِ سڀ کان مناسب وقت ڪهڙو هوندو آهي؟,Fertility & Reproductive Health,1722,558,0.02246,False
+gold_75,حمل ٿيڻ لاءِ سڀ کان مناسب وقت ڪهڙو هوندو آهي؟,Fertility & Reproductive Health,1722,1564,0.01593,False
 gold_76,مون کي ڪيئن خبر پوندي ته منهنجو بيضو ڪڏهن خارج ٿئي ٿو؟,Fertility & Reproductive Health,1722,832,0.62065,False
 gold_77,منهنجي ماهواري بي قاعده آهي، ڇا مون کي بيضو ڇڏڻ ۾ مسئلو ٿي سگهي ٿو؟,Fertility & Reproductive Health,833,833,0.99459,True
-gold_78,مون کي خبر ئي نٿي پوي ته منهنجا زرخيز ڏينهن ڪهڙا آهن، مان ڪيئن معلوم ڪريان؟,Fertility & Reproductive Health,1722,514,0.60624,False
+gold_78,مون کي خبر ئي نٿي پوي ته منهنجا زرخيز ڏينهن ڪهڙا آهن، مان ڪيئن معلوم ڪريان؟,Fertility & Reproductive Health,1722,579,0.0641,False
 gold_79,ڇا هر مهيني بيضو خارج ٿيڻ ضروري هوندو آهي؟,Fertility & Reproductive Health,832,832,0.99117,True
-gold_80,جيڪڏهن بيضو صحيح نموني خارج نه ٿئي ته ڇا حمل ۾ ڏکيائي ٿي سگهي ٿي؟,Fertility & Reproductive Health,758,1841,0.35353,False
+gold_80,جيڪڏهن بيضو صحيح نموني خارج نه ٿئي ته ڇا حمل ۾ ڏکيائي ٿي سگهي ٿي؟,Fertility & Reproductive Health,758,1898,0.06484,False
 gold_81,منهنجي شادي کي ڪافي وقت ٿي ويو آهي پر اڃا تائين حمل ناهي ٿيو، ڇا مون کي جاچ ڪرائڻ گهرجي؟,Fertility & Reproductive Health,1542,515,0.87887,False
-gold_82,ڇا عمر وڌڻ سان حمل ٿيڻ ڏکيو ٿي سگهي ٿو؟,Fertility & Reproductive Health,1566,1623,0.76187,False
-gold_84,جيڪڏهن حمل نه ٿئي ته ڇا هميشه عورت ۾ ئي مسئلو هوندو آهي؟,Fertility & Reproductive Health,1536,1645,0.56041,False
+gold_82,ڇا عمر وڌڻ سان حمل ٿيڻ ڏکيو ٿي سگهي ٿو؟,Fertility & Reproductive Health,1566,1698,0.70098,False
+gold_84,جيڪڏهن حمل نه ٿئي ته ڇا هميشه عورت ۾ ئي مسئلو هوندو آهي؟,Fertility & Reproductive Health,1536,1566,0.01298,False
 gold_85,مون کي ڪهڙي وقت ڊاڪٽر سان رابطو ڪرڻ گهرجي جيڪڏهن حمل نه ٿئي؟,Fertility & Reproductive Health,1542,1542,0.99996,True
 gold_86,حمل لاءِ ڪوشش دوران مون کي ڪهڙيون شيون کائڻ گهرجن؟,Fertility & Reproductive Health,610,610,0.99941,True
 gold_87,ڇا فولڪ ايسڊ حمل کان اڳ به وٺڻ گهرجي؟,Fertility & Reproductive Health,1568,1568,0.99498,True
 gold_88,ڇا وزن گهڻو هجڻ حمل ٿيڻ ۾ رڪاوٽ بڻجي سگهي ٿو؟,Fertility & Reproductive Health,1573,1573,0.96199,True
 gold_89,ڇا تمام گهٽ وزن هجڻ سان به حمل ۾ ڏکيائي ٿي سگهي ٿي؟,Fertility & Reproductive Health,1573,1573,0.99645,True
-gold_90,حمل لاءِ ڪوشش دوران مون کي ڪهڙين شين کان پاسو ڪرڻ گهرجي؟,Fertility & Reproductive Health,1589,623,0.98538,False
+gold_90,حمل لاءِ ڪوشش دوران مون کي ڪهڙين شين کان پاسو ڪرڻ گهرجي؟,Fertility & Reproductive Health,1589,1589,0.13554,True
 gold_91,ڇا ذهني دٻاءُ حمل ٿيڻ ۾ رڪاوٽ بڻجي سگهي ٿو؟,Fertility & Reproductive Health,1591,1591,0.96937,True
 gold_92,ڇا روزانو ورزش ڪرڻ سان زرخيزي تي سٺو اثر پئجي سگهي ٿو؟,Fertility & Reproductive Health,1650,1650,0.10698,True
 gold_94,ڇا سگريٽ يا تمباڪو زرخيزي تي اثر وجهي سگهن ٿا؟,Fertility & Reproductive Health,1576,1576,0.99996,True
 gold_95,حمل لاءِ ڪوشش دوران صحتمند زندگي گذارڻ لاءِ مون کي ڇا ڪرڻ گهرجي؟,Fertility & Reproductive Health,1589,1589,0.85934,True
-gold_96,جيڪڏهن حمل نه ٿئي ته مون کي ڪهڙيون جاچون ڪرائڻ گهرجن؟,Fertility & Reproductive Health,1537,1542,0.98336,False
-gold_98,ڇا الٽراسائونڊ سان زرخيزي بابت معلومات ملي سگهي ٿي؟,Fertility & Reproductive Health,1278,1737,0.0422,False
+gold_96,جيڪڏهن حمل نه ٿئي ته مون کي ڪهڙيون جاچون ڪرائڻ گهرجن؟,Fertility & Reproductive Health,1537,515,0.25132,False
+gold_98,ڇا الٽراسائونڊ سان زرخيزي بابت معلومات ملي سگهي ٿي؟,Fertility & Reproductive Health,1278,1278,0.00011,True
 gold_99,ڇا رت جا ٽيسٽ زرخيزي جي مسئلن جي سڃاڻپ ۾ مدد ڪن ٿا؟,Fertility & Reproductive Health,1273,1273,0.02479,True
 gold_100,مون کي حمل نه ٿيڻ بابت ڳڻتي آهي، ڇا مون کي ماهر ڊاڪٽر سان ملڻ گهرجي؟,Fertility & Reproductive Health,1542,1542,0.98771,True
 gold_101,ڇا بار بار ٿيندڙ انفيڪشن حمل ٿيڻ تي اثر وجهي سگهن ٿا؟,Fertility & Reproductive Health,1500,1828,0.98788,False
-gold_102,مون کي هيٺين پيٽ ۾ سور رهندو آهي، ڇا ان جو تعلق زرخيزي سان ٿي سگهي ٿو؟,Fertility & Reproductive Health,586,585,0.65064,False
-gold_103,ڇا هارمونن جي خرابي حمل ٿيڻ ۾ مسئلا پيدا ڪري سگهي ٿي؟,Fertility & Reproductive Health,1687,928,0.92411,False
+gold_102,مون کي هيٺين پيٽ ۾ سور رهندو آهي، ڇا ان جو تعلق زرخيزي سان ٿي سگهي ٿو؟,Fertility & Reproductive Health,586,586,0.57738,True
+gold_103,ڇا هارمونن جي خرابي حمل ٿيڻ ۾ مسئلا پيدا ڪري سگهي ٿي؟,Fertility & Reproductive Health,1687,1687,0.45622,True
 gold_104,جيڪڏهن مون کي پي سي او ايس هجي ته ڇا حمل ٿيڻ ممڪن آهي؟,Fertility & Reproductive Health,759,773,0.94092,False
 gold_105,زرخيزي بهتر رکڻ لاءِ مون کي ڪهڙين ڳالهين جو خاص خيال رکڻ گهرجي؟,Fertility & Reproductive Health,1732,1732,0.14449,True
-gold_106,مون کي سفيد پاڻي اچي رهيو آهي، ڇا اهو عام ڳالهه آهي؟,Vaginal & Personal Hygiene,1896,586,0.34195,False
-gold_107,مون کي سفيد پاڻي سان گڏ خارش به ٿي رهي آهي، مان ڇا ڪريان؟,Vaginal & Personal Hygiene,1823,644,0.26727,False
-gold_108,منهنجي سفيد پاڻي جي بوءِ اڳ کان مختلف آهي، ڇا مون کي پريشان ٿيڻ گهرجي؟,Vaginal & Personal Hygiene,1896,733,0.66396,False
-gold_109,مون کي پيلو پاڻي اچي رهيو آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1896,1778,0.08753,False
+gold_106,مون کي سفيد پاڻي اچي رهيو آهي، ڇا اهو عام ڳالهه آهي؟,Vaginal & Personal Hygiene,1896,644,0.00141,False
+gold_107,مون کي سفيد پاڻي سان گڏ خارش به ٿي رهي آهي، مان ڇا ڪريان؟,Vaginal & Personal Hygiene,1823,1778,0.08654,False
+gold_108,منهنجي سفيد پاڻي جي بوءِ اڳ کان مختلف آهي، ڇا مون کي پريشان ٿيڻ گهرجي؟,Vaginal & Personal Hygiene,1896,644,0.08015,False
+gold_109,مون کي پيلو پاڻي اچي رهيو آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1896,644,0.06413,False
 gold_110,سفيد پاڻي گهڻو اچڻ کي گهٽ ڪرڻ لاءِ مان ڇا ڪريان؟,Vaginal & Personal Hygiene,1896,644,0.00782,False
-gold_111,مون کي شرمگاهه ۾ تمام گهڻي خارش ٿي رهي آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1760,1769,0.71888,False
+gold_111,مون کي شرمگاهه ۾ تمام گهڻي خارش ٿي رهي آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1760,1760,0.29984,True
 gold_113,رات جو شرمگاهه ۾ خارش وڌيڪ ٿيندي آهي، ڇا اهو عام آهي؟,Vaginal & Personal Hygiene,1767,1767,0.99793,True
-gold_114,مون کي بار بار خارش ٿيندي رهي ٿي، ان کان ڪيئن بچي سگهان ٿي؟,Vaginal & Personal Hygiene,1760,1772,0.68908,False
+gold_114,مون کي بار بار خارش ٿيندي رهي ٿي، ان کان ڪيئن بچي سگهان ٿي؟,Vaginal & Personal Hygiene,1760,1760,0.05834,True
 gold_115,ڇا صابڻ يا خوشبودار شيون خارش جو سبب بڻجي سگهن ٿيون؟,Vaginal & Personal Hygiene,1752,1752,0.9997,True
-gold_116,مون کي شرمگاهه مان تيز بوءِ اچي رهي آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1771,1775,0.12295,False
-gold_118,مون کي بوءِ سان گڏ پاڻي به اچي رهيو آهي، ڇا مون کي ڊاڪٽر وٽ وڃڻ گهرجي؟,Vaginal & Personal Hygiene,1903,781,0.65819,False
-gold_119,ڇا هر قسم جي بوءِ پريشاني جي ڳالهه هوندي آهي؟,Vaginal & Personal Hygiene,274,1904,0.3736,False
-gold_121,شرمگاهه جي صفائي جو صحيح طريقو ڪهڙو آهي؟,Vaginal & Personal Hygiene,1861,148,0.10271,False
+gold_116,مون کي شرمگاهه مان تيز بوءِ اچي رهي آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1771,1771,0.02293,True
+gold_118,مون کي بوءِ سان گڏ پاڻي به اچي رهيو آهي، ڇا مون کي ڊاڪٽر وٽ وڃڻ گهرجي؟,Vaginal & Personal Hygiene,1903,1903,0.0659,True
+gold_119,ڇا هر قسم جي بوءِ پريشاني جي ڳالهه هوندي آهي؟,Vaginal & Personal Hygiene,274,274,0.22354,True
+gold_121,شرمگاهه جي صفائي جو صحيح طريقو ڪهڙو آهي؟,Vaginal & Personal Hygiene,1861,1881,0.00137,False
 gold_122,ڇا مون کي روزانو خاص صفائي واريون شيون استعمال ڪرڻ گهرجن؟,Vaginal & Personal Hygiene,1792,1799,0.15263,False
-gold_123,شرمگاهه کي بار بار ڌوئڻ فائديمند آهي يا نقصانڪار؟,Vaginal & Personal Hygiene,1858,1975,0.62186,False
+gold_123,شرمگاهه کي بار بار ڌوئڻ فائديمند آهي يا نقصانڪار؟,Vaginal & Personal Hygiene,1858,1858,0.11165,True
 gold_124,مون کي ڪهڙين شين کان پاسو ڪرڻ گهرجي ته جلن نه ٿئي؟,Vaginal & Personal Hygiene,1890,623,0.10695,False
-gold_125,ڇا گرم پاڻي سان صفائي ڪرڻ ٺيڪ آهي؟,Vaginal & Personal Hygiene,1871,106,0.82131,False
-gold_126,ڇا تنگ ڪپڙا پائڻ سان خارش يا جلن ٿي سگهي ٿي؟,Vaginal & Personal Hygiene,1863,159,0.71699,False
+gold_125,ڇا گرم پاڻي سان صفائي ڪرڻ ٺيڪ آهي؟,Vaginal & Personal Hygiene,1871,1887,0.41875,False
+gold_126,ڇا تنگ ڪپڙا پائڻ سان خارش يا جلن ٿي سگهي ٿي؟,Vaginal & Personal Hygiene,1863,1863,0.09779,True
 gold_127,شرمگاهه جي صحت لاءِ ڪهڙي قسم جا انڊرگارمينٽ بهتر هوندا آهن؟,Vaginal & Personal Hygiene,1860,1860,0.83159,True
 gold_129,مون کي گهڻو پگهر ايندو آهي، ان صورت ۾ مون کي ڇا ڪرڻ گهرجي؟,Vaginal & Personal Hygiene,1887,710,0.99893,False
 gold_130,رات جو انڊرگارمينٽ پائڻ ضروري آهي ڇا؟,Vaginal & Personal Hygiene,1873,1873,0.99975,True
-gold_131,مون کي پيشاب دوران ساڙ محسوس ٿئي ٿي، ڇا اهو انفيڪشن ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1930,1940,0.4949,False
+gold_131,مون کي پيشاب دوران ساڙ محسوس ٿئي ٿي، ڇا اهو انفيڪشن ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1930,1930,0.49068,True
 gold_132,مون کي بار بار انفيڪشن ٿيندي آهي، مان ڇا ڪريان؟,Vaginal & Personal Hygiene,1828,1828,0.89827,True
 gold_134,مون کي انفيڪشن کان بچڻ لاءِ ڪهڙيون احتياطون ڪرڻ گهرجن؟,Vaginal & Personal Hygiene,1881,1881,0.03149,True
-gold_135,ڇا انفيڪشن حمل ٿيڻ تي به اثر وجهي سگهي ٿي؟,Vaginal & Personal Hygiene,1500,1897,0.33225,False
+gold_135,ڇا انفيڪشن حمل ٿيڻ تي به اثر وجهي سگهي ٿي؟,Vaginal & Personal Hygiene,1500,1573,0.05881,False
 gold_138,مون کي بار بار جلن ٿيندي آهي، مان ڪهڙين شين کان پاسو ڪريان؟,Vaginal & Personal Hygiene,1890,623,0.13768,False
-gold_139,ڇا ماهواري دوران صفائي بابت خاص خيال رکڻ گهرجي؟,Vaginal & Personal Hygiene,12,1868,0.98736,False
+gold_139,ڇا ماهواري دوران صفائي بابت خاص خيال رکڻ گهرجي؟,Vaginal & Personal Hygiene,12,844,0.61627,False
 gold_141,منهنجي ماهواري ڪڏهن وقت تي اچي ٿي ته ڪڏهن ڪيترائي ڏينهن دير سان، ان جو سبب ڇا ٿي سگهي ٿو؟,Menstrual Health & Periods,501,501,0.84836,True
 gold_142,منهنجي ماهواري هن مهيني ناهي آئي، ڇا مون کي پريشان ٿيڻ گهرجي؟,Menstrual Health & Periods,817,817,0.82169,True
 gold_143,منهنجي ماهواري هر مهيني مختلف تاريخ تي اچي ٿي، ڇا اهو عام آهي؟,Menstrual Health & Periods,817,817,0.99635,True
-gold_144,مون کي سال ۾ رڳو ڪجهه ڀيرا ماهواري اچي ٿي، مان ڇا ڪريان؟,Menstrual Health & Periods,816,817,0.57021,False
+gold_144,مون کي سال ۾ رڳو ڪجهه ڀيرا ماهواري اچي ٿي، مان ڇا ڪريان؟,Menstrual Health & Periods,816,821,0.02633,False
 gold_145,منهنجي ماهواري اڳ باقاعده هوندي هئي پر هاڻي بي قاعده ٿي وئي آهي، ڇو؟,Menstrual Health & Periods,814,814,0.98582,True
 gold_146,منهنجي ماهواري تمام گهڻي ٿئي ٿي، ان کي گهٽ ڪرڻ لاءِ مان ڇا ڪريان؟,Menstrual Health & Periods,822,818,0.83845,False
 gold_147,ماهواري دوران مون کي وڏي مقدار ۾ رت اچي ٿو، ڇا اهو عام آهي؟,Menstrual Health & Periods,822,822,0.91393,True
-gold_148,منهنجي ماهواري ڪيترائي ڏينهن هلندي رهي ٿي، ڇا مون کي ڊاڪٽر سان ڳالهائڻ گهرجي؟,Menstrual Health & Periods,840,840,0.92205,True
+gold_148,منهنجي ماهواري ڪيترائي ڏينهن هلندي رهي ٿي، ڇا مون کي ڊاڪٽر سان ڳالهائڻ گهرجي؟,Menstrual Health & Periods,840,501,0.3559,False
 gold_149,مون کي ماهواري دوران رت جا وڏا ڳوڙها اچن ٿا، ان جو سبب ڇا ٿي سگهي ٿو؟,Menstrual Health & Periods,926,926,0.9911,True
 gold_150,گهڻي ماهواري سبب مون کي ڪمزوري محسوس ٿئي ٿي، مان ڇا کائان؟,Menstrual Health & Periods,821,821,0.9972,True
 gold_152,مون کي ماهواري جي پهرين ڏينهن تي سور برداشت نٿو ٿئي، ڇا اهو عام آهي؟,Menstrual Health & Periods,835,835,0.93155,True
 gold_156,ماهواري دوران مون کي چڪر اچن ٿا ۽ ڪمزوري محسوس ٿئي ٿي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menstrual Health & Periods,821,821,0.98271,True
 gold_157,مون کي ماهواري دوران تمام گهڻو ٿڪ محسوس ٿئي ٿو، ڇا اهو عام آهي؟,Menstrual Health & Periods,27,27,0.97008,True
-gold_158,ماهواري دوران مون کي متلي جهڙو لڳي ٿو، مان ڇا ڪريان؟,Menstrual Health & Periods,83,710,0.86667,False
-gold_161,ماهواري دوران مون کي ڪهڙيون شيون کائڻ گهرجن ته ڪمزوري نه ٿئي؟,Menstrual Health & Periods,821,610,0.45282,False
+gold_158,ماهواري دوران مون کي متلي جهڙو لڳي ٿو، مان ڇا ڪريان؟,Menstrual Health & Periods,83,821,0.12487,False
+gold_161,ماهواري دوران مون کي ڪهڙيون شيون کائڻ گهرجن ته ڪمزوري نه ٿئي؟,Menstrual Health & Periods,821,821,0.05973,True
 gold_162,گهڻي رت وڃڻ کان پوءِ جسم کي مضبوط رکڻ لاءِ ڇا کائجي؟,Menstrual Health & Periods,1061,745,0.24087,False
-gold_163,ماهواري دوران پاڻي وڌيڪ پيئڻ گهرجي ڇا؟,Menstrual Health & Periods,621,621,0.11284,True
-gold_165,مون کي هر مهيني ڪمزوري محسوس ٿئي ٿي، مان پنهنجي خوراڪ ۾ ڇا تبديلي آڻيان؟,Menstrual Health & Periods,684,1380,0.03811,False
-gold_166,ماهواري دوران پيڊ ڪيتري دير بعد تبديل ڪرڻ گهرجي؟,Menstrual Health & Periods,144,1878,0.98844,False
-gold_167,ماهواري دوران صفائي جو خاص خيال ڪيئن رکجي؟,Menstrual Health & Periods,844,1870,0.50043,False
-gold_168,ڇا ماهواري دوران روزانو غسل ڪرڻ ٺيڪ آهي؟,Menstrual Health & Periods,1865,174,0.47249,False
-gold_169,مون کي ماهواري دوران خارش ٿيندي آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menstrual Health & Periods,144,1785,0.93764,False
-gold_170,ماهواري دوران بدبوءِ کان بچڻ لاءِ مون کي ڇا ڪرڻ گهرجي؟,Menstrual Health & Periods,1770,818,0.49735,False
-gold_171,ڇا ماهواري دوران ورزش ڪرڻ ٺيڪ آهي؟,Menstrual Health & Periods,1589,217,0.71801,False
-gold_172,ماهواري دوران مون کي اسڪول يا ڪم تي ڌيان ڏيڻ مشڪل لڳي ٿو، مان ڇا ڪريان؟,Menstrual Health & Periods,821,818,0.5412,False
-gold_173,ڇا ماهواري دوران سفر ڪرڻ محفوظ آهي؟,Menstrual Health & Periods,14,543,0.96062,False
-gold_175,ماهواري دوران مون کي ڪهڙين ڳالهين جو خاص خيال رکڻ گهرجي؟,Menstrual Health & Periods,821,818,0.07296,False
-gold_176,مون کي ننڍين ننڍين ڳالهين تي به گهڻو ٽينشن ٿي ويندو آهي، مان ان کي ڪيئن گهٽ ڪريان؟,Mental Health & Emotional Well-being,254,267,0.25105,False
-gold_177,مان سڄو ڏينهن ڪنهن نه ڪنهن ڳالهه جي فڪر ۾ رهندي آهيان، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,254,710,0.12737,False
-gold_178,مون کي ايترو ذهني دٻاءُ آهي جو ڪنهن ڪم تي ڌيان نٿي ڏئي سگهان، ڇا ڪريان؟,Mental Health & Emotional Well-being,254,710,0.90435,False
+gold_163,ماهواري دوران پاڻي وڌيڪ پيئڻ گهرجي ڇا؟,Menstrual Health & Periods,621,174,0.00584,False
+gold_165,مون کي هر مهيني ڪمزوري محسوس ٿئي ٿي، مان پنهنجي خوراڪ ۾ ڇا تبديلي آڻيان؟,Menstrual Health & Periods,684,684,0.01399,True
+gold_166,ماهواري دوران پيڊ ڪيتري دير بعد تبديل ڪرڻ گهرجي؟,Menstrual Health & Periods,144,144,0.24027,True
+gold_167,ماهواري دوران صفائي جو خاص خيال ڪيئن رکجي؟,Menstrual Health & Periods,844,844,0.34944,True
+gold_168,ڇا ماهواري دوران روزانو غسل ڪرڻ ٺيڪ آهي؟,Menstrual Health & Periods,1865,1865,0.39014,True
+gold_169,مون کي ماهواري دوران خارش ٿيندي آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menstrual Health & Periods,144,821,0.37218,False
+gold_170,ماهواري دوران بدبوءِ کان بچڻ لاءِ مون کي ڇا ڪرڻ گهرجي؟,Menstrual Health & Periods,1770,1770,0.01899,True
+gold_171,ڇا ماهواري دوران ورزش ڪرڻ ٺيڪ آهي؟,Menstrual Health & Periods,1589,174,0.50677,False
+gold_172,ماهواري دوران مون کي اسڪول يا ڪم تي ڌيان ڏيڻ مشڪل لڳي ٿو، مان ڇا ڪريان؟,Menstrual Health & Periods,821,821,0.1286,True
+gold_173,ڇا ماهواري دوران سفر ڪرڻ محفوظ آهي؟,Menstrual Health & Periods,14,218,0.05594,False
+gold_175,ماهواري دوران مون کي ڪهڙين ڳالهين جو خاص خيال رکڻ گهرجي؟,Menstrual Health & Periods,821,153,0.00591,False
+gold_176,مون کي ننڍين ننڍين ڳالهين تي به گهڻو ٽينشن ٿي ويندو آهي، مان ان کي ڪيئن گهٽ ڪريان؟,Mental Health & Emotional Well-being,254,384,0.02038,False
+gold_177,مان سڄو ڏينهن ڪنهن نه ڪنهن ڳالهه جي فڪر ۾ رهندي آهيان، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,254,956,0.00175,False
+gold_178,مون کي ايترو ذهني دٻاءُ آهي جو ڪنهن ڪم تي ڌيان نٿي ڏئي سگهان، ڇا ڪريان؟,Mental Health & Emotional Well-being,254,1591,0.03534,False
 gold_179,گهر ۽ ڪم جي ذميوارين سبب مان تمام گهڻو دٻاءُ محسوس ڪريان ٿي، ان کي ڪيئن سنڀاليان؟,Mental Health & Emotional Well-being,385,385,0.3404,True
-gold_180,مون کي هر وقت لڳي ٿو ته مان تمام گهڻا ڪم اڪيلي سنڀالي رهي آهيان، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,254,710,0.95527,False
-gold_184,مون کي رات جو ليٽڻ سان گهڻا فڪر اچن ٿا ۽ ننڊ نٿي اچي، ڇا ڪريان؟,Mental Health & Emotional Well-being,410,710,0.68424,False
+gold_180,مون کي هر وقت لڳي ٿو ته مان تمام گهڻا ڪم اڪيلي سنڀالي رهي آهيان، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,254,999,0.01359,False
+gold_184,مون کي رات جو ليٽڻ سان گهڻا فڪر اچن ٿا ۽ ننڊ نٿي اچي، ڇا ڪريان؟,Mental Health & Emotional Well-being,410,584,0.00048,False
 gold_186,مان بنا ڪنهن خاص سبب جي اداس رهندي آهيان، ڇا اهو عام آهي؟,Mental Health & Emotional Well-being,286,292,0.8288,False
 gold_187,مون کي ڪنهن به ڪم ۾ دل نٿي لڳي، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,286,710,0.83244,False
-gold_188,اڳ جيڪي شيون مون کي پسند هيون، هاڻي انهن ۾ به دلچسپي نٿي رهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Mental Health & Emotional Well-being,286,741,0.0323,False
-gold_189,مان اڪثر روئڻ لڳندي آهيان ۽ پاڻ کي تمام گهڻو اداس محسوس ڪندي آهيان، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,271,745,0.3894,False
-gold_191,مون کي رات جو ننڊ نٿي اچي ۽ صبح جو تمام ٿڪي اٿان ٿي، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,1247,710,0.65866,False
-gold_192,مان رات جو گهڻو سوچيندي رهندي آهيان، ان ڪري ننڊ نٿي اچي، ڇا ڪريان؟,Mental Health & Emotional Well-being,421,710,0.22832,False
+gold_188,اڳ جيڪي شيون مون کي پسند هيون، هاڻي انهن ۾ به دلچسپي نٿي رهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Mental Health & Emotional Well-being,286,664,0.004,False
+gold_189,مان اڪثر روئڻ لڳندي آهيان ۽ پاڻ کي تمام گهڻو اداس محسوس ڪندي آهيان، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,271,691,0.01633,False
+gold_191,مون کي رات جو ننڊ نٿي اچي ۽ صبح جو تمام ٿڪي اٿان ٿي، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,1247,581,0.40744,False
+gold_192,مان رات جو گهڻو سوچيندي رهندي آهيان، ان ڪري ننڊ نٿي اچي، ڇا ڪريان؟,Mental Health & Emotional Well-being,421,804,0.00024,False
 gold_194,منهنجي ننڊ جو معمول بلڪل خراب ٿي ويو آهي، ان کي واپس ٺيڪ ڪرڻ لاءِ ڇا ڪريان؟,Mental Health & Emotional Well-being,1247,1247,0.26749,True
-gold_195,مان رات دير تائين موبائل هلائيندي آهيان ۽ پوءِ ننڊ نٿي اچي، ڇا ان جو اثر ٿي سگهي ٿو؟,Mental Health & Emotional Well-being,410,1232,0.51429,False
+gold_195,مان رات دير تائين موبائل هلائيندي آهيان ۽ پوءِ ننڊ نٿي اچي، ڇا ان جو اثر ٿي سگهي ٿو؟,Mental Health & Emotional Well-being,410,416,0.43538,False
 gold_196,مون کي پنهنجي شڪل ۽ جسم بابت هر وقت خراب محسوس ٿيندو آهي، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,363,363,0.40482,True
 gold_197,مان هر وقت پاڻ کي ٻين عورتن سان ڀيٽيندي رهندي آهيان، ان عادت کي ڪيئن گهٽ ڪريان؟,Mental Health & Emotional Well-being,302,302,0.01587,True
 gold_200,مان هر ڳالهه تي پاڻ کي الزام ڏيندي رهندي آهيان، مان هن عادت مان ڪيئن نڪري سگهان ٿي؟,Mental Health & Emotional Well-being,297,209,0.00749,False
-gold_201,منهنجو مزاج اوچتو اوچتو بدلجي ويندو آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Mental Health & Emotional Well-being,282,121,0.97849,False
-gold_202,ماهواري کان اڳ مان تمام گهڻي چڙچڙي ٿي ويندي آهيان، ان کي ڪيئن گهٽ ڪريان؟,Mental Health & Emotional Well-being,834,1850,0.02941,False
+gold_201,منهنجو مزاج اوچتو اوچتو بدلجي ويندو آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Mental Health & Emotional Well-being,282,803,0.00218,False
+gold_202,ماهواري کان اڳ مان تمام گهڻي چڙچڙي ٿي ويندي آهيان، ان کي ڪيئن گهٽ ڪريان؟,Mental Health & Emotional Well-being,834,174,0.00042,False
 gold_203,مون کي ڪڏهن ڏاڍي خوشي ٿيندي آهي ته ڪڏهن اوچتو تمام اداس ٿي ويندي آهيان، ڇا اهو عام آهي؟,Mental Health & Emotional Well-being,282,292,0.97747,False
 gold_205,مان بنا ڪنهن سبب جي تمام جلدي چڙچي ٿي وڃان ٿي، ڇا ننڊ يا دٻاءُ ان جو سبب ٿي سگهي ٿو؟,Mental Health & Emotional Well-being,282,116,0.89398,False
-gold_206,مون کي پنهنجا مسئلا ڪنهن سان شيئر ڪرڻ ۾ به ڊپ لڳي ٿو، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,271,630,0.7074,False
-gold_207,مان پنهنجي گهر ۽ ڪم جي مسئلن سبب اندر ئي اندر تمام گهڻو پريشان رهندي آهيان، ڪنهن سان ڳالهائڻ گهرجي؟,Mental Health & Emotional Well-being,274,692,0.13319,False
-gold_210,جيڪڏهن منهنجي اداسي ۽ پريشاني روزاني زندگي تي اثر وجهي رهي هجي ته مون کي ڇا ڪرڻ گهرجي؟,Mental Health & Emotional Well-being,280,710,0.61734,False
+gold_206,مون کي پنهنجا مسئلا ڪنهن سان شيئر ڪرڻ ۾ به ڊپ لڳي ٿو، مان ڇا ڪريان؟,Mental Health & Emotional Well-being,271,710,0.63377,False
+gold_207,مان پنهنجي گهر ۽ ڪم جي مسئلن سبب اندر ئي اندر تمام گهڻو پريشان رهندي آهيان، ڪنهن سان ڳالهائڻ گهرجي؟,Mental Health & Emotional Well-being,274,274,0.00044,True
+gold_210,جيڪڏهن منهنجي اداسي ۽ پريشاني روزاني زندگي تي اثر وجهي رهي هجي ته مون کي ڇا ڪرڻ گهرجي؟,Mental Health & Emotional Well-being,280,280,0.04572,True
 gold_211,مان هر وقت ڪمزوري محسوس ڪريان ٿي، مون کي ڇا کائڻ گهرجي ته طاقت اچي؟,Women's Nutrition & Wellness,1061,610,0.07353,False
-gold_212,مان جلدي ٿڪي پوان ٿي ۽ جسم ۾ طاقت نٿي رهي، ڇا منهنجي خوراڪ جو به ان سان تعلق ٿي سگهي ٿو؟,Women's Nutrition & Wellness,1060,1043,0.60858,False
-gold_213,روزاني صحت لاءِ مون کي ڪهڙيون شيون پنهنجي کاڌي ۾ ضرور شامل ڪرڻ گهرجن؟,Women's Nutrition & Wellness,1000,1189,0.00286,False
-gold_214,مان اڪثر کاڌو ڇڏي ڏيندي آهيان، ڇا ان سان ڪمزوري ٿي سگهي ٿي؟,Women's Nutrition & Wellness,1023,1023,0.85478,True
-gold_215,مون کي بک ته لڳي ٿي پر مان صحتمند شيون چونڊڻ نٿي ڄاڻان، مان ڇا کائان؟,Women's Nutrition & Wellness,1006,630,0.06733,False
-gold_216,مون کي هر وقت ڪمزوري ۽ چڪر اچن ٿا، ڇا منهنجي جسم ۾ رت جي گهٽتائي ٿي سگهي ٿي؟,Women's Nutrition & Wellness,1050,1060,0.43013,False
+gold_212,مان جلدي ٿڪي پوان ٿي ۽ جسم ۾ طاقت نٿي رهي، ڇا منهنجي خوراڪ جو به ان سان تعلق ٿي سگهي ٿو؟,Women's Nutrition & Wellness,1060,348,0.00099,False
+gold_213,روزاني صحت لاءِ مون کي ڪهڙيون شيون پنهنجي کاڌي ۾ ضرور شامل ڪرڻ گهرجن؟,Women's Nutrition & Wellness,1000,1215,0.0019,False
+gold_214,مان اڪثر کاڌو ڇڏي ڏيندي آهيان، ڇا ان سان ڪمزوري ٿي سگهي ٿي؟,Women's Nutrition & Wellness,1023,821,0.71736,False
+gold_215,مون کي بک ته لڳي ٿي پر مان صحتمند شيون چونڊڻ نٿي ڄاڻان، مان ڇا کائان؟,Women's Nutrition & Wellness,1006,638,0.00209,False
+gold_216,مون کي هر وقت ڪمزوري ۽ چڪر اچن ٿا، ڇا منهنجي جسم ۾ رت جي گهٽتائي ٿي سگهي ٿي؟,Women's Nutrition & Wellness,1050,513,0.00971,False
 gold_217,منهنجي ماهواري تمام گهڻي ٿئي ٿي ۽ پوءِ مون کي ڪمزوري محسوس ٿيندي آهي، مان ڇا کائان؟,Women's Nutrition & Wellness,821,821,0.99245,True
-gold_218,لوهه جي کوٽ کان بچڻ لاءِ ڪهڙيون شيون کائڻ گهرجن؟,Women's Nutrition & Wellness,1206,1052,8e-05,False
+gold_218,لوهه جي کوٽ کان بچڻ لاءِ ڪهڙيون شيون کائڻ گهرجن؟,Women's Nutrition & Wellness,1206,683,2e-05,False
 gold_219,مان لوهه جون گوريون پاڻمرادو وٺڻ شروع ڪريان ڇا؟,Women's Nutrition & Wellness,638,638,0.00489,True
 gold_220,لوهه واري خوراڪ سان گڏ ڪهڙي شيءِ کائڻ سان جسم کي لوهه جذب ڪرڻ ۾ مدد ملي ٿي؟,Women's Nutrition & Wellness,1051,1052,0.08458,False
 gold_221,منهنجا هڏا ۽ جسم ڪمزور محسوس ٿين ٿا، هڏن کي مضبوط رکڻ لاءِ ڇا کائان؟,Women's Nutrition & Wellness,1067,1351,0.03945,False
 gold_222,عورتن لاءِ ڪيلشيم ڇو ضروري آهي؟,Women's Nutrition & Wellness,1068,1066,0.99854,False
-gold_223,مان کير نٿي پيئان، ڪيلشيم لاءِ ٻيون ڪهڙيون شيون کائي سگهان ٿي؟,Women's Nutrition & Wellness,1079,1079,0.10692,True
+gold_223,مان کير نٿي پيئان، ڪيلشيم لاءِ ٻيون ڪهڙيون شيون کائي سگهان ٿي؟,Women's Nutrition & Wellness,1079,1373,0.00091,False
 gold_224,وٽامن ڊي جي کوٽ کان ڪيئن بچي سگهجي ٿو؟,Women's Nutrition & Wellness,1070,1581,0.03763,False
-gold_225,عمر وڌڻ سان هڏن کي مضبوط رکڻ لاءِ مون کي ڇا ڪرڻ گهرجي؟,Women's Nutrition & Wellness,1163,1221,0.23791,False
-gold_226,مون کي سڄو ڏينهن پاڻي گهٽ پيئڻ جي عادت آهي، ان سان جسم تي ڇا اثر پئجي سگهي ٿو؟,Women's Nutrition & Wellness,1216,1108,0.55763,False
+gold_225,عمر وڌڻ سان هڏن کي مضبوط رکڻ لاءِ مون کي ڇا ڪرڻ گهرجي؟,Women's Nutrition & Wellness,1163,1163,0.00144,True
+gold_226,مون کي سڄو ڏينهن پاڻي گهٽ پيئڻ جي عادت آهي، ان سان جسم تي ڇا اثر پئجي سگهي ٿو؟,Women's Nutrition & Wellness,1216,621,0.00135,False
 gold_227,مون کي بار بار مٿي جو سور ٿيندو آهي ۽ پاڻي به گهٽ پيئندي آهيان، ڇا ٻنهي جو تعلق ٿي سگهي ٿو؟,Women's Nutrition & Wellness,1108,732,0.82441,False
 gold_228,روزانو مون کي ڪيترو پاڻي پيئڻ گهرجي؟,Women's Nutrition & Wellness,1103,621,0.9162,False
-gold_229,گرمي ۾ مون کي گهڻو پسينو اچي ٿو، اهڙي وقت پاڻ کي پاڻي جي کوٽ کان ڪيئن بچايان؟,Women's Nutrition & Wellness,1106,644,0.06138,False
+gold_229,گرمي ۾ مون کي گهڻو پسينو اچي ٿو، اهڙي وقت پاڻ کي پاڻي جي کوٽ کان ڪيئن بچايان؟,Women's Nutrition & Wellness,1106,702,0.00046,False
 gold_230,ڇا چانهه ۽ ڪافي کي پاڻي جي جاءِ تي شمار ڪري سگهجي ٿو؟,Women's Nutrition & Wellness,1107,1110,0.00219,False
-gold_231,منهنجو وزن تيزي سان وڌي رهيو آهي، مان صحت مند طريقي سان وزن ڪيئن سنڀاليان؟,Women's Nutrition & Wellness,1225,1226,0.98439,False
-gold_232,مان وزن گهٽائڻ چاهيان ٿي پر هر قسم جي غذا آزمائڻ کان پوءِ به فائدو نٿو ٿئي، مان ڇا ڪريان؟,Women's Nutrition & Wellness,1226,864,0.03258,False
+gold_231,منهنجو وزن تيزي سان وڌي رهيو آهي، مان صحت مند طريقي سان وزن ڪيئن سنڀاليان؟,Women's Nutrition & Wellness,1225,1225,0.12358,True
+gold_232,مان وزن گهٽائڻ چاهيان ٿي پر هر قسم جي غذا آزمائڻ کان پوءِ به فائدو نٿو ٿئي، مان ڇا ڪريان؟,Women's Nutrition & Wellness,1226,942,0.0318,False
 gold_233,ڇا وزن گهٽائڻ لاءِ ماني يا چانور مڪمل طور ڇڏڻ ضروري آهي؟,Women's Nutrition & Wellness,1229,1229,0.11325,True
 gold_234,مان جلدي وزن گهٽائڻ چاهيان ٿي، ڇا تمام گهٽ کاڌو کائڻ ٺيڪ آهي؟,Women's Nutrition & Wellness,1229,1229,0.04756,True
 gold_235,مون کي سڄو ڏينهن ويهڻو پوي ٿو، وزن ۽ صحت لاءِ مان ڪهڙي سرگرمي ڪري سگهان ٿي؟,Women's Nutrition & Wellness,1174,1174,0.42877,True
-gold_236,مان رات دير تائين جاڳندي آهيان ۽ صبح جو ٿڪي اٿان ٿي، ننڊ بهتر ڪرڻ لاءِ ڇا ڪريان؟,Women's Nutrition & Wellness,410,1247,0.22566,False
-gold_237,مان سڄو ڏينهن ويٺي رهندي آهيان، روزاني صحت لاءِ مون کي ڪيتري جسماني سرگرمي ڪرڻ گهرجي؟,Women's Nutrition & Wellness,1158,938,0.39416,False
-gold_238,مان صحتمند زندگي شروع ڪرڻ چاهيان ٿي پر سمجهه ۾ نٿو اچي ته ڪٿان شروع ڪريان، مان ڇا ڪريان؟,Women's Nutrition & Wellness,1196,348,0.01871,False
-gold_246,منهنجي ماهواري ڪڏهن اچي ٿي ته ڪڏهن ڪيترائي مهينا نٿي اچي، ڇا مان مينوپاز جي ويجهو آهيان؟,Menopause & Menopausal Health,1334,817,0.86907,False
-gold_247,منهنجي عمر وڌڻ سان ماهواري بي قاعده ٿي وئي آهي، ڇا اهو مينوپاز جي نشاني ٿي سگهي ٿو؟,Menopause & Menopausal Health,1326,780,0.83575,False
+gold_236,مان رات دير تائين جاڳندي آهيان ۽ صبح جو ٿڪي اٿان ٿي، ننڊ بهتر ڪرڻ لاءِ ڇا ڪريان؟,Women's Nutrition & Wellness,410,1166,0.1238,False
+gold_237,مان سڄو ڏينهن ويٺي رهندي آهيان، روزاني صحت لاءِ مون کي ڪيتري جسماني سرگرمي ڪرڻ گهرجي؟,Women's Nutrition & Wellness,1158,1158,0.06274,True
+gold_238,مان صحتمند زندگي شروع ڪرڻ چاهيان ٿي پر سمجهه ۾ نٿو اچي ته ڪٿان شروع ڪريان، مان ڇا ڪريان؟,Women's Nutrition & Wellness,1196,1196,0.00458,True
+gold_246,منهنجي ماهواري ڪڏهن اچي ٿي ته ڪڏهن ڪيترائي مهينا نٿي اچي، ڇا مان مينوپاز جي ويجهو آهيان؟,Menopause & Menopausal Health,1334,1334,0.41943,True
+gold_247,منهنجي عمر وڌڻ سان ماهواري بي قاعده ٿي وئي آهي، ڇا اهو مينوپاز جي نشاني ٿي سگهي ٿو؟,Menopause & Menopausal Health,1326,825,0.62863,False
 gold_248,مينوپاز اصل ۾ ڇا هوندو آهي ۽ اهو ڪڏهن ٿيندو آهي؟,Menopause & Menopausal Health,1250,1250,0.9859,True
 gold_249,مون کي ڪيئن خبر پوندي ته منهنجو مينوپاز شروع ٿي رهيو آهي؟,Menopause & Menopausal Health,1285,643,0.99095,False
 gold_250,ڇا مينوپاز کان اڳ ماهواري ڪيترن مهينن لاءِ بند ٿي سگهي ٿي؟,Menopause & Menopausal Health,1491,1491,0.77284,True
-gold_251,مون کي اوچتو جسم ۾ تمام گهڻي گرمي محسوس ٿيندي آهي ۽ پوءِ پسينو اچي ويندو آهي، مان ڇا ڪريان؟,Menopause & Menopausal Health,594,121,0.2943,False
-gold_252,رات جو اوچتو تمام گهڻو پسينو اچي ٿو ۽ ننڊ کلي وڃي ٿي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menopause & Menopausal Health,1289,121,0.86908,False
-gold_253,مون کي ڏينهن ۾ ڪيترائي ڀيرا گرم لهرون اچن ٿيون، انهن کي گهٽ ڪرڻ لاءِ ڇا ڪريان؟,Menopause & Menopausal Health,1430,1431,0.03301,False
+gold_251,مون کي اوچتو جسم ۾ تمام گهڻي گرمي محسوس ٿيندي آهي ۽ پوءِ پسينو اچي ويندو آهي، مان ڇا ڪريان؟,Menopause & Menopausal Health,594,594,0.07026,True
+gold_252,رات جو اوچتو تمام گهڻو پسينو اچي ٿو ۽ ننڊ کلي وڃي ٿي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menopause & Menopausal Health,1289,1289,0.23585,True
+gold_253,مون کي ڏينهن ۾ ڪيترائي ڀيرا گرم لهرون اچن ٿيون، انهن کي گهٽ ڪرڻ لاءِ ڇا ڪريان؟,Menopause & Menopausal Health,1430,1430,0.00783,True
 gold_254,گرم لهر اچڻ وقت مان ڪهڙي ڳالهه جو خيال رکان؟,Menopause & Menopausal Health,1429,1286,0.00579,False
-gold_255,ڇا چانهه يا ڪافي پيئڻ سان گرم لهرون وڌيڪ ٿي سگهن ٿيون؟,Menopause & Menopausal Health,616,1316,0.04424,False
+gold_255,ڇا چانهه يا ڪافي پيئڻ سان گرم لهرون وڌيڪ ٿي سگهن ٿيون؟,Menopause & Menopausal Health,616,616,0.04051,True
 gold_256,مينوپاز کان پوءِ مون کي رات جو ننڊ نٿي اچي، مان ڇا ڪريان؟,Menopause & Menopausal Health,1291,1291,0.89621,True
-gold_257,رات جو بار بار ننڊ کلي وڃي ٿي ۽ پوءِ ننڊ نٿي اچي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menopause & Menopausal Health,1291,415,0.10271,False
+gold_257,رات جو بار بار ننڊ کلي وڃي ٿي ۽ پوءِ ننڊ نٿي اچي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menopause & Menopausal Health,1291,420,0.0449,False
 gold_258,رات جو پسيني سبب منهنجي ننڊ خراب ٿي وئي آهي، مان ان کي ڪيئن سنڀاليان؟,Menopause & Menopausal Health,1289,1289,0.17861,True
 gold_259,مينوپاز دوران مان جلدي چڙچي ٿي وڃان ٿي، ڇا هارمونن جي تبديلي سبب ٿي سگهي ٿو؟,Menopause & Menopausal Health,1259,1259,0.87075,True
 gold_261,مينوپاز کان پوءِ شرمگاهه ۾ خشڪي محسوس ٿئي ٿي، ان لاءِ ڇا ڪريان؟,Menopause & Menopausal Health,1422,1785,0.90102,False
 gold_264,مينوپاز کان پوءِ پيشاب وقت ساڙ ٿيندي آهي، ڇا اهو هارمونن جي تبديلي سبب ٿي سگهي ٿو؟,Menopause & Menopausal Health,1303,1259,0.94573,False
-gold_265,مينوپاز کان پوءِ هڏن کي مضبوط رکڻ لاءِ مون کي ڇا کائڻ گهرجي؟,Menopause & Menopausal Health,1374,610,0.19016,False
+gold_265,مينوپاز کان پوءِ هڏن کي مضبوط رکڻ لاءِ مون کي ڇا کائڻ گهرجي؟,Menopause & Menopausal Health,1374,1456,0.01492,False
 gold_266,ڇا مينوپاز کان پوءِ هڏا ڪمزور ٿيڻ جو خطرو وڌي ويندو آهي؟,Menopause & Menopausal Health,1947,1947,0.99424,True
 gold_267,هڏن کي مضبوط رکڻ لاءِ ڪهڙي ورزش ڪرڻ گهرجي؟,Menopause & Menopausal Health,1163,1163,0.08275,True
-gold_268,مان کير نٿي پيئان، مينوپاز کان پوءِ ڪيلشيم ڪهڙين شين مان حاصل ڪري سگهان ٿي؟,Menopause & Menopausal Health,1993,1395,0.02543,False
+gold_268,مان کير نٿي پيئان، مينوپاز کان پوءِ ڪيلشيم ڪهڙين شين مان حاصل ڪري سگهان ٿي؟,Menopause & Menopausal Health,1993,1993,0.00478,True
 gold_269,مينوپاز کان پوءِ منهنجو وزن وڌي رهيو آهي، ان جو سبب ڇا ٿي سگهي ٿو؟,Menopause & Menopausal Health,1304,1304,0.99997,True
-gold_270,مينوپاز کان پوءِ پيٽ جي چوڌاري چرٻي وڌي رهي آهي، مان ڇا ڪريان؟,Menopause & Menopausal Health,1398,1785,0.15066,False
-gold_272,مينوپاز دوران صحتمند رهڻ لاءِ مون کي ڪهڙين عادتن جو خيال رکڻ گهرجي؟,Menopause & Menopausal Health,1901,1447,0.91063,False
-gold_274,مينوپاز دوران ڪهڙين شين کان پاسو ڪرڻ گهرجي؟,Menopause & Menopausal Health,1374,1490,0.11143,False
-gold_275,مينوپاز دوران مون کي ڪهڙي قسم جو کاڌو وڌيڪ کائڻ گهرجي؟,Menopause & Menopausal Health,1374,610,0.73893,False
+gold_270,مينوپاز کان پوءِ پيٽ جي چوڌاري چرٻي وڌي رهي آهي، مان ڇا ڪريان؟,Menopause & Menopausal Health,1398,1947,0.13114,False
+gold_272,مينوپاز دوران صحتمند رهڻ لاءِ مون کي ڪهڙين عادتن جو خيال رکڻ گهرجي؟,Menopause & Menopausal Health,1901,1901,0.048,True
+gold_274,مينوپاز دوران ڪهڙين شين کان پاسو ڪرڻ گهرجي؟,Menopause & Menopausal Health,1374,1250,0.00561,False
+gold_275,مينوپاز دوران مون کي ڪهڙي قسم جو کاڌو وڌيڪ کائڻ گهرجي؟,Menopause & Menopausal Health,1374,1304,0.00154,False
 gold_278,مينوپاز جون علامتون تمام گهڻيون آهن، ڇا مون کي ڊاڪٽر سان علاج بابت ڳالهائڻ گهرجي؟,Menopause & Menopausal Health,1482,1482,0.90153,True
-gold_279,مينوپاز دوران ڪهڙيون صحت جون جاچون وقت سر ڪرائڻ گهرجن؟,Menopause & Menopausal Health,1901,1424,0.16889,False
+gold_279,مينوپاز دوران ڪهڙيون صحت جون جاچون وقت سر ڪرائڻ گهرجن؟,Menopause & Menopausal Health,1901,1901,0.01458,True
 gold_280,مون ۾ پي سي او ايس جون علامتون آهن پر منهنجا ٽيسٽ نارمل اچن ٿا، ان جو مطلب ڇا آهي؟,PCOS & Hormonal Health,782,796,0.75211,False
-gold_281,پي سي او ايس جو علاج ڪيترو عرصو کلندو آهي؟,PCOS & Hormonal Health,953,807,0.95365,False
+gold_281,پي سي او ايس جو علاج ڪيترو عرصو کلندو آهي؟,PCOS & Hormonal Health,953,953,0.08058,True
 gold_285,حمل دوران پهرين چيڪ اپ ڪڏهن ڪرائڻ گهرجي؟,Pregnancy & Maternal Health,504,558,0.91593,False
-gold_286,منهنجي منهن تي وار وڌي رهيا آهن ۽ مهاسا به رهن ٿا، ڇا اهو هارمونل مسئلو ٿي سگهي ٿو؟,PCOS & Hormonal Health,753,888,0.63337,False
+gold_286,منهنجي منهن تي وار وڌي رهيا آهن ۽ مهاسا به رهن ٿا، ڇا اهو هارمونل مسئلو ٿي سگهي ٿو؟,PCOS & Hormonal Health,753,796,0.3586,False
 gold_287,ڇا PCOS ۾ باقاعده ورزش مدد ڪري سگهي ٿي؟,PCOS & Hormonal Health,864,1163,0.90318,False
-gold_288,ڇا PCOS هجڻ سان حامله ٿيڻ ۾ مشڪل ٿي سگهي ٿي؟,PCOS & Hormonal Health,1543,758,0.50606,False
-gold_289,مان ڪيئن سمجهان ته منهنجو ovulation جو وقت ڪهڙو آهي؟,Fertility & Reproductive Health,1722,8,0.14297,False
+gold_288,ڇا PCOS هجڻ سان حامله ٿيڻ ۾ مشڪل ٿي سگهي ٿي؟,PCOS & Hormonal Health,1543,1748,0.14987,False
+gold_289,مان ڪيئن سمجهان ته منهنجو ovulation جو وقت ڪهڙو آهي؟,Fertility & Reproductive Health,1722,1723,0.01516,False
 gold_290,ٻار ڪوشش ڪري رهيا آهيون، ڪيترا مهينا انتظار ڪرڻ کان پوءِ ڊاڪٽر سان صلاح ڪجي؟,Fertility & Reproductive Health,1592,1592,0.80501,True
 gold_291,ڪهڙي قسم جي انڊرويئر پائڻ گهرجي ته صحت لاءِ بهتر هجي؟,Vaginal & Personal Hygiene,1860,1860,0.99931,True
 gold_292,ماهواري دوران بدبو ٿئي ٿي، ان کي گهٽائڻ لاءِ ڇا ڪريان؟,Vaginal & Personal Hygiene,1770,1770,0.53862,True
 gold_293,بار بار خارش ٿئي ٿي، ڇا اهو infection جي نشاني ٿي سگهي ٿو؟,Vaginal & Personal Hygiene,1970,1970,0.97247,True
-gold_295,ماهواري دوران ڪهڙي کاڌي کان پاسو ڪرڻ گهرجي؟,Menstrual Health & Periods,93,623,0.45715,False
-gold_297,منهنجو پاڻ تي ڀروسو گهٽ ٿي رهيو آهي، ان کي بهتر ڪرڻ لاءِ ڇا ڪريان؟,Mental Health & Emotional Well-being,281,710,0.93769,False
+gold_295,ماهواري دوران ڪهڙي کاڌي کان پاسو ڪرڻ گهرجي؟,Menstrual Health & Periods,93,153,0.01756,False
+gold_297,منهنجو پاڻ تي ڀروسو گهٽ ٿي رهيو آهي، ان کي بهتر ڪرڻ لاءِ ڇا ڪريان؟,Mental Health & Emotional Well-being,281,957,0.01312,False
 gold_298,روزمره جي زندگي ۾ گھڻو ٽينشن رهي ٿو، ان کي گهٽائڻ لاءِ ڪهڙا طريقا آهن؟,Mental Health & Emotional Well-being,254,254,0.96458,True
 gold_299,روزانو ڪيترو پاڻي پيئڻ گهرجي؟,Women's Nutrition & Wellness,1103,1103,0.76491,True
-gold_300,قبض جي مسئلي کان بچڻ لاءِ ڪهڙي خوراڪ کائجي؟,Women's Nutrition & Wellness,583,610,0.00239,False
+gold_300,قبض جي مسئلي کان بچڻ لاءِ ڪهڙي خوراڪ کائجي؟,Women's Nutrition & Wellness,583,583,0.0014,True
 gold_301,ٿڪاوٽ ۽ ڪمزوري محسوس ٿئي ٿي، ڇا اهو خون جي گهٽتائي جي نشاني ٿي سگهي ٿي؟,Women's Nutrition & Wellness,618,618,0.88939,True
 gold_302,صحتمند طريقي سان وزن گهٽائڻ لاءِ ڪهڙا طريقا اختيار ڪجن؟,Women's Nutrition & Wellness,1226,1226,0.99646,True
-gold_303,روزاني متوازن خوراڪ ۾ ڪهڙيون شيون شامل هجڻ گهرجن؟,Women's Nutrition & Wellness,1000,1018,0.00252,False
+gold_303,روزاني متوازن خوراڪ ۾ ڪهڙيون شيون شامل هجڻ گهرجن؟,Women's Nutrition & Wellness,1000,1000,0.00129,True
 gold_304,هڏن جي مضبوطي لاءِ روزاني ڪيترو ڪلسيم گهرجي؟,Women's Nutrition & Wellness,1068,1068,0.83553,True
-gold_305,مينوپاز کان پوءِ وزن ڪنٽرول ۾ ڇو نه رهي رهيو آهي؟,Menopause & Menopausal Health,1304,1479,0.68194,False
-gold_306,مينوپاز دوران غصو جلدي اچي ٿو، ڇا اهو هارمونن سبب آهي؟,Menopause & Menopausal Health,1475,1275,0.91311,False
+gold_305,مينوپاز کان پوءِ وزن ڪنٽرول ۾ ڇو نه رهي رهيو آهي؟,Menopause & Menopausal Health,1304,1302,0.22858,False
+gold_306,مينوپاز دوران غصو جلدي اچي ٿو، ڇا اهو هارمونن سبب آهي؟,Menopause & Menopausal Health,1475,1259,0.20306,False
 gold_307,مينوپاز دوران رات جو بار بار اکون کلي وڃن ٿيون، ان جو سبب ڇا ٿي سگهي ٿو؟,Menopause & Menopausal Health,1291,1322,0.98696,False
