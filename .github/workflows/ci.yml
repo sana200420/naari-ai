@@ -27,3 +27,7 @@ jobs:
       - run: pytest retrieval/
       - run: pytest api/
       - run: python eval/run_danger_gate_eval.py --ci
+      # Precision counterpart to the recall check above: fails the build if
+      # the danger gate starts crying wolf on benign questions. See
+      # eval/run_negative_set_eval.py for why this matters as much as recall.
+      - run: python eval/run_negative_set_eval.py --ci

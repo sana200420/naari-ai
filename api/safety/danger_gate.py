@@ -4,17 +4,84 @@ Pure function over normalised text.
 No LLM, no retrieval, no network calls.
 A bug here has a physical consequence for a real woman.
 
-v2: 
+v2:
 - Canonical Sindhi escalation script from kb_safety_always_on.md
 - Sindhi keywords added for all 11 canonical categories
 - Embedding similarity detection added (Phase 1 requirement)
+
+v3 (this revision) — fixes two classes of bug found after rounds 3-6 of
+ad hoc patching pushed danger-set recall to 1.00 by memorising the exact
+miss sentences:
+
+1. FALSE POSITIVES from bare, generic single-word keywords. A word like
+   "بخار" (fever) alone matches any sentence containing it, including
+   benign dosage questions ("paracetamol dose for fever in pregnancy").
+   Fix: generic disease/symptom names must appear with a severity or
+   context qualifier (see docs/adr/0003-danger-gate-matching.md).
+
+2. FALSE NEGATIVES from exact-substring-only matching on multi-word
+   Sindhi phrases. Sindhi word order and connectors ("سان گڏ" vs a comma,
+   verb inflection) vary far more than the harvested miss sentences did,
+   so a phrase copied verbatim from one eval row does not generalise to
+   a differently-worded but clinically identical report. Fix: keyword
+   matching now also accepts a "significant-token" match — all
+   non-stopword tokens of a keyword phrase present in the query, in any
+   order — in addition to the exact-substring fast path. See
+   `_phrase_matches` and `docs/adr/0003-danger-gate-matching.md`.
+
+Neither fix touches the embedding path's *behaviour*; it only fixes a
+staleness bug where newly added keyword categories (rounds 3-6) were
+never added to the embedding reference-phrase list, so the semantic
+fallback had no way to catch paraphrases of them. The reference list is
+now derived automatically from DANGER_CATEGORIES so this cannot go
+stale again (see `_build_embedding_reference`).
 """
 
-import re
 import logging
-from retrieval.normalize import normalize_sd
+import re
 from dataclasses import dataclass
 from typing import Optional
+
+from retrieval.normalize import normalize_sd
+
+# Sindhi/Urdu function words that carry no clinical meaning on their own.
+# Used only to find the "significant" tokens of a multi-word keyword phrase
+# for the fallback token-bag match — never used to relax single-word
+# keywords, which must still match as an exact substring.
+_STOPWORDS = {
+    "سان", "گڏ", "کان", "پوءِ", "جو", "جي", "جا", "جن", "۾", "تي", "به",
+    "نه", "ٿي", "ٿو", "ٿئي", "وئي", "آهي", "آهن", "۽", "کي", "هي", "هو",
+    "ته", "جيڪو", "جيڪا", "ئي", "پيو", "پئي", "لاءِ", "مان", "کان",
+}
+_TOKEN_SPLIT_RE = re.compile(r"[^\w]+", re.UNICODE)
+
+
+def _significant_tokens(phrase: str) -> list[str]:
+    """Tokens of a normalised phrase with stopwords and single chars removed."""
+    tokens = [t for t in _TOKEN_SPLIT_RE.split(phrase) if t]
+    return [t for t in tokens if len(t) > 1 and t not in _STOPWORDS]
+
+
+def _phrase_matches(keyword_norm: str, text_norm: str) -> bool:
+    """
+    True if `keyword_norm` should be considered present in `text_norm`.
+
+    Fast path: exact substring (handles single words and phrases that are
+    typically written the same way every time, e.g. "خودڪشي").
+
+    Fallback: for multi-word phrases (2+ significant tokens), also match
+    if every significant token appears somewhere in the text, regardless
+    of order or connecting words. This is deliberately NOT applied to
+    single-token keywords — a lone generic word must still match exactly
+    as itself, never as a "bag of one token", so this fallback cannot
+    turn a single generic word into an even broader match.
+    """
+    if keyword_norm in text_norm:
+        return True
+    tokens = _significant_tokens(keyword_norm)
+    if len(tokens) < 2:
+        return False
+    return all(tok in text_norm for tok in tokens)
 
 # ── Escalation script — canonical Sindhi from kb_safety_always_on.md ─────────
 ESCALATION_SCRIPT = (
@@ -95,8 +162,14 @@ DANGER_CATEGORIES = {
     "fever": {
         "description": "Fever",
         "keywords_sindhi": [
-            "بخار", "تيز بخار", "سخت بخار", "ٿڌ سان بخار",
-            "بخار ويم کان پوءِ",
+            # NOTE: bare "بخار" (fever) was removed here — it matched any
+            # sentence merely mentioning fever, including benign medication-
+            # dosage questions ("paracetamol dose for fever in pregnancy",
+            # eval/negative_set_100.csv id 26). Every remaining entry pairs
+            # the word with a severity/duration/timing qualifier, which is
+            # the actual danger signal per kb_safety_always_on.md.
+            "تيز بخار", "سخت بخار", "ٿڌ سان بخار",
+            "بخار ويم کان پوءِ", "بخار لاهي نٿو اچي",
         ],
         "keywords_english": [
             "fever after delivery", "very high fever", "fever won't break",
@@ -198,6 +271,9 @@ DANGER_CATEGORIES = {
         "description": "Signs of blood clot in lungs — coughing blood, sudden chest pain with breathlessness",
         "keywords_sindhi": [
                                     "کنگهه سان گڏ رت جا ڦڙا", "سيني ۾ تيز ڇوب", "ڇاتيءَ ۾ تيز ڇوب",
+            # General form, not tied to one exact sentence: "cough" + "blood"
+            # together, in any order/connector (see _phrase_matches).
+            "کنگهه سان رت",
         ],
         "keywords_english": [
             "coughing blood", "blood in cough", "sudden chest pain breathing",
@@ -221,6 +297,11 @@ DANGER_CATEGORIES = {
         
             "پوري ڏينهن ۾ هڪ به دفعو پيشاب نه ڪيو آهي",
             "مٿي جي نرم جاءِ به هيٺ ڦِٿل محسوس ٿئي ٿي",
+            # General "urine" + "completely/not at all" + "not coming" form —
+            # word order and verb inflection vary a lot here (نه/نٿو، اچڻ/اچي),
+            # so this is a second, differently-worded phrasing rather than a
+            # fix aimed at one sentence.
+            "پيشاب بلڪل نه اچڻ",
         ],
         "keywords_english": [
             "no urine", "not urinating", "can't urinate", "no urine output",
@@ -231,6 +312,9 @@ DANGER_CATEGORIES = {
         "description": "New vaginal bleeding after menopause",
         "keywords_sindhi": [
                                     "ماهواري بند ٿيڻ کي ٻه سال", "ٻيهر رت اچڻ شروع",
+            # General form: menopause/period-stopped + bleeding, without
+            # requiring a specific elapsed-time phrase like "ٻه سال".
+            "ماهواري بند ٿيڻ کان پوءِ رت",
         ],
         "keywords_english": [
             "bleeding after menopause", "postmenopausal bleeding",
@@ -532,13 +616,11 @@ _embedder = None
 _danger_phrase_embeddings = None
 _danger_phrases = []
 
-DANGER_PHRASES_FOR_EMBEDDING = [
-    # Canonical Sindhi from kb_safety_always_on.md
-    "رت وهڻ", "سِر ۾ سخت سور", "اکين اڳيان ڌنڌ يا اونداهي",
-    "پيٽ ۾ سخت سور", "هٿن ۽ منهن جو سُڄڻ", "بخار",
-    "ٻار جو چرپر گهٽ ٿيڻ", "ساهه کڻڻ ۾ تڪليف",
-    "ويم کان پوءِ گهڻو رت وهڻ", "بدبودار پاڻي", "ڪَڙَ يا بيهوشي",
-    # English equivalents
+# A handful of canonical phrases kept separate from DANGER_CATEGORIES because
+# they describe the *general* symptom pattern rather than one category's
+# specific keyword list — extra semantic anchors, not a replacement for the
+# category keywords.
+_EXTRA_CANONICAL_PHRASES = [
     "heavy bleeding", "severe headache", "blurred vision",
     "severe abdominal pain", "swollen face and hands", "high fever",
     "baby not moving", "difficulty breathing",
@@ -546,7 +628,47 @@ DANGER_PHRASES_FOR_EMBEDDING = [
     "i want to die", "kill myself", "self harm",
 ]
 
-EMBEDDING_THRESHOLD = 0.75  # cosine similarity threshold
+
+def _build_embedding_reference() -> list[str]:
+    """
+    Build the list of reference phrases the embedder compares queries
+    against, from every keyword already declared in DANGER_CATEGORIES,
+    plus a few extra generic anchors.
+
+    This is generated fresh from DANGER_CATEGORIES rather than
+    hand-maintained, because a hand-maintained list *will* go stale: rounds
+    3-6 of danger-gate fixes added 18 new categories with dozens of Sindhi
+    keywords, and none of them were ever added to the old, separate
+    DANGER_PHRASES_FOR_EMBEDDING list. That meant the semantic fallback
+    could not catch paraphrases of any of those 18 categories — it was
+    silently running on an eleven-category reference set while the keyword
+    list had grown to forty. Deriving the list here makes that class of bug
+    structurally impossible: add a category, and its keywords are
+    immediately part of what the embedder can match against too.
+    """
+    phrases: list[str] = []
+    seen = set()
+    for cat in DANGER_CATEGORIES.values():
+        for kind in ("keywords_sindhi", "keywords_english"):
+            for kw in cat.get(kind, []):
+                if kw not in seen:
+                    seen.add(kw)
+                    phrases.append(kw)
+    for kw in _EXTRA_CANONICAL_PHRASES:
+        if kw not in seen:
+            seen.add(kw)
+            phrases.append(kw)
+    return phrases
+
+
+EMBEDDING_THRESHOLD = 0.75  # cosine similarity threshold — see NOTE below.
+# NOTE: this value was set once by guesswork, not by the method Lever 5
+# specifies (plot correct-vs-incorrect top-1 score distributions on the
+# gold set, and require >=90% of a negative set to fall below the low
+# threshold). eval/tune_embedding_threshold.py implements that method.
+# Run it and update this constant with the result — do not hand-tune this
+# number again without re-running that script, since it now also needs to
+# work against ~40 categories' worth of reference phrases, not 11.
 
 
 def _load_embedder():
@@ -558,7 +680,7 @@ def _load_embedder():
         from sentence_transformers import SentenceTransformer
         import numpy as np
         _embedder = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-        _danger_phrases = DANGER_PHRASES_FOR_EMBEDDING
+        _danger_phrases = _build_embedding_reference()
         _danger_phrase_embeddings = _embedder.encode(
             _danger_phrases, normalize_embeddings=True
         )
@@ -616,7 +738,7 @@ def run_danger_gate(text: str, use_embedding: bool = True) -> GateResult:
             + cat.get("keywords_urdu", [])
         )
         for kw in all_keywords:
-            if normalize_sd(kw) in norm:
+            if _phrase_matches(normalize_sd(kw), norm):
                 return GateResult(
                     escalate=True,
                     category=cat_name,
