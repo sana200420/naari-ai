@@ -34,7 +34,7 @@ DANGER_CATEGORIES = {
         "description": "Any bleeding during pregnancy or heavy postpartum bleeding",
         "keywords_sindhi": [
             "رت وهڻ", "گھڻو رت", "تيز رت", "رت بند نٿو ٿئي",
-            "ويم کان پوءِ گهڻو رت وهڻ", "پيڊ ڀرجي وڃي", "پيڊ پوريءَ ريت ڀرجي وڃي",
+            "ويم کان پوءِ گهڻو رت وهڻ", "پيڊ ڀرجي وڃي", "پيڊ پوريءَ ريت ڀرجي وڃي", "گهاٽو رت نڪري رهيو آهي",
         ],
         "keywords_english": [
             "heavy bleeding", "soaking pads", "bleeding won't stop",
@@ -333,7 +333,7 @@ DANGER_PHRASES_FOR_EMBEDDING = [
     "i want to die", "kill myself", "self harm",
 ]
 
-EMBEDDING_THRESHOLD = 0.75  # cosine similarity threshold
+EMBEDDING_THRESHOLD = 0.65  # cosine similarity threshold
 
 
 def _load_embedder():
