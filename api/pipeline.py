@@ -13,27 +13,32 @@ from api.routers.ask import AskRequest, AskResponse
 BAND_HIGH = "high"
 BAND_MID = "mid"
 BAND_LOW = "low"
+BAND_CONFIRM = "confirm"
 
 # One definition, because two paths need to *recognise* it, not just emit it.
 _REFUSAL = "معاف ڪجو، مون وٽ هن سوال جو جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو."
 
 _logger = logging.getLogger("naari.pipeline")
 
-TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
-
-# The high band used to assert the stored answer as fact. Cross-validation
-# (eval/results.md, Diagnostic 4) showed no threshold reaches 0.95 precision --
-# the ceiling is 83.6% at 24.6% coverage, and it *drops* at stricter cutoffs,
-# which is the signature of a real ceiling rather than an unexplored tradeoff.
-# Live, 4 of 11 menstruation questions came back verbatim/high and wrong: a
-# woman asking about nausea in her period was told about breastfeeding, stated
-# as fact.
+# Three tiers, measured on all 247 gold queries (eval/tau_high_sweep.csv):
 #
-# 83.6% precision is unacceptable for asserting and perfectly fine for
-# suggesting, so the high band now offers the matched question back for
-# confirmation. Set CONFIRM_HIGH_BAND=false to restore the old assert-verbatim
-# behaviour; it is a flag rather than a rewrite so the change is reversible
-# from a Space setting during a demo.
+#   score >= TAU_HIGH     assert the stored answer   26% of traffic, 84% precise
+#   TAU_CONFIRM..TAU_HIGH offer it for confirmation   17% of traffic, 49% precise
+#   TAU_LOW..TAU_CONFIRM  grounded generation, hedged
+#   below TAU_LOW         refuse honestly
+#
+# TAU_HIGH was 0.75, which asserted 42% of traffic at 70% precision -- 12.6% of
+# ALL queries answered incorrectly as verified fact. At 0.95 that falls to 4.0%.
+#
+# The middle tier exists because its precision is 0.488: a coin flip is the
+# worst thing to state as fact and the best thing to ask about. Setting
+# TAU_CONFIRM equal to TAU_HIGH collapses the tier and disables confirmation
+# entirely, which is how to turn this off without a code change.
+TAU_HIGH = float(os.getenv("TAU_HIGH", "0.95"))
+TAU_CONFIRM = float(os.getenv("TAU_CONFIRM", "0.75"))
+
+# Superseded by TAU_CONFIRM. Kept only so an existing CONFIRM_HIGH_BAND=false
+# in a deployment still disables confirmation rather than being ignored.
 CONFIRM_HIGH_BAND = os.getenv("CONFIRM_HIGH_BAND", "true").strip().lower() not in ("false", "0", "no")
 
 # KB answers are one or two sentences, which reads as curt for a health
@@ -109,8 +114,11 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     top_score = chunks[0]["score"] if chunks else 0.0
 
     # Stage 03: confidence band decision
+    confirm_floor = TAU_CONFIRM if CONFIRM_HIGH_BAND else TAU_HIGH
     if top_score >= TAU_HIGH and chunks:
         band = BAND_HIGH
+    elif top_score >= confirm_floor and chunks and chunks[0].get("question"):
+        band = BAND_CONFIRM
     elif top_score >= TAU_LOW and chunks:
         band = BAND_MID
     else:
@@ -135,7 +143,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     if band == BAND_HIGH:
         top = chunks[0]
         latency = round((time.time() - t0) * 1000, 2)
-        path = "confirm" if (CONFIRM_HIGH_BAND and top.get("question")) else "verbatim"
+        path = "verbatim"
 
         answer_text = top["text"]
         if ELABORATE_ANSWERS:
@@ -167,12 +175,30 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             disclaimer=False,
             retrieved_ids=[c["id"] for c in chunks],
             latency_ms=latency,
-            did_you_mean=top.get("question") if path == "confirm" else None,
-            # The answer is already retrieved, so it ships with this response
-            # and the frontend reveals it on "yes". A second round-trip would
-            # cost another ~4s on a rural connection for data we already hold.
-            alternatives=[c["question"] for c in chunks[1:4] if c.get("question")]
-            if path == "confirm" else [],
+        )
+
+    # Stage 05b: confirm band -> offer the matched question, do not assert
+    if band == BAND_CONFIRM:
+        top = chunks[0]
+        latency = round((time.time() - t0) * 1000, 2)
+        _log(query, [c["id"] for c in chunks], [top_score], BAND_CONFIRM,
+             "confirm", latency, "kb", request.session_id)
+        return AskResponse(
+            # The answer ships with this response so "yes" reveals it without a
+            # second round-trip -- that would cost several more seconds on a
+            # rural connection for data already in hand. Deliberately NOT
+            # elaborated: spending an LLM call expanding an answer that is a
+            # coin flip to be right is the wrong place for it.
+            answer=top["text"],
+            audio_url=top.get("audio_url"),
+            path="confirm",
+            confidence_band=BAND_CONFIRM,
+            escalated=False,
+            disclaimer=False,
+            retrieved_ids=[c["id"] for c in chunks],
+            latency_ms=latency,
+            did_you_mean=top.get("question"),
+            alternatives=[c["question"] for c in chunks[1:4] if c.get("question")],
         )
 
     # Stage 06: mid band -> constrained generation
