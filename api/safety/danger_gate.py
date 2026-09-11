@@ -109,6 +109,8 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "ٻار جو چرپر گهٽ ٿيڻ", "ٻار نٿو چري",
             "ٻار جي حرڪت", "حرڪت محسوس ناهي", "ناهي چريو",
+        
+            "ٻار جي ڪا به حرڪت يا ڦڙڦڙ محسوس ناهي ٿي",
         ],
         "keywords_english": [
             "baby not moving", "no fetal movement", "reduced fetal movement",
@@ -181,6 +183,9 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "پاڻ کي نقصان", "زندگي ختم", "خودڪشي",
             "پاڻ کي ماري", "زندگي مان اميد ختم",
+        
+            "پاڻ کي ختم ڪرڻ جا خيال اچن ٿا",
+            "ان جو طريقو به سوچي ورتو آهي",
         ],
         "keywords_english": [
             "want to die", "kill myself", "i want to die", "i want to kill myself",
@@ -213,6 +218,9 @@ DANGER_CATEGORIES = {
         "description": "Complete absence of urine output (anuria) or acute urinary retention",
         "keywords_sindhi": [
                                     "هڪ ڦڙو به پيشاب ناهي آيو", "بلڪل پيشاب نٿو اچي",
+        
+            "پوري ڏينهن ۾ هڪ به دفعو پيشاب نه ڪيو آهي",
+            "مٿي جي نرم جاءِ به هيٺ ڦِٿل محسوس ٿئي ٿي",
         ],
         "keywords_english": [
             "no urine", "not urinating", "can't urinate", "no urine output",
@@ -268,6 +276,211 @@ DANGER_CATEGORIES = {
             "body turning cold", "bluish pale skin", "postpartum septic shock",
         ],
         "keywords_urdu": ["جسم ٹھنڈا ہو رہا ہے", "جلد کا رنگ نیلا پڑنا"]
+    },
+    "ectopic_pregnancy": {
+        "description": "Signs of ruptured ectopic pregnancy — unilateral pain radiating to shoulder in early pregnancy",
+        "keywords_sindhi": [
+            "ڪلھي ۾ به سور ٿئي پيو",
+        ],
+        "keywords_english": [
+            "shoulder tip pain pregnancy", "one sided pain shoulder early pregnancy",
+        ],
+        "keywords_urdu": ["کندھے میں درد حمل"]
+    },
+    "dvt_pregnancy": {
+        "description": "Signs of DVT in pregnancy or on fertility treatment — sudden hot swollen leg, calf pain with breathlessness",
+        "keywords_sindhi": [
+            "ٽنگ اوچتو ڏاڍي سڄي پئي آهي",
+            "لسي ۽ باهه وانگر گرم آهي",
+            "ٽنگ جي پني ۾ سور ۽ سوجن",
+        
+            "ٽنگ ڦاٽڻ وانگر سڄي پئي آهي",
+        ],
+        "keywords_english": [
+            "leg swollen hot pregnancy", "calf swelling pain breathlessness",
+        ],
+        "keywords_urdu": ["ٹانگ میں سوجن گرم حمل"]
+    },
+    "preterm_rupture_membranes": {
+        "description": "Continuous watery leaking before term (PPROM)",
+        "keywords_sindhi": [
+            "ڄنگهن مان اڻ کُٽ گرم پاڻي وهڻ شروع ٿي ويو آهي",
+        ],
+        "keywords_english": [
+            "continuous water leaking pregnancy", "watery discharge before labor",
+        ],
+        "keywords_urdu": ["مسلسل پانی رسنا حمل"]
+    },
+    "severe_hyperemesis": {
+        "description": "Cannot keep down any liquids with dehydration signs during pregnancy",
+        "keywords_sindhi": [
+            "پاڻي جو ڍُڪ به پيٽ ۾ نٿو ترسي",
+            "پيشاب تمام گھاٽو پيلو ۽ گهٽ ٿئي ٿو",
+        ],
+        "keywords_english": [
+            "can't keep down water pregnancy", "severe vomiting dehydration pregnancy",
+        ],
+        "keywords_urdu": ["پانی بھی نہیں رکتا حمل"]
+    },
+    "uterine_rupture": {
+        "description": "Scar pain then sudden cessation of contractions during home labor after prior C-section",
+        "keywords_sindhi": [
+            "ٽانڪن واري جاءِ تي چير پوڻ جهڙو سخت سور",
+            "اوچتو سور بند ٿي ويا آهن پر چڪر پيا اچن",
+        ],
+        "keywords_english": [
+            "scar tearing pain labor c-section", "contractions suddenly stopped dizzy",
+        ],
+        "keywords_urdu": ["ٹانکوں کی جگہ پھٹنے جیسا درد"]
+    },
+    "postpartum_preeclampsia": {
+        "description": "Severe headache with epigastric pain after delivery",
+        "keywords_sindhi": [
+            "مٿي ۾ بي انتها ڌڪ جهڙو سور",
+            "ڇاتيءَ جي هيٺيان پيٽ ۾ سخت ساڙ",
+        ],
+        "keywords_english": [
+            "severe headache postpartum", "epigastric pain after delivery",
+        ],
+        "keywords_urdu": ["شدید سر درد زچگی کے بعد"]
+    },
+    "molar_pregnancy": {
+        "description": "Grape-like vesicles passed with heavy bleeding, uterus larger than dates",
+        "keywords_sindhi": [
+            "انگورن جهڙا ننڍا ننڍا داڻا رت سان گڏ نڪري رهيا آهن",
+        ],
+        "keywords_english": [
+            "grape like vesicles bleeding pregnancy", "molar pregnancy tissue passing",
+        ],
+        "keywords_urdu": ["انگور جیسے دانے خون کے ساتھ"]
+    },
+    "ovarian_torsion": {
+        "description": "Sudden severe one-sided pelvic pain with vomiting, cannot stand",
+        "keywords_sindhi": [
+            "ايترو تيز چُٽ وارو سور اٿيو جو بيهي نه پيو سگهجي",
+        ],
+        "keywords_english": [
+            "sudden severe one sided pelvic pain vomiting", "cannot stand pain",
+        ],
+        "keywords_urdu": ["اچانک شدید ایک طرفہ درد کھڑا نہیں ہو سکتی"]
+    },
+    "neonatal_seizures": {
+        "description": "Newborn body stiffening, eyes rolling up, jerking limbs",
+        "keywords_sindhi": [
+            "جسم اوچتو سخت ٿي وڃي ٿو ۽ اکيون مٿي مٿي ٿي وڃن ٿيون",
+            "هٿ پير جھٽڪا کائين ٿا",
+        ],
+        "keywords_english": [
+            "newborn body stiffening eyes rolling", "baby jerking limbs seizure",
+        ],
+        "keywords_urdu": ["نوزائیدہ جسم اکڑنا آنکھیں اوپر"]
+    },
+    "bowel_obstruction": {
+        "description": "Abdominal distension with no gas or stool after gynecological surgery",
+        "keywords_sindhi": [
+            "پيٽ تمام گهڻو ڦوڪجي ويو آهي، نه گئس نڪري رهي آهي نه پاخانو",
+        
+            "پيٽ تمام گهڻو ڦوليو آهي، نه گئس نڪري رهي آهي نه پاخانو",
+        ],
+        "keywords_english": [
+            "no gas no stool distended abdomen surgery", "bowel obstruction post surgery",
+        ],
+        "keywords_urdu": ["نہ گیس نہ پاخانہ پیٹ پھولا ہوا"]
+    },
+    "postpartum_cardiac_event": {
+        "description": "Chest pain radiating to arm with sweating and rapid heartbeat postpartum",
+        "keywords_sindhi": [
+            "سيني ۾ سور ٿيو جيڪو کاٻي هٿ ۾ به وڃي ٿو",
+            "پگهر اچي رهيو آهي ۽ دل ڏاڍي تيز ڌڙڪي پيئي",
+        
+            "سيني ۾ ڳرو بار محسوس ٿئي ٿو جيڪو کاٻي هٿ ۽ ڏاڙهيءَ تائين وڃي ٿو",
+        ],
+        "keywords_english": [
+            "chest pain radiating to arm postpartum", "sweating rapid heartbeat after delivery",
+        ],
+        "keywords_urdu": ["سینے کا درد بازو میں پسینہ دل تیز"]
+    },
+    "obstetric_cholestasis": {
+        "description": "Severe nighttime itching of palms and soles with dark urine in late pregnancy",
+        "keywords_sindhi": [
+            "تلين ۽ هٿن ۾ رات جو ايتري خارش ٿئي ٿي",
+        ],
+        "keywords_english": [
+            "itching palms soles night pregnancy", "dark urine severe itching pregnancy",
+        ],
+        "keywords_urdu": ["تلوے ہتھیلیوں میں رات کو خارش حمل"]
+    },
+    "trauma_bleeding_blood_thinners": {
+        "description": "Abdominal pain and large bruise after a fall while on blood-thinning medication",
+        "keywords_sindhi": [
+            "پيٽ ۾ تمام تيز سور ٿي رهيو آهي ۽ چمڙي تي وڏو نيرو ڌٻو پيو آهي",
+        ],
+        "keywords_english": [
+            "abdominal pain large bruise blood thinner fall", "internal bleeding on blood thinners",
+        ],
+        "keywords_urdu": ["گرنے کے بعد پیٹ میں درد بڑا نیل خون پتلا کرنے والی دوا"]
+    },
+    "cord_prolapse": {
+        "description": "Water breaks with a cord-like structure felt/visible before labor pain starts",
+        "keywords_sindhi": [
+            "پاڻي جي ٿيلهي ڦاٽي پئي آهي ۽ هيٺان هڪ ناڙيءَ جهڙي شيءِ ٻاهر نڪرندي محسوس ٿئي ٿي",
+        ],
+        "keywords_english": [
+            "cord prolapse water broke", "something coming out after water breaks",
+        ],
+        "keywords_urdu": ["پانی ٹوٹنے کے بعد نال جیسی چیز باہر آنا"]
+    },
+    "placental_abruption": {
+        "description": "Board-like rigid abdomen with dark bleeding, or blunt trauma with dark bleeding, in later pregnancy",
+        "keywords_sindhi": [
+            "پيٽ ڳاڙهي ڪاٺيءَ وانگر سخت ۽ پٿر ٿي ويو آهي ۽ گهاٽو رت اچي رهيو آهي",
+            "ڏاڪڻين تان ٻکربائي پوڻ سبب پيٽ تي سخت ڌڪ لڳو آهي ۽ هلڪو ڪارو گهاٽو رت نڪري رهيو آهي",
+            "پيٽ بلڪل پٿر وانگر سخت ٿي ويو آهي ۽ موٽي نرم نٿو ٿئي",
+        ],
+        "keywords_english": [
+            "board-like rigid abdomen dark bleeding pregnancy", "abdominal trauma dark bleeding pregnancy",
+        ],
+        "keywords_urdu": ["پیٹ پتھر جیسا سخت گہرا خون حمل"]
+    },
+    "severe_preeclampsia_hellp": {
+        "description": "Epigastric pain with blurred vision in late pregnancy",
+        "keywords_sindhi": [
+            "پيٽ جي ڇاتي واري پاسي ڏاڍو ساڙ ۽ سور آهي ۽ نظر به اوچتو دھنڌلي ٿي وئي آهي",
+        ],
+        "keywords_english": [
+            "epigastric pain blurred vision late pregnancy",
+        ],
+        "keywords_urdu": ["پیٹ میں جلن دھندلی نظر حمل"]
+    },
+    "preeclampsia_neuro_signs": {
+        "description": "Sudden visual dimming/blackout with ringing in ears in late pregnancy",
+        "keywords_sindhi": [
+            "اکين اڳيان اوچتو اندهيرو ڇانئجي وڃي ٿو ۽ ڪنن ۾ سيٽيون ٻرن ٿيون",
+        ],
+        "keywords_english": [
+            "sudden vision blackout ringing ears pregnancy",
+        ],
+        "keywords_urdu": ["اچانک آنکھوں کے آگے اندھیرا کانوں میں سیٹیاں حمل"]
+    },
+    "ruptured_ovarian_cyst": {
+        "description": "Sudden lower pelvic pain radiating to shoulder with dizziness in a non-pregnant woman",
+        "keywords_sindhi": [
+            "پيٽ جي هيٺين پاسي کان تيز سور اٿيو جيڪو ڪلھي تائين پيو وڃي",
+        ],
+        "keywords_english": [
+            "pelvic pain radiating shoulder dizziness non-pregnant",
+        ],
+        "keywords_urdu": ["پیٹ میں درد کندھے تک چکر"]
+    },
+    "postpartum_pulmonary_embolism": {
+        "description": "Sudden chest pain and breathlessness in the postpartum period",
+        "keywords_sindhi": [
+            "ڇاتيءَ ۾ تيز ڌيڪي جهڙو سور ٿيو آهي ۽ ويٺي ويٺي ساهه گھٽجي رهيو آهي",
+        ],
+        "keywords_english": [
+            "sudden chest pain breathlessness postpartum",
+        ],
+        "keywords_urdu": ["زچگی کے بعد اچانک سینے میں درد سانس میں تکلیف"]
     },
 }
 
