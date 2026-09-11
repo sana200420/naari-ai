@@ -661,14 +661,40 @@ def _build_embedding_reference() -> list[str]:
     return phrases
 
 
-EMBEDDING_THRESHOLD = 0.75  # cosine similarity threshold — see NOTE below.
-# NOTE: this value was set once by guesswork, not by the method Lever 5
-# specifies (plot correct-vs-incorrect top-1 score distributions on the
-# gold set, and require >=90% of a negative set to fall below the low
-# threshold). eval/tune_embedding_threshold.py implements that method.
-# Run it and update this constant with the result — do not hand-tune this
-# number again without re-running that script, since it now also needs to
-# work against ~40 categories' worth of reference phrases, not 11.
+EMBEDDING_THRESHOLD = 0.90  # cosine similarity threshold — see NOTE below.
+# NOTE: measured via eval/tune_embedding_threshold.py against the live
+# model and the real negative/danger sets (2026-09, on the auto-derived
+# 276-phrase reference list from _build_embedding_reference()):
+#
+#   threshold | danger recall (embedding-dependent rows) | negative FP rate
+#     0.86    |  1.000                                    |  0.150
+#     0.88    |  0.667                                    |  0.130
+#     0.90    |  0.333                                    |  0.130
+#     0.92    |  0.000                                    |  0.100
+#     0.96    |  0.000                                    |  0.030
+#
+# There is no threshold in the scanned range where both recall and
+# precision are acceptable — it's a cliff, not a dial. Only 3/100 danger
+# rows in the gold set actually depend on the embedding path (the keyword
+# + token-bag path alone already gets 97/100), while every threshold that
+# keeps that recall at 1.00 also false-positives on 15%+ of the negative
+# set. 0.90 is chosen to bias toward precision: it accepts losing most of
+# the embedding path's already-small recall contribution in exchange for
+# keeping the false-positive rate closer to (though still above) the 5%
+# target, rather than accepting a health product that cries "emergency"
+# on roughly 1 in 7 ordinary questions.
+#
+# This is a real product limitation, not a solved problem: the underlying
+# cause is that _build_embedding_reference() pools all ~276 category
+# keywords into one flat reference set, and a generic multilingual
+# sentence embedder doesn't reliably separate "mentions this symptom" from
+# "is acutely experiencing this symptom as an emergency" in Sindhi at any
+# single threshold. The real fix is curating/trimming the reference set
+# (fewer, more clinically distinctive anchor phrases per category, maybe
+# per-category thresholds) rather than a further global threshold search
+# — see docs/adr/0003-danger-gate-matching.md for the follow-up plan.
+# Re-run eval/tune_embedding_threshold.py after any change to
+# DANGER_CATEGORIES or _build_embedding_reference() and update this table.
 
 
 def _load_embedder():

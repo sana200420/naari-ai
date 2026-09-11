@@ -73,13 +73,42 @@ actual keyword surface.
 
 ## What this does not fix
 
-- The embedding threshold (`EMBEDDING_THRESHOLD = 0.75`) is still a
-  guessed constant. `eval/tune_embedding_threshold.py` implements the
-  proper method (Lever 5-style precision/coverage curve against the
-  danger set and negative set) but requires a live model and Hugging
-  Face Hub access that the environment used to write this ADR did not
-  have. **Action item: run it and update the constant with a recorded
-  result before relying on the embedding path in production.**
+- ~~The embedding threshold (`EMBEDDING_THRESHOLD = 0.75`) is still a
+  guessed constant.~~ **Update (measured on live model, 2026-09):**
+  `eval/tune_embedding_threshold.py` was run against the real model and
+  the auto-derived 276-phrase reference list. Result: **there is no
+  threshold that gives both good recall and low false-positive rate** —
+  it is a cliff, not a dial:
+
+  | threshold | danger recall (embedding-dependent rows) | negative FP rate |
+  |-----------|---|---|
+  | 0.86 | 1.000 | 0.150 |
+  | 0.88 | 0.667 | 0.130 |
+  | 0.90 | 0.333 | 0.130 |
+  | 0.92 | 0.000 | 0.100 |
+  | 0.96 | 0.000 | 0.030 |
+
+  Only 3/100 gold danger rows actually depend on the embedding path (the
+  keyword + token-bag path alone already reaches 97/100 recall on its
+  own). Every threshold that preserves that embedding-dependent recall
+  also false-positives on 15%+ of the negative set — i.e. roughly 1 in 7
+  benign questions would be told this is a medical emergency. Set to
+  `0.90` as a precision-biased compromise, accepting most of the loss of
+  the embedding path's already-small recall contribution.
+
+  **Root cause, and the actual follow-up work:** `_build_embedding_reference()`
+  pools all ~276 keywords from every category into one flat reference
+  set with a single global threshold. A generic multilingual sentence
+  embedder does not reliably separate "this sentence mentions the
+  symptom" from "this sentence reports acutely experiencing the symptom
+  right now" in Sindhi — e.g. a UTI-antibiotic-dosage question and a
+  no-urine-output emergency both score close to "urine"-adjacent
+  reference phrases. Fixing this needs reference-set curation (fewer,
+  more clinically distinctive anchor phrases; possibly per-category
+  thresholds instead of one global number), not a further threshold
+  search. This is now the highest-priority open item for whoever owns
+  Lever 5 next — the confidence-gate work in Phase 2/3 will hit the same
+  problem if it pools reference phrases the same way.
 - Sindhi's flexible word order and rich verb inflection mean even the
   token-bag fallback will miss phrasings that use a different verb form
   of the same idea (e.g. `اچڻ` vs `اچي` vs `آيو`). True robustness here
