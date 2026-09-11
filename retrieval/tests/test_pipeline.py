@@ -285,3 +285,24 @@ def test_search_cascade_tau_is_independent_of_tau_high():
     )
 
     assert translated == []
+
+
+def test_promoted_row_keeps_the_reranker_score_which_the_bands_depend_on():
+    # When the guard promotes fusion's pick, the row keeps the RERANKER's low
+    # score. That is not a bug to tidy away: api/pipeline.py's confidence bands
+    # are calibrated on it, because it encodes whether fusion and the reranker
+    # agreed. Measured precision by band: 0.844 / 0.488 / 0.472 / 0.368
+    # (eval/gold_top1_scores.csv). Rescoring the promoted row here would
+    # silently invalidate that calibration.
+    retriever = _FakeRetriever(sd_dense=[_row(1, score=0.9), _row(2, score=0.8)])
+
+    result = search(
+        "query", retriever=retriever,
+        rerank_fn=_fake_rerank({1: 0.24, 2: 0.99}),
+        translate_fn=_fake_translate, tau_high=0.0,
+    )
+
+    assert result["results"][0]["answer_id"] == 1      # fusion's pick wins
+    assert result["results"][0]["score"] == 0.24       # ...keeping the low score
+    # and so the list is ordered by rank, not by descending score
+    assert result["results"][1]["score"] > result["results"][0]["score"]
