@@ -34,7 +34,7 @@ DANGER_CATEGORIES = {
         "description": "Any bleeding during pregnancy or heavy postpartum bleeding",
         "keywords_sindhi": [
             "رت وهڻ", "گھڻو رت", "تيز رت", "رت بند نٿو ٿئي",
-            "ويم کان پوءِ گهڻو رت وهڻ", "پيڊ ڀرجي وڃي",
+            "ويم کان پوءِ گهڻو رت وهڻ", "پيڊ ڀرجي وڃي", "پيڊ پوريءَ ريت ڀرجي وڃي",
         ],
         "keywords_english": [
             "heavy bleeding", "soaking pads", "bleeding won't stop",
@@ -70,12 +70,12 @@ DANGER_CATEGORIES = {
         "description": "Severe abdominal or pelvic pain",
         "keywords_sindhi": [
             "پيٽ ۾ سخت سور", "سخت درد", "تيز درد", "اڻ سهڻو درد",
-            "سيخ وانگر سور", "نچوڙيندڙ سور",
+            "سيخ وانگر سور", "نچوڙيندڙ سور", "هٿ لائڻ نٿو ڏئي",
         ],
         "keywords_english": [
             "severe pain", "unbearable pain", "sudden pain",
             "sharp pain", "excruciating", "worst pain",
-            "severe abdominal pain",
+            "severe abdominal pain", "abdomen guarding", "can't touch abdomen",
         ],
         "keywords_urdu": ["شدید درد", "ناقابل برداشت درد", "اچانک درد"]
     },
@@ -156,7 +156,7 @@ DANGER_CATEGORIES = {
     "infant_danger": {
         "description": "Danger signs in newborn",
         "keywords_sindhi": [
-            "نوزائيده خطرو", "کير پيئڻ ڇڏي ڏنو",
+            "نوزائيده خطرو", "کير پيئڻ ڇڏي ڏنو", "تليون پيليون",
         ],
         "keywords_english": [
             "baby not breathing", "newborn not feeding", "baby yellow",
@@ -185,6 +185,66 @@ DANGER_CATEGORIES = {
             "suicide", "no reason to live",
         ],
         "keywords_urdu": ["مرنا چاہتی ہوں", "خود کو نقصان", "زندگی ختم کرنا"]
+    },
+    "pulmonary_embolism": {
+        "description": "Signs of blood clot in lungs — coughing blood, sudden chest pain with breathlessness",
+        "keywords_sindhi": [
+                                    "کنگهه سان گڏ رت جا ڦڙا", "سيني ۾ تيز ڇوب", "ڇاتيءَ ۾ تيز ڇوب",
+        ],
+        "keywords_english": [
+            "coughing blood", "blood in cough", "sudden chest pain breathing",
+        ],
+        "keywords_urdu": ["کھانسی میں خون", "سینے میں اچانک درد"]
+    },
+    "anaphylaxis": {
+        "description": "Signs of severe allergic reaction — swelling of lips/tongue/throat, breathing difficulty",
+        "keywords_sindhi": [
+                                    "چپ ۽ زبان سڄي", "منهن ۽ نڙي سوجي", "نڙيءَ ۾ سوڙهاڻ",
+        ],
+        "keywords_english": [
+            "lip swelling", "tongue swelling", "throat tightness", "allergic reaction breathing",
+        ],
+        "keywords_urdu": ["ہونٹ سوجن", "گلا تنگ ہونا", "الرجک ردعمل"]
+    },
+    "no_urine_output": {
+        "description": "Complete absence of urine output (anuria) or acute urinary retention",
+        "keywords_sindhi": [
+                                    "هڪ ڦڙو به پيشاب ناهي آيو", "بلڪل پيشاب نٿو اچي",
+        ],
+        "keywords_english": [
+            "no urine", "not urinating", "can't urinate", "no urine output",
+        ],
+        "keywords_urdu": ["پیشاب نہیں آ رہا", "پیشاب بند"]
+    },
+    "postmenopausal_bleeding": {
+        "description": "New vaginal bleeding after menopause",
+        "keywords_sindhi": [
+                                    "ماهواري بند ٿيڻ کي ٻه سال", "ٻيهر رت اچڻ شروع",
+        ],
+        "keywords_english": [
+            "bleeding after menopause", "postmenopausal bleeding",
+        ],
+        "keywords_urdu": ["مینوپاز کے بعد خون", "ماہواری بند ہونے کے بعد خون"]
+    },
+    "diabetic_emergency": {
+        "description": "Signs of diabetic ketoacidosis — persistent vomiting with severe thirst",
+        "keywords_sindhi": [
+                                    "مسلسل الٽيون، سخت اڃ",
+        ],
+        "keywords_english": [
+            "persistent vomiting severe thirst", "diabetic emergency", "ketoacidosis",
+        ],
+        "keywords_urdu": ["مسلسل قے شدید پیاس", "شوگر ایمرجنسی"]
+    },
+    "postpartum_mental_health_crisis": {
+        "description": "Postpartum psychosis or severe mental health crisis — distinct from suicidal ideation",
+        "keywords_sindhi": [
+                                    "عجب آواز ٻڌڻ", "ننڊ بلڪل ناهي آئي", "ٻار کي نقصان پهچايان", "ٻار کي ڪجهه ناهوسات",
+        ],
+        "keywords_english": [
+            "postpartum insomnia severe", "hearing voices postpartum", "detached from baby",
+        ],
+        "keywords_urdu": ["ڈلیوری کے بعد نیند نہیں", "بچے سے لگاؤ نہیں"]
     },
 }
 
