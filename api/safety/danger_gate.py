@@ -379,6 +379,7 @@ DANGER_CATEGORIES = {
             "ٽنگ جي پني ۾ سور ۽ سوجن",
         
             "ٽنگ ڦاٽڻ وانگر سڄي پئي آهي",
+            "گهوٽي واري ٽنگ ۾ سخت سور",
         ],
         "keywords_english": [
             "leg swollen hot pregnancy", "calf swelling pain breathlessness",
@@ -504,13 +505,26 @@ DANGER_CATEGORIES = {
         ],
         "keywords_urdu": ["گرنے کے بعد پیٹ میں درد بڑا نیل خون پتلا کرنے والی دوا"]
     },
+    "cervical_insufficiency_late_miscarriage": {
+        "description": "Bulging membranes / something protruding from the vagina with bleeding before 24 weeks",
+        "keywords_sindhi": [
+            "شرمگاهه مان ڪجهه ڳرو ٻاهر لٽڪندي محسوس ٿئي ٿو",
+            "شرمگاهه مان شئي ٻاهر لٽڪڻ",
+        ],
+        "keywords_english": [
+            "something bulging out of vagina pregnancy", "membrane bulging miscarriage",
+        ],
+        "keywords_urdu": ["اندام نہانی سے کوئی چیز باہر لٹکنا حمل"]
+    },
     "cord_prolapse": {
         "description": "Water breaks with a cord-like structure felt/visible before labor pain starts",
         "keywords_sindhi": [
             "پاڻي جي ٿيلهي ڦاٽي پئي آهي ۽ هيٺان هڪ ناڙيءَ جهڙي شيءِ ٻاهر نڪرندي محسوس ٿئي ٿي",
+            "ڌڙڪندڙ شئي ٻاهر نڪرندي محسوس ٿئي ٿي",
         ],
         "keywords_english": [
             "cord prolapse water broke", "something coming out after water breaks",
+            "pulsating thing coming out",
         ],
         "keywords_urdu": ["پانی ٹوٹنے کے بعد نال جیسی چیز باہر آنا"]
     },
@@ -661,7 +675,7 @@ def _build_embedding_reference() -> list[str]:
     return phrases
 
 
-EMBEDDING_THRESHOLD = 0.90  # cosine similarity threshold — see NOTE below.
+EMBEDDING_THRESHOLD = 0.97  # cosine similarity threshold — see NOTE below.
 # NOTE: measured via eval/tune_embedding_threshold.py against the live
 # model and the real negative/danger sets (2026-09, on the auto-derived
 # 276-phrase reference list from _build_embedding_reference()):
