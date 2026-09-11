@@ -88,16 +88,11 @@ def main():
         print(
             f"\nNOTE: false positive rate {fp_rate:.4f} exceeds "
             f"{MAX_ACCEPTABLE_FALSE_POSITIVE_RATE:.2f} — see "
-            f"{FALSE_POS_CSV_PATH.name} and tighten the matching keyword(s). "
-            f"Not failing the build yet (report-only) — the embedding "
-            f"threshold has not been tuned with eval/tune_embedding_threshold.py "
-            f"against a live model in this codebase's history, so we don't "
-            f"yet have a verified baseline to enforce. Once that script has "
-            f"been run and EMBEDDING_THRESHOLD updated with a recorded "
-            f"result, flip this to sys.exit(1) under --ci like the recall "
-            f"check will be once it also reaches target.",
+            f"{FALSE_POS_CSV_PATH.name} and tighten the matching keyword(s).",
             file=sys.stderr,
         )
+        if args.ci:
+            sys.exit(1)
         return
 
     print("\nOK: false positive rate within acceptable range.")
