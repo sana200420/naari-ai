@@ -35,6 +35,7 @@ import pandas as pd
 from gradio_client import Client
 
 SPACE = "Sanapalijo/naari-ai"
+CKPT = os.path.join("eval", ".dod_checkpoint.json")
 GOLD = os.path.join("eval", "gold_eval_280_linked.csv")
 OUT_OF_SCOPE = os.path.join("eval", "out_of_scope_eval.csv")
 OUT_MD = os.path.join("eval", "definition_of_done.md")
@@ -42,24 +43,68 @@ OUT_MD = os.path.join("eval", "definition_of_done.md")
 REFUSAL_PATHS = {"refusal", "referral", "danger"}
 
 
+def call(client, retries=3, **kwargs):
+    """One prediction, with retries and a fresh client on the last attempt.
+
+    A free-tier Space drops connections under sustained load. The first run of
+    this script hung for two hours on a call with no timeout after one
+    ReadTimeout, losing 150 queries of work -- so failures here have to be
+    survivable rather than fatal.
+    """
+    last = None
+    for attempt in range(retries):
+        try:
+            return json.loads(client.predict(**kwargs))
+        except Exception as exc:
+            last = exc
+            if attempt == retries - 2:
+                try:
+                    client = Client(SPACE)   # reconnect, the socket may be dead
+                except Exception:
+                    pass
+            time.sleep(2 * (attempt + 1))
+    raise last
+
+
+def _load_ckpt(stage):
+    if os.path.exists(CKPT):
+        with open(CKPT, encoding="utf-8") as fh:
+            d = json.load(fh)
+        if d.get("stage") == stage:
+            return d.get("rows", [])
+    return []
+
+
+def _save_ckpt(stage, rows):
+    os.makedirs(os.path.dirname(CKPT), exist_ok=True)
+    with open(CKPT, "w", encoding="utf-8") as fh:
+        json.dump({"stage": stage, "rows": rows}, fh)
+
+
 def retrieval_metrics(client, gold, limit):
-    rows, lat = [], []
+    rows = _load_ckpt("retrieval")
+    done = {r["query_id"] for r in rows}
+    lat = [r["lat"] for r in rows if r.get("lat")]
+    if rows:
+        print(f"  resuming from checkpoint: {len(rows)} already done", flush=True)
     n = len(gold)
     for i, (_, r) in enumerate(gold.iterrows(), 1):
+        if r.query_id in done:
+            continue
         try:
-            p = json.loads(client.predict(query=r["query"], top_k=20,
-                                          api_name="/retrieve"))
+            p = call(client, query=r["query"], top_k=20, api_name="/retrieve")
         except Exception as exc:
             print(f"  [{i}/{n}] retrieve error {type(exc).__name__}", flush=True)
             continue
         ids = [int(x["answer_id"]) for x in p["results"]]
         want = int(r.correct_answer_id)
         rank = ids.index(want) + 1 if want in ids else None
-        rows.append({"query_id": r.query_id, "rank": rank})
+        rows.append({"query_id": r.query_id, "rank": rank, "lat": p["latency_ms"]})
         lat.append(p["latency_ms"])
         if i % 25 == 0 or i == n:
             d = pd.DataFrame(rows)
             print(f"  [{i}/{n}] R@1 {(d['rank'] == 1).mean():.3f}", flush=True)
+            _save_ckpt("retrieval", rows)   # a stall now costs minutes, not hours
     d = pd.DataFrame(rows)
     at = lambda k: float((d["rank"].notna() & (d["rank"] <= k)).mean())
     return {"n": len(d), "r1": at(1), "r5": at(5), "r20": at(20),
@@ -70,9 +115,9 @@ def scope_and_citation(client, oos, gold, limit):
     refused, cited, checked, lat = 0, 0, 0, []
     for i, (_, r) in enumerate(oos.iterrows(), 1):
         try:
-            d = json.loads(client.predict(query=r["query"], language="sindhi",
-                                          api_name="/ask"))
-        except Exception:
+            d = call(client, query=r["query"], language="sindhi", api_name="/ask")
+        except Exception as exc:
+            print(f"  [{i}] ask error {type(exc).__name__}", flush=True)
             continue
         checked += 1
         if d.get("path") in REFUSAL_PATHS:
@@ -86,8 +131,7 @@ def scope_and_citation(client, oos, gold, limit):
     answered, with_ids = 0, 0
     for _, r in gold.head(min(40, len(gold))).iterrows():
         try:
-            d = json.loads(client.predict(query=r["query"], language="sindhi",
-                                          api_name="/ask"))
+            d = call(client, query=r["query"], language="sindhi", api_name="/ask")
         except Exception:
             continue
         if d.get("path") in REFUSAL_PATHS:
@@ -160,6 +204,9 @@ def main() -> int:
               "unmeasured. One known violation exists: an elaborated answer added "
               "a toxic-shock warning that was correct but not in the retrieved "
               "row.", ""]
+
+    if os.path.exists(CKPT):
+        os.remove(CKPT)   # a completed run starts clean next time
 
     with open(OUT_MD, "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines))
