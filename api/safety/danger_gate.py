@@ -102,6 +102,7 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "رت وهڻ", "گھڻو رت", "تيز رت", "رت بند نٿو ٿئي",
             "ويم کان پوءِ گهڻو رت وهڻ", "پيڊ ڀرجي وڃي", "پيڊ پوريءَ ريت ڀرجي وڃي",
+            "پيڊ جلدي ڀرجي وڃڻ",
         ],
         "keywords_english": [
             "heavy bleeding", "soaking pads", "bleeding won't stop",
@@ -126,6 +127,7 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "اکين اڳيان ڌنڌ يا اونداهي", "اکين اڳيان اونداهي",
             "نظر ڌنڌلو", "وڄ جون چمڪون", "پاڇولا", "ٻٽو نظر",
+            "اکين اڳيان اونداهو ڇانئجڻ",
         ],
         "keywords_english": [
             "blurred vision", "blurred vision pregnancy", "darkness before eyes",
@@ -139,6 +141,7 @@ DANGER_CATEGORIES = {
             "پيٽ ۾ سخت سور", "سخت درد", "تيز درد", "اڻ سهڻو درد",
             "سيخ وانگر", "نچوڙيندڙ سور", "هٿ لائڻ نٿو ڏئي",
             "پيٽ پٿر وانگر سخت", "بي انتها سور",
+            "هٿ لائڻ نه ڏيڻ",
         ],
         "keywords_english": [
             "severe pain", "unbearable pain", "sudden pain",
@@ -235,6 +238,8 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "نوزائيده خطرو", "کير پيئڻ ڇڏي ڏنو", "تليون پيليون",
             "ڇاتي اندر ڍري وڃي", "گرنٽنگ جهڙو آواز",
+            "نئون ڄاول ٻار جو کير پيئڻ لاءِ اکيون نه کولڻ",
+            "ٻار جي ڇاتي اندر ڍري وڃڻ",
         ],
         "keywords_english": [
             "baby not breathing", "newborn not feeding", "baby yellow",
@@ -259,6 +264,7 @@ DANGER_CATEGORIES = {
         
             "پاڻ کي ختم ڪرڻ جا خيال اچن ٿا",
             "ان جو طريقو به سوچي ورتو آهي",
+            "پاڻ کي ختم ڪرڻ جا خيال",
         ],
         "keywords_english": [
             "want to die", "kill myself", "i want to die", "i want to kill myself",
@@ -284,6 +290,7 @@ DANGER_CATEGORIES = {
         "description": "Signs of severe allergic reaction — swelling of lips/tongue/throat, breathing difficulty",
         "keywords_sindhi": [
                                     "چپ ۽ زبان سڄي", "منهن ۽ نڙي سوجي", "نڙيءَ ۾ سوڙهاڻ",
+            "چپ ۽ زبان يا منهن سوجڻ",
         ],
         "keywords_english": [
             "lip swelling", "tongue swelling", "throat tightness", "allergic reaction breathing",
@@ -302,6 +309,7 @@ DANGER_CATEGORIES = {
             # so this is a second, differently-worded phrasing rather than a
             # fix aimed at one sentence.
             "پيشاب بلڪل نه اچڻ",
+            "مٿي جي نرم جاءِ ڦِٿل ٿيڻ",
         ],
         "keywords_english": [
             "no urine", "not urinating", "can't urinate", "no urine output",
@@ -325,6 +333,7 @@ DANGER_CATEGORIES = {
         "description": "Signs of diabetic ketoacidosis — persistent vomiting with severe thirst",
         "keywords_sindhi": [
                                     "مسلسل الٽيون، سخت اڃ",
+            "بيسودي يا مونجهارو محسوس ٿيڻ",
         ],
         "keywords_english": [
             "persistent vomiting severe thirst", "diabetic emergency", "ketoacidosis",
@@ -335,6 +344,9 @@ DANGER_CATEGORIES = {
         "description": "Postpartum psychosis or severe mental health crisis — distinct from suicidal ideation",
         "keywords_sindhi": [
                                     "عجب آواز ٻڌڻ", "ننڊ بلڪل ناهي آئي", "ٻار کي نقصان پهچايان", "ٻار کي ڪجهه ناهوسات",
+            "ٻار کي نقصان پهچائڻ جا خيال",
+            "ننڊ بلڪل نه اچڻ",
+            "ٻار کان ناهوسات محسوس ڪرڻ",
         ],
         "keywords_english": [
             "postpartum insomnia severe", "hearing voices postpartum", "detached from baby",
@@ -345,6 +357,7 @@ DANGER_CATEGORIES = {
         "description": "Signs of stroke — limb numbness/weakness with slurred speech",
         "keywords_sindhi": [
             "هٿ ۽ پير سُڃا ٿي ويا آهن", "ٻولي ٻُٿي ٿئي", "چڪرائي پئي آهيان",
+            "هٿ يا پير سُڃا ٿي وڃڻ",
         ],
         "keywords_english": [
             "limb numbness", "slurred speech", "sudden weakness one side",
@@ -355,6 +368,7 @@ DANGER_CATEGORIES = {
         "description": "Signs of septic shock — body turning cold, bluish/pale skin",
         "keywords_sindhi": [
             "جسم يخ ٿي ويو آهي", "چمڙي پيلي نيري پئجي وئي آهي",
+            "جسم يخ ٿي وڃڻ",
         ],
         "keywords_english": [
             "body turning cold", "bluish pale skin", "postpartum septic shock",
@@ -365,6 +379,7 @@ DANGER_CATEGORIES = {
         "description": "Signs of ruptured ectopic pregnancy — unilateral pain radiating to shoulder in early pregnancy",
         "keywords_sindhi": [
             "ڪلھي ۾ به سور ٿئي پيو",
+            "کلهي ۾ سور سان گڏ پيٽ جو سور",
         ],
         "keywords_english": [
             "shoulder tip pain pregnancy", "one sided pain shoulder early pregnancy",
@@ -380,6 +395,8 @@ DANGER_CATEGORIES = {
         
             "ٽنگ ڦاٽڻ وانگر سڄي پئي آهي",
             "گهوٽي واري ٽنگ ۾ سخت سور",
+            "ٽنگ ۾ سوجن ۽ گرمي",
+            "پني ۾ سور ۽ سوجن",
         ],
         "keywords_english": [
             "leg swollen hot pregnancy", "calf swelling pain breathlessness",
@@ -390,6 +407,7 @@ DANGER_CATEGORIES = {
         "description": "Continuous watery leaking before term (PPROM)",
         "keywords_sindhi": [
             "ڄنگهن مان اڻ کُٽ گرم پاڻي وهڻ شروع ٿي ويو آهي",
+            "گرم پاڻي جو اوچتو وهڻ",
         ],
         "keywords_english": [
             "continuous water leaking pregnancy", "watery discharge before labor",
@@ -401,6 +419,7 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "پاڻي جو ڍُڪ به پيٽ ۾ نٿو ترسي",
             "پيشاب تمام گھاٽو پيلو ۽ گهٽ ٿئي ٿو",
+            "گهاٽو ۽ گهٽ پيشاب",
         ],
         "keywords_english": [
             "can't keep down water pregnancy", "severe vomiting dehydration pregnancy",
@@ -412,6 +431,7 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "ٽانڪن واري جاءِ تي چير پوڻ جهڙو سخت سور",
             "اوچتو سور بند ٿي ويا آهن پر چڪر پيا اچن",
+            "سور اوچتو بند ٿي وڃڻ",
         ],
         "keywords_english": [
             "scar tearing pain labor c-section", "contractions suddenly stopped dizzy",
@@ -433,6 +453,7 @@ DANGER_CATEGORIES = {
         "description": "Grape-like vesicles passed with heavy bleeding, uterus larger than dates",
         "keywords_sindhi": [
             "انگورن جهڙا ننڍا ننڍا داڻا رت سان گڏ نڪري رهيا آهن",
+            "انگورن جهڙا داڻا نڪرڻ",
         ],
         "keywords_english": [
             "grape like vesicles bleeding pregnancy", "molar pregnancy tissue passing",
@@ -443,6 +464,7 @@ DANGER_CATEGORIES = {
         "description": "Sudden severe one-sided pelvic pain with vomiting, cannot stand",
         "keywords_sindhi": [
             "ايترو تيز چُٽ وارو سور اٿيو جو بيهي نه پيو سگهجي",
+            "بيهي نه سگهجڻ",
         ],
         "keywords_english": [
             "sudden severe one sided pelvic pain vomiting", "cannot stand pain",
@@ -454,6 +476,8 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "جسم اوچتو سخت ٿي وڃي ٿو ۽ اکيون مٿي مٿي ٿي وڃن ٿيون",
             "هٿ پير جھٽڪا کائين ٿا",
+            "اکيون مٿي مٿي ٿي وڃڻ",
+            "هٿ پير جھٽڪا کائڻ",
         ],
         "keywords_english": [
             "newborn body stiffening eyes rolling", "baby jerking limbs seizure",
@@ -466,6 +490,7 @@ DANGER_CATEGORIES = {
             "پيٽ تمام گهڻو ڦوڪجي ويو آهي، نه گئس نڪري رهي آهي نه پاخانو",
         
             "پيٽ تمام گهڻو ڦوليو آهي، نه گئس نڪري رهي آهي نه پاخانو",
+            "پيٽ ڦوڪجڻ ۽ گئس يا پاخانو نه نڪرڻ",
         ],
         "keywords_english": [
             "no gas no stool distended abdomen surgery", "bowel obstruction post surgery",
@@ -479,6 +504,8 @@ DANGER_CATEGORIES = {
             "پگهر اچي رهيو آهي ۽ دل ڏاڍي تيز ڌڙڪي پيئي",
         
             "سيني ۾ ڳرو بار محسوس ٿئي ٿو جيڪو کاٻي هٿ ۽ ڏاڙهيءَ تائين وڃي ٿو",
+            "سيني ۾ ڳرو بار محسوس ٿيڻ",
+            "سيني ۾ سور کاٻي هٿ ڏانهن وڃڻ",
         ],
         "keywords_english": [
             "chest pain radiating to arm postpartum", "sweating rapid heartbeat after delivery",
@@ -489,6 +516,7 @@ DANGER_CATEGORIES = {
         "description": "Severe nighttime itching of palms and soles with dark urine in late pregnancy",
         "keywords_sindhi": [
             "تلين ۽ هٿن ۾ رات جو ايتري خارش ٿئي ٿي",
+            "تلين ۽ هٿن ۾ رات جو خارش",
         ],
         "keywords_english": [
             "itching palms soles night pregnancy", "dark urine severe itching pregnancy",
@@ -499,6 +527,7 @@ DANGER_CATEGORIES = {
         "description": "Abdominal pain and large bruise after a fall while on blood-thinning medication",
         "keywords_sindhi": [
             "پيٽ ۾ تمام تيز سور ٿي رهيو آهي ۽ چمڙي تي وڏو نيرو ڌٻو پيو آهي",
+            "ڪري پوڻ کان پوءِ نيرو ڌٻو پوڻ",
         ],
         "keywords_english": [
             "abdominal pain large bruise blood thinner fall", "internal bleeding on blood thinners",
@@ -521,6 +550,7 @@ DANGER_CATEGORIES = {
         "keywords_sindhi": [
             "پاڻي جي ٿيلهي ڦاٽي پئي آهي ۽ هيٺان هڪ ناڙيءَ جهڙي شيءِ ٻاهر نڪرندي محسوس ٿئي ٿي",
             "ڌڙڪندڙ شئي ٻاهر نڪرندي محسوس ٿئي ٿي",
+            "ناڙيءَ جهڙي شيءِ ٻاهر نڪرڻ",
         ],
         "keywords_english": [
             "cord prolapse water broke", "something coming out after water breaks",
@@ -534,6 +564,7 @@ DANGER_CATEGORIES = {
             "پيٽ ڳاڙهي ڪاٺيءَ وانگر سخت ۽ پٿر ٿي ويو آهي ۽ گهاٽو رت اچي رهيو آهي",
             "ڏاڪڻين تان ٻکربائي پوڻ سبب پيٽ تي سخت ڌڪ لڳو آهي ۽ هلڪو ڪارو گهاٽو رت نڪري رهيو آهي",
             "پيٽ بلڪل پٿر وانگر سخت ٿي ويو آهي ۽ موٽي نرم نٿو ٿئي",
+            "ڌڪ لڳڻ کان پوءِ رت اچڻ",
         ],
         "keywords_english": [
             "board-like rigid abdomen dark bleeding pregnancy", "abdominal trauma dark bleeding pregnancy",
@@ -544,6 +575,7 @@ DANGER_CATEGORIES = {
         "description": "Epigastric pain with blurred vision in late pregnancy",
         "keywords_sindhi": [
             "پيٽ جي ڇاتي واري پاسي ڏاڍو ساڙ ۽ سور آهي ۽ نظر به اوچتو دھنڌلي ٿي وئي آهي",
+            "ڳالهيون وسارڻ يا پريشان ٿيڻ",
         ],
         "keywords_english": [
             "epigastric pain blurred vision late pregnancy",
@@ -554,6 +586,7 @@ DANGER_CATEGORIES = {
         "description": "Sudden visual dimming/blackout with ringing in ears in late pregnancy",
         "keywords_sindhi": [
             "اکين اڳيان اوچتو اندهيرو ڇانئجي وڃي ٿو ۽ ڪنن ۾ سيٽيون ٻرن ٿيون",
+            "ڪنن ۾ سيٽيون وڄڻ",
         ],
         "keywords_english": [
             "sudden vision blackout ringing ears pregnancy",
