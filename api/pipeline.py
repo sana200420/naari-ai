@@ -53,6 +53,19 @@ CONFIRM_HIGH_BAND = os.getenv("CONFIRM_HIGH_BAND", "true").strip().lower() not i
 # than to nothing.
 ELABORATE_ANSWERS = os.getenv("ELABORATE_ANSWERS", "true").strip().lower() not in ("false", "0", "no")
 
+# Provider order, fastest-reliable first. Measured against the live keys:
+#
+#   Groq    958ms, succeeded
+#   Gemini  2.7s,  failed (503 "high demand"; free tier is also 20 req/day)
+#
+# Gemini was first because ADR 0001 picked it for Sindhi comprehension. But a
+# provider that 503s does not produce comprehension -- it produces a 2.7s delay
+# before the fallback runs, on every single answer. That was most of the ~7.5s
+# the LLM step was costing. Groq's Sindhi output is good enough that the
+# quality argument no longer outweighs being three times faster and actually
+# available. Set LLM_ORDER=gemini,groq to restore the old precedence.
+LLM_ORDER = [p.strip() for p in os.getenv("LLM_ORDER", "groq,gemini").split(",") if p.strip()]
+
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
@@ -271,10 +284,8 @@ Her question: {query}
 
 Fuller answer in Sindhi:"""
 
-    for attempt in (_try_gemini, _try_groq):
-        out = attempt(prompt)
-        if out:
-            return _as_paragraph(out)
+    for out in _try_providers(prompt):
+        return _as_paragraph(out)
     # Both LLMs down: the stored answer is short but correct, which beats a
     # refusal on a path where we have a verified row.
     return primary
@@ -296,15 +307,28 @@ Question: {query}
 
 Answer in Sindhi:"""
 
-    answer = _try_gemini(prompt)
-    if answer:
-        return _as_paragraph(answer)
-
-    answer = _try_groq(prompt)
-    if answer:
+    for answer in _try_providers(prompt):
         return _as_paragraph(answer)
 
     return "معاف ڪجو، في الحال جواب ڏيڻ ممڪن ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو."
+
+
+def _try_providers(prompt: str):
+    """Yield the first provider response that comes back, in LLM_ORDER.
+
+    A generator so the caller can `for x in ...: return x` and stop at the
+    first success without a sentinel dance.
+    """
+    providers = {"groq": _try_groq, "gemini": _try_gemini}
+    for name in LLM_ORDER:
+        fn = providers.get(name)
+        if fn is None:
+            _logger.warning("LLM_ORDER names unknown provider %r, skipping", name)
+            continue
+        out = fn(prompt)
+        if out:
+            yield out
+            return
 
 
 def _try_gemini(prompt: str) -> str:
