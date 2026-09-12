@@ -24,7 +24,9 @@ _model_lock = threading.Lock()
 def _load_model():
     from FlagEmbedding import BGEM3FlagModel
 
-    return BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)
+    from retrieval.device import device, use_fp16
+
+    return BGEM3FlagModel("BAAI/bge-m3", use_fp16=use_fp16(), devices=device())
 
 
 def _get_model():

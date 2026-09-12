@@ -52,3 +52,44 @@ answer. Groq's Llama 3.3 70B is kept wired up as an automatic fallback
 (Risk 3 in `PLAYBOOKS.md`) for when Gemini rate-limits, since the generation
 step is deliberately a minority path anyway — most traffic should resolve
 through the verbatim path and never call an LLM at all.
+
+---
+
+## Amendment 2026-09-10 — backend hosting, as actually deployed
+
+The "Backend hosting" decision above is superseded. It is left in place
+because the *reasoning* still holds — 16GB to keep the models resident is
+still the requirement that drives everything — but two of its premises turned
+out to be wrong, and the service spent ten days serving a mock while nobody
+noticed.
+
+**What changed.** Hugging Face now gates compute-backed Spaces behind a paid
+plan. On a free personal account both the Docker SDK and the Gradio SDK on
+`cpu-basic` return `402 Payment Required` at create time (verified, not read
+off a pricing page). Docker is therefore not available to us at all, which
+also removes the "same container config works locally and in production"
+argument the original decision leaned on.
+
+**Chosen instead:** a Gradio-SDK Space on `zero-a10g` (ZeroGPU) — the one
+free path for a compute-backed Space, capped at 2 per free account. The
+pipeline stays CPU-resident there: a single no-op `@spaces.GPU` function
+satisfies ZeroGPU's "at least one decorated function" requirement and all the
+real work sits outside it, so no GPU is ever requested and no quota is burned.
+`app.py` mounts the existing FastAPI app rather than replacing it, so `/ask`
+keeps the `docs/contracts/retrieval.json` shape the frontend depends on.
+
+**The trap this hardware sets:** `import spaces` patches `torch.cuda.*` in the
+main web process, so `torch.cuda.is_available()` answers True with no GPU
+attached. `retrieval/device.py` is the single place that decides device and
+dtype for embed, rerank and translate, precisely so that answer is ignored in
+one place instead of three.
+
+**Railway** (`naari-ai-production.up.railway.app`) is where the service ran
+before this, and is not a viable target for the real pipeline: its free tier
+is 512MB against a ~8.5GB CPU-resident peak, roughly 17x short. Its deploy had
+been failing since 2026-09-01 regardless — `requirements.txt` gained the ML
+dependencies and unpinned `torch` resolves the CUDA wheel on Linux, ~3GB of
+`nvidia-*` libraries a CPU host cannot execute. The last *successful* build
+predates that, which is why production kept answering with the Phase 0 mock.
+The `Dockerfile` and its CPU-only torch pin are kept for that target should
+anyone revive it; the Space does not use them.

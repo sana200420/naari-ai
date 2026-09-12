@@ -191,7 +191,7 @@ surface phrase overlap (`gold_7`, "how many times should I visit the doctor duri
 pregnancy" reranked to a PCOS post-diagnosis follow-up row) — occurred in this sample,
 not fabricated, worth watching for as reranking gets tuned further.
 
-**Latency:** mean 335ms, p95 112ms for 20 candidates — well inside Risk 2's 3s budget.
+**Latency:** mean 335ms, p50 112ms for 20 candidates — well inside Risk 2's 3s budget. **Correction (2026-09-02):** this was originally mislabeled "p95" — p95 cannot be below the mean for a latency distribution, so 112ms is the median. The actual p95 was never recorded from that run; needs re-measuring before treating the 3s budget claim as verified at the tail rather than just on average.
 
 **Not blocking Phase 1's GO** (fused alone already clears the exit gate). Before relying
 on reranking's Recall@1 number for anything load-bearing (e.g. Lever 5 threshold tuning),
@@ -243,3 +243,212 @@ the recorded "correct" answer wasn't). No threshold can distinguish "confidently
 **tau_high tuning cannot proceed until the gold set gets a full individual review**, not just
 the original 24 flagged rows — this is now the single highest-leverage next task, blocking
 both a clean Item 2 re-measurement and Item 3 outright.
+
+---
+
+# Phase 2 — real diagnostics against the fully-reviewed 248-row gold set (2026-09-05)
+Generated via `retrieval/scripts/verify_pipeline_and_tune_thresholds.ipynb`, run on Kaggle.
+
+The gold-set review is done (see docs/status.md — 248 rows, all individually verified).
+This run adds the diagnostics needed to actually explain *why* tau_high still doesn't
+converge, rather than continuing to guess.
+
+**Correction to the raw run output:** the notebook's category-mismatch check initially
+compared `stated_category` (English, from the gold CSV) against the KB row's `category`
+(Sindhi) directly as strings — these can never match, so the first pass of this run
+reported a false "58/58 (100%) category mismatch." Fixed in the notebook (an
+English→Sindhi category map, `retrieval/scripts/verify_pipeline_and_tune_thresholds.ipynb`)
+and recomputed by hand from the downloaded audit CSV below. The corrected numbers are the
+ones that matter.
+
+## Item 1 — warm loading, latency, memory: still fine
+`warmup()`: 231s (cold model download+load). First query post-warmup: 1164ms. Second
+query: 663ms (under the 1s target). Memory flat over 100 calls (+10MB).
+
+## Item 2 — conditional English leg: DONE, clean result
+| Mode | Median latency | Recall@1 |
+|---|---:|---:|
+| Forced off (tau_high=0.0) | 465ms | 0.351 |
+| Conditional (tau_high=0.750) | 507ms | 0.339 |
+| Always on (tau_high=1.1) | 1050ms | 0.339 |
+
+**This finally answers the checklist question correctly.** Conditional vs. always-on —
+the actual comparison this item asks for — shows identical Recall@1 (0.339 both) at 543ms
+less median latency. Being conditional costs nothing and saves over half a second per
+query relative to always translating. Checklist item can be marked done.
+
+(Side observation, not the main point: forced-off has slightly *higher* recall (0.351)
+than either mode that uses the English leg (0.339) — small-n noise at this scale (12
+queries), but consistent with Lever 4's original 0/8 rescue finding that the leg wasn't
+obviously earning its keep. The Closure section below has an updated, more encouraging
+number on this.)
+
+## Item 3 / Diagnostic 1 — tau_high still doesn't converge, and now we know why
+`tau_high`: no threshold reaches 0.95 precision. `tau_low = 0.2034` (90% of negative set
+below it, target met).
+
+**Recall@1 (final pipeline): 0.339. Recall@20 (fused shortlist, pre-rerank): 0.726.**
+That's a 39-point gap — the correct answer is usually *sitting in the shortlist* (73% of
+the time) but only reaches the final top-1 slot a third of the time. Per the diagnostic
+rule this run was designed to answer: **a gap this large means the failure is in
+ranking/fusion/reranking, not in retrieval or embeddings.** Reranking work is not wasted
+effort; retrieval/embedding work would be, right now.
+
+68/248 (27%) of queries never surface the correct answer anywhere in the top-20 shortlist
+at all — a genuine retrieval-pool gap for that subset specifically, which no amount of
+reranking or tau tuning can fix. Worth its own investigation later, but it's a minority
+of the problem.
+
+## Diagnostic 2 — hub-row frequency: no row exceeded 20% this run
+Somewhat surprising given the id=610/821/773/956/644 pattern observed repeatedly during
+the manual gold-set review — either that pattern is concentrated within specific
+sub-topics (not enough to clear a flat 20%-of-all-queries bar) or it's less dominant
+against the now-cleaned gold set than it appeared during review. Worth rechecking the
+top-15-by-raw-frequency list (printed in the notebook, not saved to a file this run).
+
+## Diagnostic 3 — structured audit of the 58 incorrect-but-score≥0.9 queries
+**Corrected numbers** (the notebook's own 58/58 category-mismatch figure was the language
+bug described above): of the 58, **31 (53%) are actually same-category** — the reranker
+picked the wrong specific KB row, but the right general topic — and **27 (47%) are true
+cross-category confusion**. 37/58 (64%) have the correct answer sitting somewhere else in
+the top-20 (a ranking problem for those, not a missing-from-pool problem).
+
+**The most actionable finding in this audit:** of the 58, **25 had the correct answer
+sitting at rank 1 of the pre-rerank fused shortlist** — meaning fusion already got it
+right, and reranking *demoted the correct answer in favor of a wrong one*. That's not
+noise or category confusion; it's the reranker actively making 25/248 (10%) of all
+queries worse than doing nothing would have. `gold_7` (the pregnancy-checkup-frequency
+query reranked into a PCOS follow-up row, first flagged in the Item 8 audit) is one of
+these 25 — same failure mode, now confirmed to recur at meaningful scale, not a one-off.
+
+Full per-query detail: `eval/high_score_wrong_answer_audit.csv` (downloaded from this
+run — not yet committed; the human columns are still blank pending a fill-in pass).
+
+## Diagnostic 4 — alternative confidence signals
+Notebook output not yet captured to a file this run (needs a copy of the printed
+train/test table). Given Diagnostic 3's finding above, `fusion_agrees_with_final` is the
+signal most likely to matter — a query where fusion and the final reranked answer agree
+should be a real precision boost, precisely because 25/58 of the current failures are
+cases where they disagree and fusion was right. Re-run needed to get real numbers.
+
+## Closure — English leg: less dead than it looked
+Of 20 sampled Sindhi-only misses (queries that never surface the correct answer in the
+Sindhi-only top-20), the English leg rescued **4 (20%)** — a real, meaningfully positive
+number against the old measurement's 0/8 (0%). Extrapolated to the full 68 Sindhi-only
+misses this run, that's a plausible ~13-14 queries the leg could be rescuing. This
+reopens the "should Lever 4 be deleted" question from the opposite direction — worth
+re-running the full 68 (not just the 20 sampled) before deciding either way.
+
+---
+
+# Diagnostic 4, properly cross-validated (2026-09-07) — and a targeted reranker fix
+Generated from `eval/gold_scored_full.csv` (a re-run of the notebook with the per-query
+export added), analyzed locally rather than read off one notebook print statement.
+
+**The single-split numbers from the 2026-09-05 run were optimistic noise.** With only 75
+held-out queries, one misclassified query swings precision by ~1.3 points, and the
+reported 0.87–0.947 precision for `fusion_agrees_with_final AND category_match` (and for
+a logistic-regression cutoff) didn't hold up. Two more robust checks:
+
+1. **10-fold cross-validated logistic regression** (score, margin, fusion-agreement,
+   category-match as features, pooled predictions across all 10 held-out folds): peaks at
+   **83.6% precision, 24.6% coverage** (p≥0.70 cutoff, 61/248 queries) and does not
+   improve at stricter cutoffs — precision actually drops slightly past that point,
+   which is the signature of a real ceiling, not an unexplored coverage/precision
+   trade-off.
+2. **The hand-built rule evaluated directly on the full 248 rows** (no split needed,
+   since it's a fixed predicate): `score≥0.98 AND fusion_agrees AND category_match` — the
+   most extreme cutoff tried — reaches **90.6% precision at only 12.9% coverage** (32
+   queries) and still doesn't move meaningfully past that with a stricter floor.
+
+**Conclusion: 0.95 precision is not reachable with any signal combination on top of the
+current retrieval+rerank pipeline, at any coverage down to a few dozen queries.** This
+argues for two things instead of continuing to search for a better gating trick:
+- A three-band serving design (verbatim answer / "did you mean this?" confirmation /
+  decline) rather than a single binary threshold, since ~85-90% precision is a
+  reasonable bar for a confirmation step even though it's not enough to answer silently.
+- Fixing the underlying cause directly, since gating can only hide a wrong answer, not
+  make it right. Per the 2026-09-05 finding (25/58 high-confidence-wrong answers had the
+  correct answer at rank 1 of the fused shortlist before reranking demoted it),
+  `retrieval/pipeline.py` now has `_prefer_fusion_top1_if_close()`: when the reranker's
+  top pick differs from fusion's own top-1 by less than `RERANK_OVERRIDE_MARGIN`, fusion's
+  #1 wins the tie instead of being silently overridden. Ships with the margin defaulted
+  to `0.0` (a no-op — real behaviour is unchanged) because there's no calibrated value
+  yet; `eval/gold_scored_full.csv` now also carries `fusion_top1_rerank_score` and
+  `preguard_top1_id`/`preguard_top1_score` so any margin can be simulated offline from
+  one export, without a GPU run per candidate value. **Next run should sweep this and
+  report the margin that maximizes Recall@1.**
+
+Also confirmed on this run: the hub-row pattern is real, just under the flat 20%
+threshold used to flag it. Top by shortlist frequency: `id=610` (18%), `id=821` (17%),
+`id=825` (15%), `id=623` (15%) — the same rows flagged by hand across three review
+passes. Worth splitting these into narrower, single-topic KB rows independent of
+anything on the reranker side.
+
+---
+
+# RERANK_OVERRIDE_MARGIN calibrated and shipped (2026-09-07, second run)
+Generated from `eval/gold_scored_full.csv` (re-run with the pre-guard reranker state
+export added), simulating every candidate margin offline — no GPU calls needed.
+
+| margin | Recall@1 | queries overridden |
+|---|---:|---:|
+| 0.0 (old default) | 0.339 | 0 |
+| 0.05 | 0.399 | 31 |
+| 0.2 | 0.448 | 71 |
+| 0.5 | 0.500 | 105 |
+| 1.0+ (always defer to fusion on disagreement) | **0.540** | 139 |
+
+Recall@1 climbs monotonically all the way to "always trust fusion over the reranker
+when they disagree" — no crossover point where reranking starts winning. That shape is
+exactly what raised the overfitting flag on the raw-score threshold two runs ago, so it
+got the same scrutiny before shipping: of the 139 queries where fusion and reranking
+actually disagreed, **fusion was right and reranking wrongly overrode it 61 times;
+reranking was right to override fusion only 10 times** — a 6:1 ratio. Split those 139
+disagreements randomly in half and check each half independently: 30:5 in one half,
+31:5 in the other. Same ratio, holds in both halves independently — that's what makes
+this a real, stable property of how this reranker behaves on this KB, not noise from
+one lucky split (the raw-score threshold, by contrast, did *not* survive this check).
+
+**Shipped:** `DEFAULT_RERANK_OVERRIDE_MARGIN = 2.0` in `retrieval/pipeline.py` — outside
+the range a rerank-score gap can ever reach, so fusion's #1 pick always wins on
+disagreement. `retrieval/tests/test_pipeline.py` covers both the new default and the
+explicit `rerank_override_margin=0.0` opt-out. All 104 retrieval tests pass.
+
+**What this really says about reranking:** it isn't earning its keep on top-1 selection
+for this KB — net-harmful whenever it disagrees with fusion. Worth an open question for
+later, not resolved here: is reranking still useful for ordering positions 2-5 (relevant
+to a "did you mean" confirmation band), or should it be dropped from the top-1 decision
+entirely and reconsidered as a smaller-scope tool? Not answered by this data, since we
+only measured its effect on the #1 slot.
+
+Phase 2 status after this: **Items 1, 2, and 3 are done.** Item 3's original literal
+spec ("both thresholds have a stated justification") isn't met in the form expected —
+there is no single `tau_high` value, because none exists that reaches 0.95 precision.
+What shipped instead is the actual finding (cross-validated, not a threshold fit to
+noise) plus a targeted fix for the largest identified cause of the gap. Item 4 (ONNX
+int8 conversion) is untouched and still needs real work — a separate GPU-dependent task,
+not a documentation update.
+
+
+# Phase 2, Item 4 -- ONNX int8 conversion
+Generated: 2026-09-09T15:40:05.502119+00:00, via retrieval/scripts/convert_models_to_onnx_int8.ipynb
+
+**Scope:** converted and quantized the embedder's dense output and the reranker. Sparse search stays on the original float32 model -- its extra learned head isn't exportable via standard tooling, and converting it blind risked silently breaking a component that's currently pulling real weight (0.542 Recall@1 alone). See the notebook's intro cell for the full reasoning.
+
+## Sanity checks (run before trusting anything below)
+Reranker: relevant-pair / irrelevant-pair scores compared original vs int8 -- see notebook output.
+Dense embedding: cosine similarity original vs onnx-int8 = 0.9839 (target: >0.95, ideally >0.98).
+
+## Latency (CPU, matching the free-Space deployment target)
+| Stage | fp32-CPU p50 | fp32-CPU p95 | int8-CPU p50 | int8-CPU p95 |
+|---|---:|---:|---:|---:|
+| Dense embed | 36ms | 134ms | 75ms | 111ms |
+| Rerank | 50ms | 59ms | 137ms | 181ms |
+
+Combined embed+rerank p95: fp32 192ms, int8 292ms (target: under 1500ms; excludes Qdrant network round-trip and sparse search).
+
+## Recall (dense+rerank on int8, sparse and fusion unchanged, n=248)
+Recall@1 fp32: 0.351. Recall@1 int8: 0.327. Drop: 2.42 percentage points (target: within 1.0 point).
+
+**Verdict: latency PASS, recall FAIL.**

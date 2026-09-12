@@ -9,9 +9,10 @@
 
 | Service | URL |
 |---|---|
-| API (production) | https://naari-ai-production.up.railway.app |
-| Health check | https://naari-ai-production.up.railway.app/health |
-| Railway dashboard | https://railway.app/dashboard |
+| Backend (production) | https://huggingface.co/spaces/Sanapalijo/naari-ai |
+| Backend direct / API | https://sanapalijo-naari-ai.hf.space |
+| Space dashboard | https://huggingface.co/spaces/Sanapalijo/naari-ai/settings |
+| Railway (retired) | https://naari-ai-production.up.railway.app — served a Phase 0 mock from 2026-08-30; see ADR 0001 amendment |
 | Supabase logs | https://supabase.com/dashboard/project/nyvqcvqqbxwwzenuukpx |
 | GitHub repo | https://github.com/sana200420/naari-ai |
 
@@ -19,14 +20,31 @@
 
 ## Quick health check
 
-Open in browser:
+Open https://sanapalijo-naari-ai.hf.space in a browser — the Sindhi chat UI
+should load. Ask "حيض جي چڪر ڇا آهي؟" and expect a real answer, not the
+refusal string.
+
+To check the API the frontend actually calls:
+
+```bash
+python -c "
+from gradio_client import Client
+print(Client('Sanapalijo/naari-ai').predict(
+    query='حيض جي چڪر ڇا آهي؟', language='sindhi', api_name='/ask'))"
 ```
-https://naari-ai-production.up.railway.app/health
-```
-Expected response:
-```json
-{"status": "ok", "service": "naari-ai"}
-```
+
+Returns a JSON string with `answer`, `path`, `confidence_band`,
+`retrieved_ids` and `latency_ms`.
+
+**Deploying:** the Space is a git remote. From the repo:
+`git push space <branch>:main`. Build and run logs:
+`hf spaces logs Sanapalijo/naari-ai [--build]`.
+
+**Cold start:** the models are ~7GB and download on boot, so a restarted Space
+takes several minutes before the first answer. Warmup runs in a background
+thread, so the UI loads before the models are ready.
+
+**Secrets** live in Space Settings → Variables and secrets, not in `.env`.
 
 ---
 
@@ -99,14 +117,27 @@ curl https://naari-ai-production.up.railway.app/health
 
 | Variable | What it does |
 |---|---|
+| `QDRANT_URL` | Qdrant Cloud endpoint — **required**, retrieval raises `KeyError` without it |
+| `QDRANT_API_KEY` | Qdrant Cloud key — **required**, same |
 | `SUPABASE_URL` | Supabase project URL |
 | `SUPABASE_ANON_KEY` | Supabase anon key |
 | `SUPABASE_SERVICE_KEY` | Supabase service key |
 | `GEMINI_API_KEY` | Gemini 2.5 Flash key |
 | `GROQ_API_KEY` | Groq fallback key |
-| `TAU_HIGH` | High confidence threshold (default 0.75) |
-| `TAU_LOW` | Low confidence threshold (default 0.40) |
+| `TAU_HIGH` | High confidence threshold (default 0.75) — see warning below |
+| `TAU_LOW` | Low confidence threshold (default 0.2034) |
 | `DEMO_MODE` | Set `true` to force verbatim-only |
+
+> **`TAU_HIGH` is read by two different modules with two different meanings:**
+> `api/pipeline.py` uses it as the verbatim band threshold, while
+> `retrieval/pipeline.py` uses it as the Lever 4 cascade gate (skip English
+> translation if the Sindhi score already clears it). Setting it here changes
+> both at once. Setting it to `0.0` to disable the English leg would also send
+> every query down the verbatim path. Don't set it until these are split.
+
+> **`TAU_LOW = 0.2034`** is calibrated against `eval/negative_set_100.csv`
+> (90/100 out-of-scope queries fall below it). The previous `0.40` was a
+> placeholder and refused a large share of *correct* answers.
 
 ---
 
