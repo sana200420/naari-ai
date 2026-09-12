@@ -708,38 +708,39 @@ def _build_embedding_reference() -> list[str]:
     return phrases
 
 
-EMBEDDING_THRESHOLD = 0.97  # cosine similarity threshold — see NOTE below.
-# NOTE: measured via eval/tune_embedding_threshold.py against the live
-# model and the real negative/danger sets (2026-09, on the auto-derived
-# 276-phrase reference list from _build_embedding_reference()):
+EMBEDDING_THRESHOLD = 0.96  # cosine similarity threshold — see NOTE below.
+# NOTE: re-measured via eval/tune_embedding_threshold.py after the round-4
+# keyword patch (33 phrases from Sana's phase-3 miss list, all added as
+# keywords rather than left for the embedding path) and after Sana's
+# dfcd1f2 token-bag generalisation fix (2026-09):
 #
 #   threshold | danger recall (embedding-dependent rows) | negative FP rate
 #     0.86    |  1.000                                    |  0.150
-#     0.88    |  0.667                                    |  0.130
-#     0.90    |  0.333                                    |  0.130
-#     0.92    |  0.000                                    |  0.100
-#     0.96    |  0.000                                    |  0.030
+#     0.88    |  1.000                                    |  0.130
+#     0.90    |  1.000                                    |  0.130
+#     0.92    |  1.000                                    |  0.100
+#     0.94    |  1.000                                    |  0.060
+#     0.96    |  1.000                                    |  0.030
+#     0.98    |  1.000                                    |  0.000
 #
-# There is no threshold in the scanned range where both recall and
-# precision are acceptable — it's a cliff, not a dial. Only 3/100 danger
-# rows in the gold set actually depend on the embedding path (the keyword
-# + token-bag path alone already gets 97/100), while every threshold that
-# keeps that recall at 1.00 also false-positives on 15%+ of the negative
-# set. 0.90 is chosen to bias toward precision: it accepts losing most of
-# the embedding path's already-small recall contribution in exchange for
-# keeping the false-positive rate closer to (though still above) the 5%
-# target, rather than accepting a health product that cries "emergency"
-# on roughly 1 in 7 ordinary questions.
+# The picture from the old table above is now stale. With the token-bag
+# fix plus the 33 added keywords, the keyword path alone gets 100/100 on
+# the danger set (eval/run_danger_gate_eval.py) — 0/100 rows depend on the
+# embedding path anymore, down from 3/100. Measured cost of keeping the
+# embedding path in the request loop: ~15.5ms/question (2.0ms keyword-only
+# -> 17.5ms with embedding), for zero additional recall on the current
+# eval set.
 #
-# This is a real product limitation, not a solved problem: the underlying
-# cause is that _build_embedding_reference() pools all ~276 category
-# keywords into one flat reference set, and a generic multilingual
-# sentence embedder doesn't reliably separate "mentions this symptom" from
-# "is acutely experiencing this symptom as an emergency" in Sindhi at any
-# single threshold. The real fix is curating/trimming the reference set
-# (fewer, more clinically distinctive anchor phrases per category, maybe
-# per-category thresholds) rather than a further global threshold search
-# — see docs/adr/0003-danger-gate-matching.md for the follow-up plan.
+# Decision: the embedding path is DISABLED in production (see
+# api/pipeline.py, run_danger_gate(query, use_embedding=False)) rather
+# than deleted. EMBEDDING_THRESHOLD is kept in sync at 0.96 (the lowest
+# value that still holds recall at 1.00 with an acceptable ~3% FP rate)
+# so the path is ready to re-enable — for a future case the keyword/
+# token-bag path genuinely can't reach, or once the reference set in
+# _build_embedding_reference() is curated down to fewer, more
+# clinically-distinctive anchors per category (see
+# docs/adr/0003-danger-gate-matching.md for that follow-up plan) — without
+# needing to re-derive the threshold from scratch.
 # Re-run eval/tune_embedding_threshold.py after any change to
 # DANGER_CATEGORIES or _build_embedding_reference() and update this table.
 

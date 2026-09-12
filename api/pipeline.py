@@ -29,8 +29,14 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     t0 = time.time()
     query = request.query
 
-    # Stage 00: danger gate — runs FIRST, always
-    gate: GateResult = run_danger_gate(query)
+    # Stage 00: danger gate — runs FIRST, always.
+    # use_embedding=False: after Sana's 33-phrase round + the token-bag fix,
+    # the keyword path alone hits 100/100 on eval/danger_sign_eval_100.csv
+    # (0/100 rows depend on the embedding path). Keeping embedding on cost
+    # ~15.5ms/question for zero extra recall — retired here, not deleted.
+    # Flip back to True (and see the NOTE above EMBEDDING_THRESHOLD in
+    # danger_gate.py) if a future eval finds a gap only it can catch.
+    gate: GateResult = run_danger_gate(query, use_embedding=False)
     if gate.escalate:
         latency = round((time.time() - t0) * 1000, 2)
         _log(query, [], [], BAND_HIGH, "danger", latency, "gate", request.session_id)
