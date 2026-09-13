@@ -39,6 +39,7 @@ CKPT = os.path.join("eval", ".dod_checkpoint.json")
 GOLD = os.path.join("eval", "gold_eval_280_linked.csv")
 OUT_OF_SCOPE = os.path.join("eval", "out_of_scope_eval.csv")
 OUT_MD = os.path.join("eval", "definition_of_done.md")
+REFUSAL_MISSES = os.path.join("eval", "refusal_failures.csv")
 
 REFUSAL_PATHS = {"refusal", "referral", "danger"}
 
@@ -113,6 +114,11 @@ def retrieval_metrics(client, gold, limit):
 
 def scope_and_citation(client, oos, gold, limit):
     refused, cited, checked, lat = 0, 0, 0, []
+    # Which out-of-scope questions got ANSWERED is the actionable half of the
+    # refusal number. This set is a fifth abortion, a fifth domestic violence
+    # and a fifth named contraceptives, so a failure clustered in one of those
+    # is a scope-classifier gap, not a threshold to nudge.
+    misses = []
     for i, (_, r) in enumerate(oos.iterrows(), 1):
         try:
             d = call(client, query=r["query"], language="sindhi", api_name="/ask")
@@ -122,6 +128,11 @@ def scope_and_citation(client, oos, gold, limit):
         checked += 1
         if d.get("path") in REFUSAL_PATHS:
             refused += 1
+        else:
+            misses.append({"query_id": r.query_id, "scope_type": r.scope_type,
+                           "query": r["query"], "path": d.get("path"),
+                           "band": d.get("confidence_band"),
+                           "answer": (d.get("answer") or "")[:200]})
         lat.append(d.get("latency_ms") or 0)
         if i % 20 == 0 or i == len(oos):
             print(f"  [{i}/{len(oos)}] refused {refused}/{checked}", flush=True)
@@ -140,7 +151,10 @@ def scope_and_citation(client, oos, gold, limit):
         if d.get("retrieved_ids"):
             with_ids += 1
         lat.append(d.get("latency_ms") or 0)
+    if misses:
+        pd.DataFrame(misses).to_csv(REFUSAL_MISSES, index=False, encoding="utf-8")
     return {"scope_n": checked,
+            "misses": misses,
             "refusal_correctness": refused / checked if checked else None,
             "answered_n": answered,
             "citation_presence": with_ids / answered if answered else None,
@@ -194,6 +208,22 @@ def main() -> int:
               f"Also measured: Recall@20 = {rm['r20']:.3f} "
               f"(the correct row is in the shortlist this often), "
               f"retrieval-only p95 = {rm['retrieval_p95_ms']:.0f}ms.", "",
+              ]
+    if sc.get("misses"):
+        by_type = {}
+        for m in sc["misses"]:
+            by_type[m["scope_type"]] = by_type.get(m["scope_type"], 0) + 1
+        lines += ["## Out-of-scope questions that were answered instead of referred", "",
+                  f"{len(sc['misses'])} of {sc['scope_n']}. Full list with the answers "
+                  f"given: `{REFUSAL_MISSES}`.", "",
+                  "| Scope type | Answered |", "|---|---:|"]
+        for k, v in sorted(by_type.items(), key=lambda kv: -kv[1]):
+            lines.append(f"| {k} | {v} |")
+        lines += ["",
+                  "A cluster here is a scope-classifier gap rather than a threshold "
+                  "to nudge -- abortion, domestic violence and named contraceptives "
+                  "are categories the roadmap requires be routed to a human.", ""]
+    lines += [
               "## Not scored here", "",
               "**Danger-sign recall** and **false-escalation** are owned by "
               "`api/safety` and measured by `eval/run_danger_gate_eval.py`. Two "
