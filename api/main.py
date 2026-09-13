@@ -2,7 +2,7 @@ import threading
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import ask, health
+from api.routers import ask, health, audio
 
 app = FastAPI(
     title="NaariAI API",
@@ -18,6 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(audio.router)
 app.include_router(ask.router)
 
 # Model loading takes ~230s cold (eval/results.md, Item 1). Left lazy, that
