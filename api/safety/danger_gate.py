@@ -618,21 +618,24 @@ DANGER_CATEGORIES = {
 # ── Scope classifier ───────────────────────────────────────────────────────────
 SCOPE_REFERRALS = {
     "abortion": {
-        "keywords": ["abortion", "terminate pregnancy", "اسقاط حمل کروانا", "حمل گرانا", "اسقاط", "حمل ختم"],
+        "keywords": ["abortion", "terminate pregnancy", "اسقاط حمل کروانا", "حمل گرانا", "اسقاط", "حمل ختم",
+                     "حمل ضايع ڪرڻ", "ضايع ڪرڻ چاهيان", "حمل خراب ڪرڻ", "پيٽ ڪرائڻ"],
         "response": (
             "هي موضوع مخصوص طبي ۽ قانوني رهنمائي گھري ٿو جيڪا هي سروس مهيا نٿي ڪري سگهي. "
             "مهرباني ڪري ويجهي صحت مرڪز، ليڊي ڊاڪٽر يا تصديق ٿيل فيملي پلاننگ ڪلينڪ سان رابطو ڪريو."
         )
     },
     "named_contraceptives": {
-        "keywords": ["pill name", "contraceptive pill", "iud brand", "copper t brand", "مرينا", "ياسمين"],
+        "keywords": ["pill name", "contraceptive pill", "iud brand", "copper t brand", "مرينا", "ياسمين",
+                     "گولي جو نالو", "ڪهڙي برانڊ بهتر"],
         "response": (
             "هي سروس مخصوص برانڊ يا پراڊڪٽ جي مقابلي جي صلاح نٿي ڏئي. "
             "پنهنجي حالت لاءِ بهترين آپشن معلوم ڪرڻ لاءِ مهرباني ڪري صحت ڪارڪن يا ڊاڪٽر سان صلاح ڪريو."
         )
     },
     "domestic_violence_referral": {
-        "keywords": ["shelter", "escape husband", "leave home safe", "DV helpline"],
+        "keywords": ["shelter", "escape husband", "leave home safe", "DV helpline",
+                     "گهر کان ڀڄڻ", "مڙس کان بچڻ", "پناهگاهه", "محفوظ جڳهه", "مدد گهرجي مون کي"],
         "response": (
             "توهان جي حفاظت اهم آهي. مهرباني ڪري ويجهي مدد ڪندڙ اداري، "
             "پوليس هيلپ لائين يا ڀروسي واري شخص سان رابطو ڪريو. توهان اڪيلا ناهيو."
@@ -648,7 +651,7 @@ SCOPE_REFERRALS = {
     },
     "doctor_question": {
         "keywords": ["are you a doctor", "kya tum doctor ho", "ڇا تون ڊاڪٽر آهين",
-                     "ڇا توهان ڊاڪٽر آهيو", "are you a doctor"],
+                     "ڇا توهان ڊاڪٽر آهيو", "توهان ڊاڪٽر آهيو", "طبيب آهيو"],
         "response": (
             "نه، هي هڪ خودڪار معلوماتي سروس آهي، ڊاڪٽر ناهي. "
             "هي عام صحت جي معلومات ڏئي ٿي، تشخيص يا علاج نٿي ڪري. "
@@ -802,7 +805,7 @@ class GateResult:
 
 
 # ── Main gate function ─────────────────────────────────────────────────────────
-def run_danger_gate(text: str, use_embedding: bool = True) -> GateResult:
+def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
     """
     Pure function. Call this FIRST — before retrieval, before LLM.
     Returns GateResult with escalate=True if any danger keyword matches.
