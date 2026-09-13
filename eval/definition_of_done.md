@@ -14,7 +14,11 @@ Also measured: Recall@20 = 0.762 (the correct row is in the shortlist this often
 
 ## Out-of-scope questions that were answered instead of referred
 
-14 of 100. Full list with the answers given: `eval/refusal_failures.csv`.
+14 of 100. The per-question list with the answers given is written to
+`eval/refusal_failures.csv` by the run. The copy currently in the repo is from an
+earlier 12-query smoke pass and holds only 3 of these rows -- the notebook was
+downloading the summary and leaving the breakdown behind in the VM. Fixed; the
+next run replaces it with all 14.
 
 | Scope type | Answered |
 |---|---:|
