@@ -711,8 +711,14 @@ def _build_embedding_reference() -> list[str]:
 EMBEDDING_THRESHOLD = 0.96  # cosine similarity threshold — see NOTE below.
 # NOTE: re-measured via eval/tune_embedding_threshold.py after the round-4
 # keyword patch (33 phrases from Sana's phase-3 miss list, all added as
-# keywords rather than left for the embedding path) and after Sana's
-# dfcd1f2 token-bag generalisation fix (2026-09):
+# keywords rather than left for the embedding path) and after Sabiha's
+# dfcd1f2 token-bag generalisation fix (2026-09), which made keyword
+# matching tolerate word-order and connector changes instead of
+# memorising exact eval sentences.
+#
+# (dfcd1f2's git *author* field reads sana200420 because it carries a
+# users.noreply.github.com address from the web UI; the *committer* is
+# Sabihaa12, who wrote it.)
 #
 #   threshold | danger recall (embedding-dependent rows) | negative FP rate
 #     0.86    |  1.000                                    |  0.150
