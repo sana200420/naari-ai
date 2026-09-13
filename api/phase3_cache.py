@@ -20,9 +20,18 @@ _CACHE_TTL = 60 * 60 * 24  # 24 hours
 
 
 def _cache_key(query: str) -> str:
-    from api.safety.danger_gate import normalise
-    norm = normalise(query)
-    return hashlib.sha256(norm.encode()).hexdigest()
+    # normalize_sd is the project's one normaliser -- retrieval embeds through
+    # it, so a cache keyed on anything else could hand back the answer to a
+    # different question.
+    #
+    # This used to import `normalise` from api.safety.danger_gate, which has
+    # never existed in any version of that module. It went unnoticed because
+    # nothing called cache_get: the Space serves Gradio, which bypassed
+    # routers/ask.py entirely. Wiring the cache into the Gradio path turned a
+    # dormant ImportError into a total /ask outage.
+    from retrieval.normalize import normalize_sd
+
+    return hashlib.sha256(normalize_sd(query).encode()).hexdigest()
 
 
 def cache_get(query: str) -> Optional[dict]:
