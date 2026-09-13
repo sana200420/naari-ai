@@ -640,7 +640,7 @@ SCOPE_REFERRALS = {
     },
     "not_health": {
         "keywords": ["recipe", "cooking", "politics", "cricket", "weather", "news",
-                     "recipe for biryani", "cricket match score"],
+                     "recipe for biryani", "cricket match score", "ڪرڪيٽ", "موسم", "سياست", "خبرون", "ريسيپي", "کاڌي جي ترڪيب", "ڪرڪيٽ ميچ"],
         "response": (
             "معاف ڪجو، هي سوال هن سروس جي دائري کان ٻاهر آهي. "
             "مهرباني ڪري لاڳاپيل شعبي جي ڊاڪٽر يا ماهر سان رابطو ڪريو."
