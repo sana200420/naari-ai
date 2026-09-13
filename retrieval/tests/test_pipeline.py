@@ -244,3 +244,65 @@ def test_search_respects_top_k():
     )
 
     assert len(result["results"]) == 3
+
+
+def test_search_guard_survives_the_english_rescue_leg():
+    # The English leg re-ranks a combined candidate set. It used to do so
+    # WITHOUT the fusion-over-reranker guard, so every query below the cascade
+    # threshold silently lost the fix that moved Recall@1 from 0.339 to 0.540 --
+    # most of the gap between that and the 0.387 measured live on 248 queries.
+    retriever = _FakeRetriever(
+        sd_dense=[_row(1, score=0.9), _row(2, score=0.8)],
+        en_dense=[_row(99, score=0.7)],
+    )
+    result = search(
+        "query", retriever=retriever,
+        # id 1 is fusion's top-1; the reranker prefers 2, and the low score
+        # forces the English leg to run.
+        rerank_fn=_fake_rerank({1: 0.10, 2: 0.20, 99: 0.15}),
+        translate_fn=_fake_translate, tau_high=0.75,
+    )
+
+    assert result["results"][0]["answer_id"] == 1
+
+
+def test_search_cascade_tau_is_independent_of_tau_high():
+    # One number used to gate both "confident enough to assert" and "weak
+    # enough to translate". Raising the first for safety silently made the
+    # English leg fire on nearly every query.
+    retriever = _FakeRetriever(sd_dense=[_row(1, score=0.9)], en_dense=[_row(99)])
+    translated = []
+
+    def spy(q):
+        translated.append(q)
+        return f"EN:{q}"
+
+    search(
+        "query", retriever=retriever, rerank_fn=_fake_rerank({1: 0.5}),
+        translate_fn=spy,
+        tau_high=0.99,      # band says "not confident"
+        cascade_tau=0.10,   # cascade says "no rescue needed"
+    )
+
+    assert translated == []
+
+
+def test_promoted_row_keeps_the_reranker_score_which_the_bands_depend_on():
+    # When the guard promotes fusion's pick, the row keeps the RERANKER's low
+    # score. That is not a bug to tidy away: api/pipeline.py's confidence bands
+    # are calibrated on it, because it encodes whether fusion and the reranker
+    # agreed. Measured precision by band: 0.844 / 0.488 / 0.472 / 0.368
+    # (eval/gold_top1_scores.csv). Rescoring the promoted row here would
+    # silently invalidate that calibration.
+    retriever = _FakeRetriever(sd_dense=[_row(1, score=0.9), _row(2, score=0.8)])
+
+    result = search(
+        "query", retriever=retriever,
+        rerank_fn=_fake_rerank({1: 0.24, 2: 0.99}),
+        translate_fn=_fake_translate, tau_high=0.0,
+    )
+
+    assert result["results"][0]["answer_id"] == 1      # fusion's pick wins
+    assert result["results"][0]["score"] == 0.24       # ...keeping the low score
+    # and so the list is ordered by rank, not by descending score
+    assert result["results"][1]["score"] > result["results"][0]["score"]

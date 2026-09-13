@@ -63,6 +63,13 @@ from retrieval.search import COLLECTION, HybridRetriever, reciprocal_rank_fusion
 from retrieval.translate import translate_sd_to_en
 
 DEFAULT_TAU_HIGH = 0.75
+# The cascade gate is now its own knob. It used to share TAU_HIGH with the
+# API's confidence band, which meant one number decided two unrelated things:
+# "is this answer confident enough to assert" and "is this answer weak enough
+# to be worth translating". Raising the band threshold for safety silently
+# made the English leg fire on nearly every query. Defaults to the old shared
+# value so nothing changes until someone deliberately tunes it.
+DEFAULT_CASCADE_TAU = 0.75
 DEFAULT_RERANK_OVERRIDE_MARGIN = 2.0
 
 
@@ -154,6 +161,7 @@ def search(
     top_k: int = 5,
     candidate_k: int = 20,
     tau_high: float | None = None,
+    cascade_tau: float | None = None,
     rerank_override_margin: float | None = None,
     retriever: HybridRetriever | None = None,
     translate_fn=translate_sd_to_en,
@@ -165,6 +173,10 @@ def search(
     start = time.perf_counter()
     if tau_high is None:
         tau_high = float(os.environ.get("TAU_HIGH", DEFAULT_TAU_HIGH))
+    if cascade_tau is None:
+        # Falls back to tau_high so existing callers and tests keep their
+        # behaviour; CASCADE_TAU overrides it independently.
+        cascade_tau = float(os.environ.get("CASCADE_TAU", tau_high))
     if rerank_override_margin is None:
         rerank_override_margin = float(
             os.environ.get("RERANK_OVERRIDE_MARGIN", DEFAULT_RERANK_OVERRIDE_MARGIN)
@@ -198,7 +210,7 @@ def search(
     reranked = reranked_full[:top_k]
     top_score = reranked[0]["rerank_score"] if reranked else 0.0
 
-    if top_score < tau_high:
+    if top_score < cascade_tau:
         en_query = translate_fn(query)
         en_dense = active_retriever.dense_search(en_query, top_k=candidate_k, lang="en")
         for row in en_dense:
@@ -208,7 +220,19 @@ def search(
         combined = {row["answer_id"]: row for row in sd_candidates}
         for row in en_dense:
             combined.setdefault(row["answer_id"], row)
-        reranked = rerank_fn(query, list(combined.values()), top_k=top_k) if combined else []
+        # The guard has to be re-applied here. Without it, every query that
+        # takes the rescue path silently loses the fusion-over-reranker
+        # preference that moved Recall@1 from 0.339 to 0.540 -- which is most
+        # of the gap between that number and the 0.387 measured live.
+        if combined:
+            combined_full = rerank_fn(query, list(combined.values()),
+                                      top_k=len(combined))
+            combined_full = _prefer_fusion_top1_if_close(
+                combined_full, sd_candidates[0]["answer_id"], rerank_override_margin
+            ) if sd_candidates else combined_full
+            reranked = combined_full[:top_k]
+        else:
+            reranked = []
 
     results = [_to_result(row, path_by_id[row["answer_id"]]) for row in reranked]
 

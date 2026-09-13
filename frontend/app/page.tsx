@@ -1,6 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { MapPin, Phone, Navigation } from "lucide-react";
+import {
+  loadFacilities,
+  nearest,
+  getPosition,
+  formatKm,
+  mapsUrl,
+  KIND_LABEL,
+  type NearbyFacility,
+} from "./facilities";
 import {
   CalendarHeart,
   Brain,
@@ -67,6 +77,8 @@ type AskResponse = {
   confidence_band: string;
   retrieved_ids: number[];
   latency_ms: number;
+  did_you_mean?: string | null;
+  alternatives?: string[];
 };
 
 /** Pull the payload out of Gradio's SSE stream. Frames are an "event:" line
@@ -85,13 +97,162 @@ function parseGradioSse(raw: string): AskResponse {
   throw new Error("no complete event in Gradio stream");
 }
 
+
+/**
+ * Nearest health facilities, shown only under a danger-gate escalation.
+ *
+ * Deliberately a separate component rendered *after* the escalation message:
+ * the escalation is already on screen and correct before this runs, so a
+ * denied permission, a missing GPS fix or a failed fetch degrades to nothing
+ * rather than delaying or replacing the advice. The lookup itself is
+ * on-device -- see facilities.ts.
+ */
+function NearestFacilities() {
+  const [state, setState] = useState<"idle" | "locating" | "ready" | "denied" | "error">("idle");
+  const [places, setPlaces] = useState<NearbyFacility[]>([]);
+
+  async function find() {
+    setState("locating");
+    try {
+      const [pos, data] = await Promise.all([getPosition(), loadFacilities()]);
+      setPlaces(nearest(data, pos.coords.latitude, pos.coords.longitude, 3));
+      setState("ready");
+    } catch (err) {
+      const denied =
+        typeof GeolocationPositionError !== "undefined" &&
+        err instanceof GeolocationPositionError &&
+        err.code === err.PERMISSION_DENIED;
+      console.error("[naari] facility lookup failed:", err);
+      setState(denied ? "denied" : "error");
+    }
+  }
+
+  const box: React.CSSProperties = {
+    background: "#FFFFFF",
+    border: "1px solid #F0DDD7",
+    borderRight: "3px solid #B3261E",
+    borderRadius: "14px",
+    padding: "14px 16px",
+    marginTop: "10px",
+  };
+
+  if (state === "idle") {
+    return (
+      <div style={box}>
+        <p style={{ margin: "0 0 10px", fontSize: "14px", color: "#4A1942", lineHeight: 1.6 }}>
+          ويجهي صحت مرڪز جو نالو ۽ فاصلو ڏسڻ لاءِ پنهنجي جاءِ جي اجازت ڏيو.
+          توهان جي جاءِ توهان جي فون تي ئي رهندي.
+        </p>
+        <button
+          onClick={find}
+          style={{
+            display: "flex", alignItems: "center", gap: "8px",
+            background: "#4A1942", color: "#FFFFFF", border: "none",
+            borderRadius: "12px", padding: "10px 16px", fontSize: "14.5px",
+            fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+          }}
+        >
+          <MapPin size={17} />
+          ويجهو صحت مرڪز ڳوليو
+        </button>
+      </div>
+    );
+  }
+
+  if (state === "locating") {
+    return <div style={box}><p style={{ margin: 0, fontSize: "14px", color: "#4A1942" }}>جاءِ معلوم ڪري رهيا آهيون…</p></div>;
+  }
+
+  if (state === "denied" || state === "error") {
+    return (
+      <div style={box}>
+        <p style={{ margin: 0, fontSize: "14px", color: "#4A1942", lineHeight: 1.6 }}>
+          {state === "denied"
+            ? "جاءِ جي اجازت نه ملي. مهرباني ڪري ويجهي ليڊي هيلٿ ورڪر يا تعلقي اسپتال وڃو."
+            : "ويجهن مرڪزن جي فهرست هن وقت نه ملي سگهي. مهرباني ڪري ويجهي اسپتال وڃو."}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={box}>
+      <p style={{ margin: "0 0 10px", fontSize: "13px", fontWeight: 600, color: "#B3261E" }}>
+        ويجها صحت مرڪز
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {places.map((f) => (
+          <div key={f.id} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+            <span style={{ fontSize: "15px", fontWeight: 600, color: "#4A1942" }}>{f.name}</span>
+            <span style={{ fontSize: "13px", color: "#7A6169" }}>
+              {KIND_LABEL[f.kind]} · {formatKm(f.km)}
+            </span>
+            <span style={{ display: "flex", gap: "14px", marginTop: "2px" }}>
+              <a href={mapsUrl(f)} target="_blank" rel="noopener noreferrer"
+                 style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "13px", color: "#4A1942" }}>
+                <Navigation size={13} /> رستو ڏسو
+              </a>
+              {f.phone && (
+                <a href={`tel:${f.phone}`}
+                   style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "13px", color: "#4A1942" }}>
+                  <Phone size={13} /> فون ڪريو
+                </a>
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+      <p style={{ margin: "12px 0 0", fontSize: "11.5px", color: "#7A6169", lineHeight: 1.5 }}>
+        فاصلو سڌي ليڪ ۾ آهي، رستي جو فاصلو وڌيڪ ٿي سگهي ٿو. ڊيٽا: OpenStreetMap
+      </p>
+    </div>
+  );
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<
-    { role: string; text: string }[]
+    {
+      role: string;
+      text: string;
+      escalated?: boolean;
+      // Set on the high-confidence path: the KB question we matched. The
+      // answer is already in `text` but stays hidden until she confirms the
+      // question is really what she asked.
+      confirmQuestion?: string;
+      alternatives?: string[];
+      confirmed?: boolean;
+    }[]
   >([]);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  /**
+   * Resolve a "did you mean" offer.
+   *
+   * The answer was already returned with the original response, so "yes" just
+   * reveals it -- no second request, which would cost another few seconds on a
+   * rural connection for data we already hold. "No" replaces the offer with
+   * the other candidate questions she can tap, or an honest refusal.
+   */
+  function confirmAnswer(index: number, yes: boolean) {
+    setMessages((prev) =>
+      prev.map((m, i) => {
+        if (i !== index) return m;
+        if (yes) return { ...m, confirmed: true };
+        const alts = m.alternatives ?? [];
+        return {
+          ...m,
+          confirmed: true,
+          confirmQuestion: undefined,
+          text: alts.length
+            ? "معاف ڪجو. ڇا هيٺين مان ڪو سوال توهان جو آهي؟\n\n" +
+              alts.map((a) => "• " + a).join("\n")
+            : "معاف ڪجو، مون وٽ هن سوال جو صحيح جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو.",
+        };
+      })
+    );
+  }
 
   async function sendMessage(customQuery?: string) {
     const query = customQuery ?? input;
@@ -143,6 +304,13 @@ export default function Home() {
           text:
             data.answer ||
             "معاف ڪجو، جواب حاصل نه ٿي سگهيو.",
+          // The danger gate already answered. Facilities are layered on
+          // afterwards as an enhancement -- if the lookup fails, the
+          // escalation itself is untouched.
+          escalated: data.path === "danger",
+          confirmQuestion:
+            data.path === "confirm" ? data.did_you_mean ?? undefined : undefined,
+          alternatives: data.alternatives ?? [],
         },
       ]);
     } catch (error) {
@@ -438,7 +606,40 @@ export default function Home() {
                   whiteSpace: "pre-wrap",
                 }}
               >
-                {message.text}
+                {message.confirmQuestion && !message.confirmed ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <span style={{ fontSize: "15px", color: "#7A6169" }}>
+                      ڇا توهان اهو پڇي رهيا آهيو؟
+                    </span>
+                    <span style={{ fontWeight: 600 }}>{message.confirmQuestion}</span>
+                    <span style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => confirmAnswer(index, true)}
+                        style={{
+                          background: "#4A1942", color: "#FFFFFF", border: "none",
+                          borderRadius: "12px", padding: "9px 20px", fontSize: "15px",
+                          fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+                        }}
+                      >
+                        ها
+                      </button>
+                      <button
+                        onClick={() => confirmAnswer(index, false)}
+                        style={{
+                          background: "#FFFFFF", color: "#4A1942",
+                          border: "1px solid #F0DDD7", borderRadius: "12px",
+                          padding: "9px 20px", fontSize: "15px", fontWeight: 600,
+                          fontFamily: "inherit", cursor: "pointer",
+                        }}
+                      >
+                        نه
+                      </button>
+                    </span>
+                  </div>
+                ) : (
+                  message.text
+                )}
+                {message.escalated && <NearestFacilities />}
               </div>
             </div>
           ))}

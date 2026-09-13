@@ -35,3 +35,4 @@ Thumbs.db
 slidedeck/
 assets/*.mp4
 assets/*.pptx
+eval/.dod_checkpoint.json
