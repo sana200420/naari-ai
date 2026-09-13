@@ -33,9 +33,7 @@ def main():
     parser.add_argument(
         "--ci",
         action="store_true",
-        help="Run in CI mode (report-only for now; does not fail the build). "
-             "Recall is currently below the 1.00 target so this is not wired "
-             "to block merges yet.",
+        help="Run in CI mode. Exits non-zero if recall is below 1.00.",
     )
     args = parser.parse_args()
 
@@ -83,15 +81,14 @@ def main():
     if recall < 1.0:
         print(
             f"\nNOTE: recall {recall:.4f} is below the 1.00 target. "
-            f"Not failing the build (report-only) until the gate is fixed — "
-            f"see eval/danger_gate_misses.csv.",
+            f"See eval/danger_gate_misses.csv.",
             file=sys.stderr,
         )
+        if args.ci:
+            sys.exit(1)
+    else:
+        print("\nOK: recall meets the 1.00 target.")
 
-    # Report-only: always exit 0 so this doesn't block merges while the
-    # gate is being fixed. Revisit once recall is closer to target —
-    # either restore a hard 1.00 gate or ratchet against a committed
-    # baseline so regressions (not the existing gap) fail the build.
     sys.exit(0)
 
 

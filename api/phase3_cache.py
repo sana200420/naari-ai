@@ -20,8 +20,8 @@ _CACHE_TTL = 60 * 60 * 24  # 24 hours
 
 
 def _cache_key(query: str) -> str:
-    from retrieval.normalize import normalize_sd
-    norm = normalize_sd(query)
+    from api.safety.danger_gate import normalise
+    norm = normalise(query)
     return hashlib.sha256(norm.encode()).hexdigest()
 
 

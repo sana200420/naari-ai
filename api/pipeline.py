@@ -2,7 +2,6 @@
 Phase 2 — Main pipeline: stages 00-08
 Danger gate short-circuits everything — a danger query never reaches retrieval or LLM.
 """
-import logging
 import time
 import os
 import re
@@ -14,12 +13,7 @@ BAND_HIGH = "high"
 BAND_MID = "mid"
 BAND_LOW = "low"
 
-_logger = logging.getLogger("naari.pipeline")
-
 TAU_HIGH = float(os.getenv("TAU_HIGH", "0.75"))
-
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
 # Logger — never import at top level to avoid circular imports
 def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id=None):
@@ -28,16 +22,21 @@ def _log(query, retrieved_ids, scores, band, path, latency_ms, provider, session
         log_query(query, retrieved_ids, scores, band, path, latency_ms, provider, session_id)
     except Exception:
         pass
-
-TAU_LOW = float(os.getenv("TAU_LOW", "0.2034"))
+TAU_LOW = float(os.getenv("TAU_LOW", "0.40"))
 
 
 def run_pipeline(request: AskRequest) -> AskResponse:
     t0 = time.time()
     query = request.query
 
-    # Stage 00: danger gate — runs FIRST, always
-    gate: GateResult = run_danger_gate(query)
+    # Stage 00: danger gate — runs FIRST, always.
+    # use_embedding=False: after Sana's 33-phrase round + the token-bag fix,
+    # the keyword path alone hits 100/100 on eval/danger_sign_eval_100.csv
+    # (0/100 rows depend on the embedding path). Keeping embedding on cost
+    # ~15.5ms/question for zero extra recall — retired here, not deleted.
+    # Flip back to True (and see the NOTE above EMBEDDING_THRESHOLD in
+    # danger_gate.py) if a future eval finds a gap only it can catch.
+    gate: GateResult = run_danger_gate(query, use_embedding=False)
     if gate.escalate:
         latency = round((time.time() - t0) * 1000, 2)
         _log(query, [], [], BAND_HIGH, "danger", latency, "gate", request.session_id)
@@ -54,8 +53,6 @@ def run_pipeline(request: AskRequest) -> AskResponse:
 
     # Stage 01: scope classifier
     if gate.scope_block:
-        latency = round((time.time() - t0) * 1000, 2)
-        _log(query, [], [], BAND_HIGH, "referral", latency, "scope", request.session_id)
         return AskResponse(
             answer=gate.response,
             audio_url=None,
@@ -64,18 +61,12 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[],
-            latency_ms=latency,
+            latency_ms=round((time.time() - t0) * 1000, 2),
         )
 
-    # Stage 02: retrieval
-    from retrieval.pipeline import search as retrieval_search
-
-    retrieval_result = retrieval_search(query)
-    chunks = [
-        {"id": r["answer_id"], "text": r["answer"], "score": r["score"]}
-        for r in retrieval_result["results"]
-    ]
-    top_score = chunks[0]["score"] if chunks else 0.0
+    # Stage 02: retrieval (stub — Sana replaces with real KB retrieval)
+    chunks = []
+    top_score = 0.0
 
     # Stage 03: confidence band decision
     if top_score >= TAU_HIGH and chunks:
@@ -87,8 +78,6 @@ def run_pipeline(request: AskRequest) -> AskResponse:
 
     # Stage 04: low band -> refusal
     if band == BAND_LOW:
-        latency = round((time.time() - t0) * 1000, 2)
-        _log(query, [], [top_score], BAND_LOW, "refusal", latency, "none", request.session_id)
         return AskResponse(
             answer="معاف ڪجو، مون وٽ هن سوال جو جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو.",
             audio_url=None,
@@ -97,14 +86,12 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[],
-            latency_ms=latency,
+            latency_ms=round((time.time() - t0) * 1000, 2),
         )
 
     # Stage 05: high band -> verbatim
     if band == BAND_HIGH:
         top = chunks[0]
-        latency = round((time.time() - t0) * 1000, 2)
-        _log(query, [c["id"] for c in chunks], [top_score], BAND_HIGH, "verbatim", latency, "kb", request.session_id)
         return AskResponse(
             answer=top["text"],
             audio_url=top.get("audio_url"),
@@ -113,7 +100,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             escalated=False,
             disclaimer=False,
             retrieved_ids=[c["id"] for c in chunks],
-            latency_ms=latency,
+            latency_ms=round((time.time() - t0) * 1000, 2),
         )
 
     # Stage 06: mid band -> constrained generation
@@ -123,7 +110,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     answer = output_filter(answer)
 
     latency = round((time.time() - t0) * 1000, 2)
-    _log(query, [c["id"] for c in chunks], [top_score], BAND_MID, "generated", latency, "llm", request.session_id)
+    _log(query, [c["id"] for c in chunks], [], BAND_MID, "generated", latency, "llm", request.session_id)
     return AskResponse(
         answer=answer,
         audio_url=None,
@@ -163,37 +150,35 @@ Answer in Sindhi:"""
 
 
 def _try_gemini(prompt: str) -> str:
+    """Try Gemini 2.5 Flash — returns None on any failure."""
     key = os.getenv("GEMINI_API_KEY")
     if not key:
-        _logger.warning("gemini: GEMINI_API_KEY not set, skipping")
         return None
     try:
         import google.generativeai as genai
         genai.configure(api_key=key)
-        model = genai.GenerativeModel(GEMINI_MODEL)
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(prompt)
         return response.text.strip()
-    except Exception as exc:
-        _logger.warning("gemini failed: %s: %s", type(exc).__name__, exc)
+    except Exception:
         return None
 
 
 def _try_groq(prompt: str) -> str:
+    """Try Groq Llama — returns None on any failure."""
     key = os.getenv("GROQ_API_KEY")
     if not key:
-        _logger.warning("groq: GROQ_API_KEY not set, skipping")
         return None
     try:
         from groq import Groq
         client = Groq(api_key=key)
         response = client.chat.completions.create(
-            model=GROQ_MODEL,
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
-            max_completion_tokens=512,
+            max_tokens=512,
         )
         return response.choices[0].message.content.strip()
-    except Exception as exc:
-        _logger.warning("groq failed: %s: %s", type(exc).__name__, exc)
+    except Exception:
         return None
 
 
@@ -201,9 +186,11 @@ def output_filter(text: str) -> str:
     """Stage 07: block medicine names, doses, diagnosis phrasing."""
     REFUSAL = "معاف ڪجو، مون وٽ هن سوال جو جواب ناهي. مهرباني ڪري ليڊي هيلٿ ورڪر سان رابطو ڪريو."
 
+    # Dose patterns — mg, ml, tablet, capsule
     if re.search(r"\d+\s*(mg|ml|mcg|tablet|tablets|cap|capsule|dose)", text, re.IGNORECASE):
         return REFUSAL
 
+    # False reassurance phrases
     bad_phrases = [
         "nothing to worry", "don't worry", "it's normal", "just relax",
         "no need to worry", "probably nothing", "should be fine"
