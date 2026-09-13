@@ -26,6 +26,10 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest retrieval/
       - run: pytest api/
+      # Mahnoor's corpus and eval-set tests. Every folder owner writes tests
+      # for their own folder; these had none running because the folder was
+      # never committed.
+      - run: pytest data/
       - run: python eval/run_danger_gate_eval.py --ci
 
       # False-escalation is a section-7 target (<=0.05) and had no gate, so a
