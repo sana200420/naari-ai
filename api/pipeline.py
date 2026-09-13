@@ -85,12 +85,15 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     query = request.query
 
     # Stage 00: danger gate — runs FIRST, always
-    # use_embedding=False matches Sabiha's production call. The embedding path
-    # is retired: measured on her latest gate, keywords alone reach 1.00 on both
-    # her 100-case set and my independent 52-phrase bank, while enabling the
-    # embedding path adds 15.5ms and turns three ordinary questions into
-    # emergencies -- a PCOS diet question, a pre-conception planning question,
-    # and one about low mood affecting daily life.
+    # use_embedding=False: after the 33-phrase round + the token-bag fix, the
+    # keyword path alone hits 100/100 on eval/danger_sign_eval_100.csv (0/100
+    # rows depend on the embedding path) and 52/52 on the independent
+    # 52-phrase bank. Keeping embedding on cost ~15.5ms/question for zero
+    # extra recall, and turned three ordinary questions into emergencies -- a
+    # PCOS diet question, a pre-conception planning question, and one about
+    # low mood. Retired here, not deleted: flip back to True (and see the NOTE
+    # above EMBEDDING_THRESHOLD in danger_gate.py) if a future eval finds a
+    # gap only it can catch.
     gate: GateResult = run_danger_gate(query, use_embedding=False)
     if gate.escalate:
         latency = round((time.time() - t0) * 1000, 2)

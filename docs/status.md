@@ -7,7 +7,7 @@
 | Person | Currently | Blocked on |
 |---|---|---|
 | Sana | Levers 1, 3, 4 done and measured; reranking (item 8) built and measured; Sindhi+English fully embedded (4000/4000 points, verified live); gold eval set at 248 rows, every row individually reviewed, now also carrying `acceptable_answer_ids` for verified near-duplicate KB rows; Phase 1 go/no-go is a GO; Phase 2 Items 1, 2, and 3 all done — the reranker override guard is shipped and calibrated (Recall@1 0.339 → 0.540); Item 4 measured and decided (int8 not adopted — latency passes, recall costs 2.42 points) | **Phase 2 complete.** Next: open a PR merging `sana/phase2-service` into `main`, then Phase 3 (index the colloquial variants, retune against the ~4x larger index). Two documented, non-blocking follow-ups on Item 4: a genuine fp32-CPU latency baseline, and a reranker-only int8 variant |
-| Sabiha | FastAPI skeleton + first deploy | — |
+| Sabiha | Phases 0-4 built: FastAPI service, danger gate (100/100 recall, keyword-only, embedding path retired), 3-band confidence pipeline, Gemini→Groq→static fallback, Supabase logging, cache/rate-limit/tier scaffolding (tier enforcement + demo mode not yet wired into serving), uptime monitoring, runbook | Merging `sabiha/phase2-pipeline` into `main` (conflicts with `retrieval/` work, in progress); wiring `enforce_tier()` and demo mode into the pipeline; registering `api/routers/audio.py` in `main.py` |
 | Tooba | Next.js skeleton, Sindhi font audit | — |
 | Mahnoor | Corpus merge landed; variant + eval pipeline landed but partial (see below) | Reviewer outreach and real-question harvesting not started yet |
 
