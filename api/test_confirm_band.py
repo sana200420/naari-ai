@@ -37,8 +37,10 @@ def _pipeline(monkeypatch, top_score):
     monkeypatch.setitem(sys.modules, "retrieval.pipeline", mod)
     import api.pipeline as p
     import api.safety.danger_gate as dg
+    # **kw so this keeps working when the production call gains arguments --
+    # it already gained use_embedding=False, which broke a bare lambda.
     monkeypatch.setattr(p, "run_danger_gate",
-                        lambda t: dg.run_danger_gate(t, use_embedding=False))
+                        lambda t, **kw: dg.run_danger_gate(t, use_embedding=False))
     # elaboration has its own concerns; leaving it on would rewrite answers here
     monkeypatch.setattr(p, "ELABORATE_ANSWERS", False)
     return p
