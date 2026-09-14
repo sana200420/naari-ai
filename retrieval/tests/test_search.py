@@ -4,7 +4,13 @@ real Qdrant connection needed)."""
 
 from types import SimpleNamespace
 
-from retrieval.search import RRF_K, HybridRetriever, reciprocal_rank_fusion
+from retrieval.search import (
+    RRF_K,
+    VARIANT_LANG,
+    HybridRetriever,
+    dedupe_by_answer_id,
+    reciprocal_rank_fusion,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -265,3 +271,132 @@ def test_cross_lingual_search_translates_before_english_leg():
     # embed_fn echoes its input into the dense vector, so we can see the
     # English leg was embedded from the *translated* text, not the original.
     assert seen_queries == [["EN:سنڌي سوال"]]
+
+
+# ---------------------------------------------------------------------------
+# Variant index — weighted RRF, dedupe, and the extra legs
+# ---------------------------------------------------------------------------
+
+def test_weights_default_to_plain_rrf():
+    """Passing no weights must be byte-identical to the old behaviour."""
+    lists = [[1, 2, 3], [3, 1]]
+    assert reciprocal_rank_fusion(lists) == reciprocal_rank_fusion(
+        lists, weights=[1.0, 1.0]
+    )
+
+
+def test_weight_scales_a_list_contribution():
+    half = dict(reciprocal_rank_fusion([[1], [2]], weights=[1.0, 0.5]))
+    assert half[1] == 1.0 / (RRF_K + 1)
+    assert half[2] == 0.5 / (RRF_K + 1)
+
+
+def test_zero_weight_removes_a_list_influence():
+    """A variant_weight of 0 must make the variant legs inert, so the flag can
+    be turned off by configuration without redeploying code."""
+    with_legs = dict(reciprocal_rank_fusion([[1, 2], [9]], weights=[1.0, 0.0]))
+    assert with_legs[9] == 0.0
+    assert with_legs[1] > with_legs[2]
+
+
+def test_mismatched_weights_raise():
+    try:
+        reciprocal_rank_fusion([[1], [2]], weights=[1.0])
+    except ValueError as exc:
+        assert "2 lists" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_dedupe_keeps_first_occurrence_per_answer_id():
+    rows = [
+        {"answer_id": 7, "question": "variant a"},
+        {"answer_id": 7, "question": "variant b"},
+        {"answer_id": 9, "question": "variant c"},
+    ]
+    out = dedupe_by_answer_id(rows)
+    assert [r["answer_id"] for r in out] == [7, 9]
+    assert out[0]["question"] == "variant a"   # best-ranked one survives
+
+
+def test_variant_legs_do_not_double_count_a_row():
+    """
+    The failure this guards against: a KB row has two variants, both match,
+    both land in one ranked list, and RRF awards the row two separate
+    1/(k+rank) terms. It would then outrank a row that was simply retrieved
+    better, purely for having more paraphrases in the index.
+    """
+    client = _FakeQdrantClient(
+        dense_hits=[_FakeHit(7, 0.9), _FakeHit(7, 0.88), _FakeHit(9, 0.4)],
+        sparse_hits=[],
+    )
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    var_dense, _ = retriever.variant_search("query", top_k=25)
+
+    assert [r["answer_id"] for r in var_dense] == [7, 9]
+
+
+def test_variant_search_filters_on_the_variant_lang():
+    client = _FakeQdrantClient(dense_hits=[_FakeHit(1, 0.9)], sparse_hits=[])
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    retriever.variant_search("query")
+
+    matched = client.filters[0].must[0].match.value
+    assert matched == VARIANT_LANG
+
+
+def test_fused_search_without_variants_never_queries_them():
+    """Default off: the existing measured pipeline must be untouched."""
+    client = _FakeQdrantClient(
+        dense_hits=[_FakeHit(1, 0.9)], sparse_hits=[_FakeHit(2, 0.8)]
+    )
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    rows = retriever.fused_search("query", top_k=5)
+
+    assert client.calls == ["dense", "sparse"]      # two legs, not four
+    assert rows[0]["path"] == "fused"
+
+
+def test_fused_search_with_variants_adds_two_legs():
+    client = _FakeQdrantClient(
+        dense_hits=[_FakeHit(1, 0.9)], sparse_hits=[_FakeHit(2, 0.8)]
+    )
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    rows = retriever.fused_search("query", top_k=5, use_variants=True)
+
+    assert client.calls == ["dense", "sparse", "dense", "sparse"]
+    assert rows[0]["path"] == "fused_variants"
+
+
+def test_canonical_payload_wins_over_a_variant_payload():
+    """
+    A variant point carries its source row's answer, but the canonical row is
+    the one whose question was reviewed. When both legs return the same
+    answer_id, the displayed row must be the canonical one.
+    """
+    canonical = _FakeHit(5, 0.9)
+    canonical.payload["question"] = "canonical question"
+    variant = _FakeHit(5, 0.95)
+    variant.payload["question"] = "colloquial variant"
+
+    class _Client(_FakeQdrantClient):
+        def query_points(self, collection_name, query, using, limit,
+                         with_payload, query_filter=None):
+            self.calls.append(using)
+            self.filters.append(query_filter)
+            is_variant = (
+                query_filter is not None
+                and query_filter.must[0].match.value == VARIANT_LANG
+            )
+            hits = [variant] if is_variant else [canonical]
+            return SimpleNamespace(points=hits[:limit])
+
+    retriever = HybridRetriever(_Client([], []), embed_fn=_fake_embed)
+    rows = retriever.fused_search("query", top_k=5, use_variants=True)
+
+    assert rows[0]["answer_id"] == 5
+    assert rows[0]["question"] == "canonical question"

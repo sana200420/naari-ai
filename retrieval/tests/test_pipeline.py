@@ -1,4 +1,4 @@
-"""Tests for retrieval.pipeline.search() -- the docs/contracts/retrieval.json
+"""Tests for retrieval.search() -- the docs/contracts/retrieval.json
 entrypoint. Everything heavy (Qdrant client, HybridRetriever, rerank model,
 translate model) is injected as a fake, so these never load a real model or
 touch the network. Real end-to-end verification against live Qdrant + real
@@ -25,10 +25,13 @@ def _row(answer_id, score=0.5, question=None):
 
 
 class _FakeRetriever:
-    def __init__(self, sd_dense=None, sd_sparse=None, en_dense=None):
+    def __init__(self, sd_dense=None, sd_sparse=None, en_dense=None,
+                 var_dense=None, var_sparse=None):
         self.sd_dense = sd_dense or []
         self.sd_sparse = sd_sparse or []
         self.en_dense = en_dense or []
+        self.var_dense = var_dense or []
+        self.var_sparse = var_sparse or []
         self.calls = []
 
     def dense_search(self, query, top_k=25, lang="sd"):
@@ -38,6 +41,10 @@ class _FakeRetriever:
     def sparse_search(self, query, top_k=25, lang="sd"):
         self.calls.append(("sparse", lang, query))
         return self.sd_sparse if lang == "sd" else []
+
+    def variant_search(self, query, top_k=25):
+        self.calls.append(("variant", "sd_var", query))
+        return self.var_dense, self.var_sparse
 
 
 def _fake_rerank(score_map=None):
@@ -306,3 +313,81 @@ def test_promoted_row_keeps_the_reranker_score_which_the_bands_depend_on():
     assert result["results"][0]["score"] == 0.24       # ...keeping the low score
     # and so the list is ordered by rank, not by descending score
     assert result["results"][1]["score"] > result["results"][0]["score"]
+
+
+# ---------------------------------------------------------------------------
+# Variant index legs
+# ---------------------------------------------------------------------------
+
+def test_variants_are_off_by_default():
+    """
+    The measured pipeline must be unchanged unless someone opts in. Every
+    recall number on record was produced with these legs off, so defaulting
+    them on would invalidate the baseline they are meant to be compared to.
+    """
+    retriever = _FakeRetriever(sd_dense=[_row(1)], var_dense=[_row(42)])
+    search("query", retriever=retriever,
+                    rerank_fn=_fake_rerank({1: 0.9}), translate_fn=_fake_translate)
+
+    assert not any(call[0] == "variant" for call in retriever.calls)
+
+
+def test_variants_queried_when_enabled():
+    retriever = _FakeRetriever(sd_dense=[_row(1)], var_dense=[_row(42)])
+    search("query", retriever=retriever, use_variants=True,
+                    rerank_fn=_fake_rerank({1: 0.9, 42: 0.1}),
+                    translate_fn=_fake_translate)
+
+    assert ("variant", "sd_var", "query") in retriever.calls
+
+
+def test_variant_leg_can_surface_a_row_the_canonical_legs_missed():
+    """The rescue this index exists for: the right row is findable by how the
+    question is actually phrased, even when the FAQ wording does not match."""
+    retriever = _FakeRetriever(sd_dense=[_row(1)], var_dense=[_row(42)])
+    result = search(
+        "query", retriever=retriever, use_variants=True,
+        rerank_fn=_fake_rerank({1: 0.2, 42: 0.95}), translate_fn=_fake_translate,
+    )
+
+    assert 42 in [r["answer_id"] for r in result["results"]]
+
+
+def test_variant_weight_zero_leaves_ranking_unchanged():
+    """
+    VARIANT_WEIGHT=0 must be equivalent to the legs being off, so the flag can
+    be neutralised by configuration alone if it ever misbehaves in production.
+    """
+    def build():
+        return _FakeRetriever(sd_dense=[_row(1), _row(2)], var_dense=[_row(2), _row(1)])
+
+    off = search("query", retriever=build(), use_variants=False,
+                          rerank_fn=_fake_rerank({1: 0.9, 2: 0.8}),
+                          translate_fn=_fake_translate)
+    zero = search("query", retriever=build(), use_variants=True,
+                           variant_weight=0.0,
+                           rerank_fn=_fake_rerank({1: 0.9, 2: 0.8}),
+                           translate_fn=_fake_translate)
+
+    assert [r["answer_id"] for r in off["results"]] == \
+           [r["answer_id"] for r in zero["results"]]
+
+
+def test_canonical_row_is_returned_not_the_variant_payload():
+    """
+    A variant point carries its source row's answer so it can be served, but
+    the canonical row is the reviewed one. When both legs return the same
+    answer_id, the canonical payload must win -- otherwise a colloquial
+    paraphrase could end up displayed as though it were vetted text.
+    """
+    canonical = _row(7)
+    canonical["question"] = "canonical question"
+    variant = _row(7)
+    variant["question"] = "colloquial variant"
+
+    retriever = _FakeRetriever(sd_dense=[canonical], var_dense=[variant])
+    result = search("query", retriever=retriever, use_variants=True,
+                             rerank_fn=_fake_rerank({7: 0.9}),
+                             translate_fn=_fake_translate)
+
+    assert result["results"][0]["question"] == "canonical question"

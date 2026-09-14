@@ -72,6 +72,13 @@ DEFAULT_TAU_HIGH = 0.75
 DEFAULT_CASCADE_TAU = 0.75
 DEFAULT_RERANK_OVERRIDE_MARGIN = 2.0
 
+# Variant legs are OFF by default. Turning them on changes what every query
+# retrieves, and the branch's whole claim is that retrieval numbers are
+# measured rather than asserted -- so the flag ships off, gets measured on the
+# gold set, and is flipped in the environment only if the measurement earns it.
+DEFAULT_USE_VARIANTS = False
+DEFAULT_VARIANT_WEIGHT = 1.0
+
 
 def _prefer_fusion_top1_if_close(
     reranked: list[dict], fusion_top1_id, margin: float
@@ -166,6 +173,8 @@ def search(
     retriever: HybridRetriever | None = None,
     translate_fn=translate_sd_to_en,
     rerank_fn=rerank_fn,
+    use_variants: bool | None = None,
+    variant_weight: float | None = None,
 ) -> dict:
     """The retrieval.json contract entrypoint. `retriever`/`translate_fn`/
     `rerank_fn` are injectable so this is testable against fakes without
@@ -181,22 +190,50 @@ def search(
         rerank_override_margin = float(
             os.environ.get("RERANK_OVERRIDE_MARGIN", DEFAULT_RERANK_OVERRIDE_MARGIN)
         )
+    if use_variants is None:
+        use_variants = os.environ.get(
+            "USE_VARIANT_INDEX", str(DEFAULT_USE_VARIANTS)
+        ).strip().lower() in ("1", "true", "yes")
+    if variant_weight is None:
+        variant_weight = float(os.environ.get("VARIANT_WEIGHT", DEFAULT_VARIANT_WEIGHT))
     active_retriever = retriever if retriever is not None else _get_retriever()
 
     sd_dense = active_retriever.dense_search(query, top_k=candidate_k, lang="sd")
     sd_sparse = active_retriever.sparse_search(query, top_k=candidate_k, lang="sd")
 
+    # Colloquial rewordings of the same questions. The gold queries are not
+    # phrased the way the KB's FAQ-style questions are, which is what keeps
+    # Recall@1 (0.528) so far below Recall@20 (0.762): the right row is
+    # usually reachable and merely not first. A variant gives that row a
+    # surface that matches how the question actually gets asked.
+    var_dense, var_sparse = ([], [])
+    if use_variants:
+        var_dense, var_sparse = active_retriever.variant_search(query, top_k=candidate_k)
+
     row_by_id: dict = {}
     path_by_id: dict = {}
-    for path_name, rows in (("sindhi_dense", sd_dense), ("sindhi_sparse", sd_sparse)):
+    # Canonical legs are registered FIRST so setdefault keeps the vetted row
+    # for any answer_id that both a canonical and a variant leg returned. The
+    # variant only ever contributes rank evidence, never displayed text.
+    leg_rows = (("sindhi_dense", sd_dense), ("sindhi_sparse", sd_sparse),
+                ("variant_dense", var_dense), ("variant_sparse", var_sparse))
+    for path_name, rows in leg_rows:
         for row in rows:
             row_by_id.setdefault(row["answer_id"], row)
             path_by_id.setdefault(row["answer_id"], path_name)
 
-    sd_fused = reciprocal_rank_fusion([
+    ranked_lists = [
         [row["answer_id"] for row in sd_dense],
         [row["answer_id"] for row in sd_sparse],
-    ])
+    ]
+    weights = [1.0, 1.0]
+    if use_variants:
+        ranked_lists += [
+            [row["answer_id"] for row in var_dense],
+            [row["answer_id"] for row in var_sparse],
+        ]
+        weights += [variant_weight, variant_weight]
+    sd_fused = reciprocal_rank_fusion(ranked_lists, weights=weights)
     sd_candidates = [row_by_id[answer_id] for answer_id, _score in sd_fused[:candidate_k]]
 
     # Rerank every fused candidate, not just top_k, so fusion's #1 pick always
