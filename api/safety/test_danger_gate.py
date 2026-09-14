@@ -209,3 +209,51 @@ def test_phrase_matches_does_not_bag_single_words():
     assert _phrase_matches("بخار", "بخار جي دوا") is True  # still bare-substring, expected
     # but it must not gain any *extra* reach via token-bagging beyond that:
     assert len(_significant_tokens("بخار")) < 2
+
+
+# ── Scope keyword collisions ──────────────────────────────────────────────────
+def test_scope_keywords_do_not_collide_across_scopes():
+    """
+    No scope's keyword may appear inside another scope's keyword.
+
+    The scope classifier matches with a bare `in`, so a short word can sit
+    inside an unrelated longer one. The live example: بارش ("rain") is a
+    substring of ابارشن ("abortion"). Adding بارش for weather chatter would
+    route ten abortion questions to the weather brush-off, and the only reason
+    abortion would still win is that it comes first in SCOPE_REFERRALS -- dict
+    ordering is not a safety mechanism.
+
+    Arabic-script words collide far more often than they look like they will.
+    Prefer a phrase ("بارش ٿيندي") over a bare word.
+    """
+    from api.safety.danger_gate import SCOPE_REFERRALS
+    from retrieval.normalize import normalize_sd
+
+    collisions = []
+    for scope_a, a in SCOPE_REFERRALS.items():
+        for kw_a in a["keywords"]:
+            na = normalize_sd(kw_a)
+            if len(na) < 3:
+                continue
+            for scope_b, b in SCOPE_REFERRALS.items():
+                if scope_a == scope_b:
+                    continue
+                for kw_b in b["keywords"]:
+                    nb = normalize_sd(kw_b)
+                    if na != nb and na in nb:
+                        collisions.append(f"{scope_a}:{kw_a!r} inside {scope_b}:{kw_b!r}")
+    assert not collisions, "scope keywords collide: " + "; ".join(collisions)
+
+
+def test_abortion_queries_route_to_abortion_scope():
+    """
+    The query that shipped constipation advice at band=high must be classified,
+    and classified as abortion rather than merely caught by something.
+    """
+    for q in [
+        "مان حمل ضايع ڪرڻ چاهيان ٿي، ڇا ڪجي؟",
+        "حمل ضايع ڪرڻ لاءِ ڪهڙي دوا وٺان؟",
+    ]:
+        result = run_danger_gate(q, use_embedding=False)
+        assert result.scope_block == "abortion", f"{q!r} -> {result.scope_block}"
+        assert result.escalate is False
