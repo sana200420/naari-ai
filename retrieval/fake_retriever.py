@@ -25,6 +25,7 @@ _FAKE_ROWS = [
         "source": "WHO - https://www.who.int/news-room/fact-sheets/detail/menstrual-health-and-hygiene",
         "score": 0.91,
         "path": "sindhi_dense",
+        "review_tier": "B",
     },
     {
         "answer_id": 502,
@@ -38,6 +39,7 @@ _FAKE_ROWS = [
         "source": "https://www.who.int/news/item/07-11-2016-new-guidelines-on-antenatal-care-for-a-positive-pregnancy-experience",
         "score": 0.77,
         "path": "sindhi_sparse",
+        "review_tier": "B",
     },
     {
         "answer_id": 1502,
@@ -51,6 +53,7 @@ _FAKE_ROWS = [
         "source": "https://www.nhs.uk/live-well/sexual-health/",
         "score": 0.52,
         "path": "english_dense",
+        "review_tier": "B",
     },
 ]
 

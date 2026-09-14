@@ -20,6 +20,12 @@ KB_PATH = (
 )
 
 
+# Pinned deliberately: a change here should be a change someone MEANT to make
+# to the corpus, not one that arrives silently with a data drop. 2000 original
+# rows + 9 fever rows (ids 2001-2009, data/incoming/fever_gap_new_rows_only.csv).
+KB_ROWS = 2009
+
+
 def _load_kb_rows():
     with open(KB_PATH, encoding="utf-8", newline="") as f:
         return list(csv.DictReader(f))
@@ -31,7 +37,7 @@ def _load_kb_rows():
 
 def test_idempotence_over_full_corpus():
     rows = _load_kb_rows()
-    assert len(rows) == 2000
+    assert len(rows) == KB_ROWS
 
     checked = 0
     for row in rows:
@@ -41,7 +47,7 @@ def test_idempotence_over_full_corpus():
             twice = normalize_sd(once)
             assert once == twice, f"not idempotent on id={row['id']} field={field}"
             checked += 1
-    assert checked == 4000
+    assert checked == KB_ROWS * 2
 
 
 def test_idempotence_on_empty_and_whitespace_only():

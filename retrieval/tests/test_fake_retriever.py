@@ -12,6 +12,7 @@ REQUIRED_RESULT_KEYS = {
     "source",
     "score",
     "path",
+    "review_tier",
 }
 
 
