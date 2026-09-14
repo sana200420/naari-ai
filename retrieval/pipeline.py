@@ -77,7 +77,17 @@ DEFAULT_RERANK_OVERRIDE_MARGIN = 2.0
 # measured rather than asserted -- so the flag ships off, gets measured on the
 # gold set, and is flipped in the environment only if the measurement earns it.
 DEFAULT_USE_VARIANTS = False
-DEFAULT_VARIANT_WEIGHT = 1.0
+
+# How many variant-only candidates get a RESCUE slot beyond the canonical
+# top-candidate_k. Originally this was a weighted-RRF blend where variant legs
+# competed with canonical legs for the same fixed candidate_k slots -- and a
+# Colab measurement (eval/variant_index_lift.csv, w=0.5) showed that design
+# regresses Recall@1 by 0.125 while barely moving Recall@20 (+0.008): variant
+# noise was crowding correct canonical rows OUT of the candidate window before
+# reranking ever got to see them. Lever 4's English cascade leg already solved
+# this exact problem below (`combined.setdefault`, canonical rows never
+# evicted) -- this reuses that pattern instead of re-deriving a worse one.
+DEFAULT_VARIANT_RESCUE_K = 10
 
 
 def _prefer_fusion_top1_if_close(
@@ -180,7 +190,7 @@ def search(
     translate_fn=translate_sd_to_en,
     rerank_fn=rerank_fn,
     use_variants: bool | None = None,
-    variant_weight: float | None = None,
+    variant_rescue_k: int | None = None,
 ) -> dict:
     """The retrieval.json contract entrypoint. `retriever`/`translate_fn`/
     `rerank_fn` are injectable so this is testable against fakes without
@@ -200,8 +210,8 @@ def search(
         use_variants = os.environ.get(
             "USE_VARIANT_INDEX", str(DEFAULT_USE_VARIANTS)
         ).strip().lower() in ("1", "true", "yes")
-    if variant_weight is None:
-        variant_weight = float(os.environ.get("VARIANT_WEIGHT", DEFAULT_VARIANT_WEIGHT))
+    if variant_rescue_k is None:
+        variant_rescue_k = int(os.environ.get("VARIANT_RESCUE_K", DEFAULT_VARIANT_RESCUE_K))
     active_retriever = retriever if retriever is not None else _get_retriever()
 
     sd_dense = active_retriever.dense_search(query, top_k=candidate_k, lang="sd")
@@ -218,34 +228,53 @@ def search(
 
     row_by_id: dict = {}
     path_by_id: dict = {}
-    # Canonical legs are registered FIRST so setdefault keeps the vetted row
-    # for any answer_id that both a canonical and a variant leg returned. The
-    # variant only ever contributes rank evidence, never displayed text.
-    leg_rows = (("sindhi_dense", sd_dense), ("sindhi_sparse", sd_sparse),
-                ("variant_dense", var_dense), ("variant_sparse", var_sparse))
-    for path_name, rows in leg_rows:
+    for path_name, rows in (("sindhi_dense", sd_dense), ("sindhi_sparse", sd_sparse)):
         for row in rows:
             row_by_id.setdefault(row["answer_id"], row)
             path_by_id.setdefault(row["answer_id"], path_name)
 
-    ranked_lists = [
+    # Canonical-only fusion, exactly as it was before variants existed. This
+    # MUST stay untouched by variant legs: a first attempt fused all four
+    # ranked lists together and sliced to candidate_k, which let variant-only
+    # discovered rows outrank and displace correct canonical rows before
+    # reranking ever saw them -- Recall@1 dropped 0.125 for a Recall@20 gain
+    # of 0.008 (eval/variant_index_lift.csv). Variants are a rescue leg, not
+    # a voter: they may only ADD candidates, never bump one out.
+    sd_fused = reciprocal_rank_fusion([
         [row["answer_id"] for row in sd_dense],
         [row["answer_id"] for row in sd_sparse],
-    ]
-    weights = [1.0, 1.0]
-    if use_variants:
-        ranked_lists += [
-            [row["answer_id"] for row in var_dense],
-            [row["answer_id"] for row in var_sparse],
-        ]
-        weights += [variant_weight, variant_weight]
-    sd_fused = reciprocal_rank_fusion(ranked_lists, weights=weights)
+    ])
     sd_candidates = [row_by_id[answer_id] for answer_id, _score in sd_fused[:candidate_k]]
 
-    # Rerank every fused candidate, not just top_k, so fusion's #1 pick always
-    # has a rerank_score available for the override-guard comparison below --
-    # then truncate to top_k only after that guard has had a chance to run.
-    reranked_full = rerank_fn(query, sd_candidates, top_k=len(sd_candidates)) if sd_candidates else []
+    # Same rescue pattern as the English cascade leg below (combined =
+    # sd_candidates first, setdefault only): variant hits get appended after
+    # every canonical candidate is already locked in, so the worst a bad
+    # variant match can do is occupy an extra reranker slot, never displace a
+    # row the canonical legs already found.
+    candidates_for_rerank = sd_candidates
+    if use_variants:
+        var_dense, var_sparse = active_retriever.variant_search(query, top_k=candidate_k)
+        for path_name, rows in (("variant_dense", var_dense), ("variant_sparse", var_sparse)):
+            for row in rows:
+                row_by_id.setdefault(row["answer_id"], row)
+                path_by_id.setdefault(row["answer_id"], path_name)
+        var_fused = reciprocal_rank_fusion([
+            [row["answer_id"] for row in var_dense],
+            [row["answer_id"] for row in var_sparse],
+        ])
+        canonical_ids = {c["answer_id"] for c in sd_candidates}
+        rescued = [row_by_id[answer_id] for answer_id, _score in var_fused
+                  if answer_id not in canonical_ids][:variant_rescue_k]
+        candidates_for_rerank = sd_candidates + rescued
+
+    # Rerank every candidate, not just top_k, so fusion's #1 pick always has a
+    # rerank_score available for the override-guard comparison below -- then
+    # truncate to top_k only after that guard has had a chance to run. The
+    # guard still anchors to sd_candidates[0] -- the CANONICAL fusion's #1 --
+    # never a rescued variant row, so a variant can never win the tie-break
+    # that guard exists to protect.
+    reranked_full = (rerank_fn(query, candidates_for_rerank, top_k=len(candidates_for_rerank))
+                     if candidates_for_rerank else [])
     if reranked_full and sd_candidates:
         reranked_full = _prefer_fusion_top1_if_close(
             reranked_full, sd_candidates[0]["answer_id"], rerank_override_margin

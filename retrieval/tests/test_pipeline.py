@@ -343,21 +343,34 @@ def test_variants_queried_when_enabled():
 
 
 def test_variant_leg_can_surface_a_row_the_canonical_legs_missed():
-    """The rescue this index exists for: the right row is findable by how the
-    question is actually phrased, even when the FAQ wording does not match."""
+    """
+    The rescue this index exists for: the right row is findable by how the
+    question is actually phrased, even when the FAQ wording does not match.
+
+    The rescued row still has to win on the SAME terms as any reranker
+    disagreement with fusion -- _prefer_fusion_top1_if_close protects
+    fusion's #1 pick unless the reranker's margin is decisive
+    (RERANK_OVERRIDE_MARGIN, default 2.0), and that guard does not know or
+    care whether the reranker's pick came from a canonical or a rescued
+    candidate. So the score gap here has to be wide enough to clear the
+    guard -- a narrow gap (e.g. 0.95 vs 0.2) would have fusion's #1 (the
+    canonical row) win the tie-break, correctly, same as it would for two
+    disagreeing canonical candidates.
+    """
     retriever = _FakeRetriever(sd_dense=[_row(1)], var_dense=[_row(42)])
     result = search(
         "query", retriever=retriever, use_variants=True,
-        rerank_fn=_fake_rerank({1: 0.2, 42: 0.95}), translate_fn=_fake_translate,
+        rerank_fn=_fake_rerank({1: 0.1, 42: 3.0}), translate_fn=_fake_translate,
     )
 
-    assert 42 in [r["answer_id"] for r in result["results"]]
+    assert result["results"][0]["answer_id"] == 42
 
 
-def test_variant_weight_zero_leaves_ranking_unchanged():
+def test_variant_rescue_k_zero_leaves_ranking_unchanged():
     """
-    VARIANT_WEIGHT=0 must be equivalent to the legs being off, so the flag can
-    be neutralised by configuration alone if it ever misbehaves in production.
+    VARIANT_RESCUE_K=0 must be equivalent to the legs being off, so the
+    feature can be neutralised by configuration alone if it ever misbehaves
+    in production, without needing a redeploy.
     """
     def build():
         return _FakeRetriever(sd_dense=[_row(1), _row(2)], var_dense=[_row(2), _row(1)])
@@ -366,12 +379,36 @@ def test_variant_weight_zero_leaves_ranking_unchanged():
                           rerank_fn=_fake_rerank({1: 0.9, 2: 0.8}),
                           translate_fn=_fake_translate)
     zero = search("query", retriever=build(), use_variants=True,
-                           variant_weight=0.0,
+                           variant_rescue_k=0,
                            rerank_fn=_fake_rerank({1: 0.9, 2: 0.8}),
                            translate_fn=_fake_translate)
 
     assert [r["answer_id"] for r in off["results"]] == \
            [r["answer_id"] for r in zero["results"]]
+
+
+def test_variant_rescue_never_displaces_a_canonical_candidate():
+    """
+    The regression this whole redesign exists to fix: a first version fused
+    variant legs into the same weighted-RRF competition as the canonical
+    legs and sliced to candidate_k, which let a noisy variant match bump a
+    correct canonical row out of the candidate set before reranking ever saw
+    it -- measured as a 0.125 Recall@1 loss for a 0.008 Recall@20 gain
+    (eval/variant_index_lift.csv). Here, canonical fusion already fills
+    candidate_k (both ids present), so even a variant hit for a THIRD,
+    unrelated id must not remove either canonical candidate from
+    consideration -- it can only be added alongside them.
+    """
+    retriever = _FakeRetriever(
+        sd_dense=[_row(1), _row(2)], var_dense=[_row(99)],
+    )
+    result = search("query", retriever=retriever, use_variants=True,
+                    candidate_k=2,
+                    rerank_fn=_fake_rerank({1: 0.9, 2: 0.5, 99: 0.99}),
+                    translate_fn=_fake_translate)
+
+    ids = [r["answer_id"] for r in result["results"]]
+    assert 1 in ids and 2 in ids
 
 
 def test_canonical_row_is_returned_not_the_variant_payload():
