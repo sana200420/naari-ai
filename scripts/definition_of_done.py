@@ -41,7 +41,7 @@ OUT_OF_SCOPE = os.path.join("eval", "out_of_scope_eval.csv")
 OUT_MD = os.path.join("eval", "definition_of_done.md")
 REFUSAL_MISSES = os.path.join("eval", "refusal_failures.csv")
 
-REFUSAL_PATHS = {"refusal", "referral", "danger"}
+REFUSAL_PATHS = {"refusal", "referral", "danger", "tier_c_block"}
 
 
 def call(client, retries=3, **kwargs):

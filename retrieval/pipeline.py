@@ -160,6 +160,12 @@ def _to_result(row: dict, path: str) -> dict:
         "source": row["source"],
         "score": row["rerank_score"],
         "path": path,
+        # api/pipeline.py's Stage 02b tier enforcement (PR #22) reads this to
+        # decide whether a row is allowed to be served. It was added there
+        # assuming this contract already carried it -- it did not, so the
+        # check was reading a key that was never present and always fell back
+        # to Tier B, meaning Tier C could never actually block anything.
+        "review_tier": row.get("review_tier", "B"),
     }
 
 

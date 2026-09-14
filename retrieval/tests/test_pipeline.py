@@ -12,7 +12,7 @@ from retrieval.pipeline import search, warmup
 from retrieval.tests.test_fake_retriever import REQUIRED_RESULT_KEYS
 
 
-def _row(answer_id, score=0.5, question=None):
+def _row(answer_id, score=0.5, question=None, review_tier="B"):
     return {
         "answer_id": answer_id,
         "category": "cat",
@@ -21,6 +21,7 @@ def _row(answer_id, score=0.5, question=None):
         "answer": f"answer {answer_id}",
         "source": "src",
         "score": score,
+        "review_tier": review_tier,
     }
 
 

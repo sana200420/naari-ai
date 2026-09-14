@@ -130,9 +130,12 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     retrieval_result = retrieval_search(query)
     chunks = [
         {"id": r["answer_id"], "text": r["answer"], "score": r["score"],
-         "question": r.get("question", "")}
+         "question": r.get("question", ""), "tier": r.get("review_tier", "B")}
         for r in retrieval_result["results"]
     ]
+    # retrieval.search()'s "results" rows carry review_tier as of this fix --
+    # before it, this key was never present and Stage 02b's tier check below
+    # always fell back to "B", so Tier C could never block anything.
     top_score = chunks[0]["score"] if chunks else 0.0
 
 
