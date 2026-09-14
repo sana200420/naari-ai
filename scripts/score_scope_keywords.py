@@ -17,10 +17,18 @@ abortion query that came back with constipation advice at band=high is what
 that failure looks like. Scope classification has to carry the load instead.
 
 Candidate keywords are scored on two numbers, and the second is the one with
-teeth: how many out-of-scope questions it catches, and how many of the 248
-real health questions it would wrongly block. A keyword that catches 14
-abortion queries and also blocks women asking about their own pregnancy is a
-worse bug than the one it fixes.
+teeth: how many out-of-scope questions it catches, how many of the 248 real
+health questions it would wrongly block, and whether it leaks into another
+scope. A keyword that catches 14 abortion queries and also blocks women asking
+about their own pregnancy is a worse bug than the one it fixes.
+
+Leakage is why بارش ("rain") is not in this list as a bare word: it is a
+substring of ابارشن ("abortion"). The scope classifier matches with a plain
+`in`, so بارش would pull ten abortion questions into the weather brush-off.
+Abortion still wins today only because it comes first in SCOPE_REFERRALS --
+meaning the one thing between a woman asking how to end a pregnancy and a
+reply about the weather is dict ordering. Short single words in Arabic script
+collide far more often than they look like they will; prefer phrases.
 
     python scripts/score_scope_keywords.py
 """
@@ -57,7 +65,7 @@ CANDIDATES = {
                            "فلم", "هوٽل", "تاريخ آهي", "لطيفو", "مفاصلي", "رنگ سٺو",
                            "ريسپي", "گادي وارو", "ڪرڪيٽ", "ڪتاب جي صلاح",
                            "ٻولي ڳالهائين", "موسيقي", "پسنديده کاڌي", "سفر جي جاءِ",
-                           "بارش", "روبوٽ"],
+                           "بارش ٿيندي", "روبوٽ"],
 }
 
 

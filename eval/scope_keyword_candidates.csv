@@ -1,6 +1,5 @@
 scope,keyword,catches_out_of_scope,of_which_right_scope,blocks_real_questions
 named_contraceptives,مانع حمل,13,13,0
-non_health_chatter,بارش,11,1,0
 abortion,ابارشن,10,10,0
 domestic_violence_referral,تشدد,4,4,0
 named_contraceptives,ڪنڊوم,3,3,0
@@ -53,5 +52,6 @@ non_health_chatter,ٻولي ڳالهائين,1,1,0
 non_health_chatter,موسيقي,1,1,0
 non_health_chatter,پسنديده کاڌي,1,1,0
 non_health_chatter,سفر جي جاءِ,1,1,0
+non_health_chatter,بارش ٿيندي,1,1,0
 non_health_chatter,روبوٽ,1,1,0
 abortion,حمل رکڻ نه,0,0,0
