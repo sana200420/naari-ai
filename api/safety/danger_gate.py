@@ -254,7 +254,11 @@ DANGER_CATEGORIES = {
             "husband hitting", "husband hitting me", "domestic violence",
             "being beaten", "physical abuse", "he hit me", "forced sex", "rape"
         ],
-        "keywords_urdu": ["مار پیٹ", "گھریلو تشدد", "زبردستی"]
+        "keywords_urdu": ["مار پیٹ", "گھریلو تشدد", "زبردستی"],
+        "response_override": (
+            "توهان جي حفاظت اهم آهي. مهرباني ڪري ويجهي مدد ڪندڙ اداري، "
+            "پوليس هيلپ لائين يا ڀروسي واري شخص سان رابطو ڪريو. توهان اڪيلا ناهيو."
+        )
     },
     "suicide_self_harm": {
         "description": "Suicidal ideation or self-harm",
