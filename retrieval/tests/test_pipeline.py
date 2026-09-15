@@ -429,3 +429,39 @@ def test_canonical_row_is_returned_not_the_variant_payload():
                              translate_fn=_fake_translate)
 
     assert result["results"][0]["question"] == "canonical question"
+
+
+def test_variant_rescue_survives_the_english_cascade():
+    """
+    The bug this guards against: when the cascade fires (top_score below
+    cascade_tau -- the common case, since most queries score below it), the
+    candidate pool used to get rebuilt from sd_candidates ALONE, silently
+    discarding every variant-rescued row computed moments earlier. A full
+    Colab run measured Recall@1/@5/@20 bit-for-bit identical to "off" at
+    every rescue_k tried (eval/variant_index_lift.csv, 2026-09-15) -- exactly
+    what a silently-discarded contribution looks like on nearly all traffic,
+    since nearly all traffic takes the cascade path.
+
+    Here the Sindhi leg alone scores low enough to trigger the cascade, and
+    only the variant leg's rescued row scores well -- so the rescued row must
+    still be present after the cascade rebuild. Its rerank score is set far
+    enough above the canonical candidate's to legitimately clear
+    _prefer_fusion_top1_if_close's override margin too (same guard, same
+    reasoning as test_variant_leg_can_surface_a_row_the_canonical_legs_missed
+    above) -- otherwise fusion's own #1 pick correctly wins the tie-break and
+    this test would be checking the wrong thing.
+    """
+    retriever = _FakeRetriever(
+        sd_dense=[_row(1, score=0.1)],
+        var_dense=[_row(42)],
+        en_dense=[_row(99, score=0.1)],
+    )
+    result = search(
+        "query", retriever=retriever, use_variants=True, tau_high=0.75,
+        rerank_fn=_fake_rerank({1: 0.1, 42: 3.0, 99: 0.1}),
+        translate_fn=_fake_translate,
+    )
+
+    ids = [r["answer_id"] for r in result["results"]]
+    assert 42 in ids, f"variant rescue lost after cascade fired: {ids}"
+    assert result["results"][0]["answer_id"] == 42

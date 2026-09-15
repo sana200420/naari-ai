@@ -217,15 +217,6 @@ def search(
     sd_dense = active_retriever.dense_search(query, top_k=candidate_k, lang="sd")
     sd_sparse = active_retriever.sparse_search(query, top_k=candidate_k, lang="sd")
 
-    # Colloquial rewordings of the same questions. The gold queries are not
-    # phrased the way the KB's FAQ-style questions are, which is what keeps
-    # Recall@1 (0.528) so far below Recall@20 (0.762): the right row is
-    # usually reachable and merely not first. A variant gives that row a
-    # surface that matches how the question actually gets asked.
-    var_dense, var_sparse = ([], [])
-    if use_variants:
-        var_dense, var_sparse = active_retriever.variant_search(query, top_k=candidate_k)
-
     row_by_id: dict = {}
     path_by_id: dict = {}
     for path_name, rows in (("sindhi_dense", sd_dense), ("sindhi_sparse", sd_sparse)):
@@ -289,7 +280,16 @@ def search(
             row_by_id.setdefault(row["answer_id"], row)
             path_by_id.setdefault(row["answer_id"], "english_dense")
 
-        combined = {row["answer_id"]: row for row in sd_candidates}
+        # candidates_for_rerank, not sd_candidates -- this rebuild used to
+        # start from sd_candidates alone, which silently discarded every
+        # variant-rescued row the moment the cascade fired. Since most
+        # queries score below cascade_tau, that meant the variant rescue leg
+        # had zero effect on nearly all traffic: a full Colab measurement
+        # came back with Recall@1/@5/@20 bit-for-bit identical to "off" at
+        # every rescue_k tested (eval/variant_index_lift.csv, 2026-09-15),
+        # which is what a silently-discarded contribution looks like, not a
+        # genuine null result.
+        combined = {row["answer_id"]: row for row in candidates_for_rerank}
         for row in en_dense:
             combined.setdefault(row["answer_id"], row)
         # The guard has to be re-applied here. Without it, every query that
