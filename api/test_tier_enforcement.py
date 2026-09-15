@@ -1,18 +1,45 @@
-"""Stage 02b: review-tier enforcement (PR #22, api/phase3_tier.py).
-
-PR #22 wired this in by reading `chunks[0].get("tier", "B")`, but the chunks
-dict built in run_pipeline() never had a "tier" key and retrieval's contract
-(docs/contracts/retrieval.json) never returned review_tier in the first place.
-So the lookup always fell back to "B" and the Tier C block could never fire --
-inert by construction, not by data. Fixed by threading review_tier through
-retrieval/pipeline.py's _to_result() and api/pipeline.py's chunk construction.
-
-Nothing exercised this path before; these are the first tests for it.
+"""
+Tests for Phase 3 tier enforcement.
+Tier A: serve normally
+Tier B: serve with disclaimer flag = True
+Tier C: block, return refusal
 """
 import sys
 import types
-
+import pytest
+from api.phase3_tier import enforce_tier, TIER_A, TIER_B, TIER_C, TIER_B_DISCLAIMER, TIER_C_REFUSAL
 from api.routers.ask import AskRequest
+
+
+def test_tier_a_serves_normally():
+    answer, disclaimer, blocked = enforce_tier(TIER_A, "test answer", False)
+    assert answer == "test answer"
+    assert disclaimer is False
+    assert blocked is False
+
+
+def test_tier_b_sets_disclaimer():
+    answer, disclaimer, blocked = enforce_tier(TIER_B, "test answer", False)
+    assert answer == "test answer"
+    assert disclaimer is True
+    assert blocked is False
+
+
+def test_tier_c_blocks():
+    answer, disclaimer, blocked = enforce_tier(TIER_C, "test answer", False)
+    assert blocked is True
+    assert answer == TIER_C_REFUSAL
+
+
+def test_tier_c_never_serves_original():
+    answer, _, blocked = enforce_tier(TIER_C, "sensitive content", False)
+    assert blocked is True
+    assert answer != "sensitive content"
+
+
+def test_missing_tier_serves_normally():
+    answer, disclaimer, blocked = enforce_tier(None, "test answer", False)
+    assert blocked is False
 
 
 def _fake_results(review_tier="B", top_score=0.97):
@@ -40,22 +67,16 @@ def _ask(p):
 
 
 def test_tier_c_row_is_never_served(monkeypatch):
-    from api.phase3_tier import TIER_C_REFUSAL
-
     p = _pipeline(monkeypatch, review_tier="C")
     r = _ask(p)
-
     assert r.path == "tier_c_block"
     assert r.answer == TIER_C_REFUSAL
     assert r.retrieved_ids == []
 
 
 def test_tier_b_row_is_served_normally(monkeypatch):
-    """Every row in the KB is Tier B today (knowledge_base/*.csv,
-    review_tier column), so this is the path that must not regress."""
     p = _pipeline(monkeypatch, review_tier="B")
     r = _ask(p)
-
     assert r.path != "tier_c_block"
     assert r.path == "verbatim"
 
@@ -63,33 +84,18 @@ def test_tier_b_row_is_served_normally(monkeypatch):
 def test_tier_a_row_is_served_normally(monkeypatch):
     p = _pipeline(monkeypatch, review_tier="A")
     r = _ask(p)
-
     assert r.path != "tier_c_block"
 
 
 def test_missing_review_tier_defaults_to_b_not_a_block():
-    """A row with no review_tier field (a future KB source that forgets the
-    column, or a variant/English row shaped slightly differently) must default
-    to being servable, not silently blocked."""
     from api.phase3_tier import enforce_tier
-
     _, disclaimer, blocked = enforce_tier(None, "answer text", False)
     assert blocked is False
 
 
 def test_tier_c_block_counts_as_a_refusal_in_the_scorecard(monkeypatch):
-    """
-    scripts/definition_of_done.py's REFUSAL_PATHS decides what counts as "not
-    answered" for the refusal-correctness target. A Tier C block refuses to
-    serve an answer exactly like "refusal"/"referral"/"danger" do, so it
-    belongs in that set -- without it, the day any KB row is actually tiered
-    C, a correct block would be scored as an answer and silently lower
-    measured refusal correctness.
-    """
     from scripts.definition_of_done import REFUSAL_PATHS
-
     p = _pipeline(monkeypatch, review_tier="C")
     r = _ask(p)
-
     assert r.path == "tier_c_block"
     assert r.path in REFUSAL_PATHS

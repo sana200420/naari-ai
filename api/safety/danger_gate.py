@@ -820,7 +820,7 @@ class GateResult:
 
 
 # ── Main gate function ─────────────────────────────────────────────────────────
-def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
+def run_danger_gate(text: str, use_embedding: bool = True) -> GateResult:
     """
     Pure function. Call this FIRST — before retrieval, before LLM.
     Returns GateResult with escalate=True if any danger keyword matches.
