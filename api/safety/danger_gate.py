@@ -620,7 +620,7 @@ SCOPE_REFERRALS = {
     "abortion": {
         "keywords": ["abortion", "terminate pregnancy", "اسقاط حمل کروانا", "حمل گرانا", "اسقاط", "حمل ختم",
                      "حمل ضايع ڪرڻ", "ضايع ڪرڻ چاهيان", "حمل خراب ڪرڻ", "پيٽ ڪرائڻ",
-                     "ابارشن", "اڻڄاتل حمل", "ختم ڪرڻ جو طريقو", "رکڻ نه ٿي چاهيان", "حمل کان جان", "حمل نه گھرجي"
+                     "ابارشن", "اڻڄاتل حمل", "ختم ڪرڻ جو طريقو", "رکڻ نه ٿي چاهيان", "حمل کان جان", "حمل ختم نه گھرجي", "حمل کي روڪڻ جو تڪڙو طريقو"
                      ],
         "response": (
             "هي موضوع مخصوص طبي ۽ قانوني رهنمائي گھري ٿو جيڪا هي سروس مهيا نٿي ڪري سگهي. "
@@ -644,7 +644,10 @@ SCOPE_REFERRALS = {
                      "مار ڪُٽ", "مار پيٽ", "ڪُٽيو", "ڪُٽندو آهي",
                      "زخمي ڪيو", "گهر کان ڪڍيو", "threatening me", "he beats me",
                      "mujhe maar ta hai", "ghar se nikala", "mujhe dhamki",
-                     "unsafe at home", "scared of husband", "husband threatens me"
+                     "unsafe at home", "scared of husband", "husband threatens me",
+                     "تشدد کان ڪيئن بچجي", "شڪايت ڪٿي درج ڪرائجي",
+                     "پئسا نه ٿو ڏئي", "ماءُ پيءُ سان ملڻ نه ٿو ڏئي",
+                     "ثبوت ڪيئن گڏ ڪجي"
                      ],
         "response": (
             "توهان جي حفاظت اهم آهي. مهرباني ڪري ويجهي مدد ڪندڙ اداري، "
@@ -678,8 +681,21 @@ SCOPE_REFERRALS = {
             "ڇا توهان اصلي ڊاڪٽر آهيو", "ڇا توهان تي ڀروسو ڪري سگهجي ٿو",
             "توهان وٽ ڊگري آهي", "ڇا توهان طبيب آهيو",
             "kya tum pe bharosa kar sakte hain", "tumhari degree kya hai",
+            "توهان جو ميڊيڪل لائسنس آهي", "دوا لکي ڏئي سگهو ٿا",
+            "توهان تي ڀروسو ڪري سگهان", "توهان جي مشوري ۽ ڊاڪٽر جي مشوري ۾ فرق",
+            "طبي طور تصديق ٿيل", "معلومات ڪٿان ايندي",
+            "ٽيسٽ يا اسڪين جي رپورٽ پڙهي سگهو", "توهان کي طبي تعليم آهي",
+            "غلط ٻڌايو ته ذميوار ڪير", "هاڻي به ڊاڪٽر وٽ وڃڻو پوندو",
+            "توهان جي صلاح تي عمل ڪرڻ سُرکشيت",
             "are you qualified", "what are your qualifications",
             "doctor jaisi salah", "kya tum real doctor ho",
+            "هي مشوري ڊاڪٽر جي مشوري جي جاءِ وٺي سگهي ٿو",
+            "توهان جون معلومات ڪيتري قابل اعتماد آهن",
+            "توهان جي صلاح ۽ ڊاڪٽر جي صلاح ۾ فرق",
+            "جيڪڏهن حالت خراب هجي ته ڇا توهان مدد ڪري سگهو ٿا",
+            "مون کي ڪيئن خبر پوندي ته توهان صحيح ٻڌايو",
+            "ڇا اهو ايپ ڪنهن ڊاڪٽر پاران ٺهيل آهي",
+            "توهان جي مشوري تي عمل ڪرڻ سان مان بچي سگهان ٿي", "توهان جي مشوري تي عمل ڪرڻ سان مان بچي سگھان ٿي",
         ],
         "response": (
             "نه، هي هڪ خودڪار معلوماتي سروس آهي، ڊاڪٽر ناهي. "
@@ -874,10 +890,10 @@ def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
                 method="embedding",
             )
 
-    # 3. Scope classifier
+       # 3. Scope classifier
     for scope_name, scope in SCOPE_REFERRALS.items():
         for kw in scope["keywords"]:
-            if normalize_sd(kw) in norm:
+            if _phrase_matches(normalize_sd(kw), norm):
                 return GateResult(
                     escalate=False,
                     category=None,
@@ -886,7 +902,6 @@ def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
                     matched_keyword=kw,
                     method="scope",
                 )
-
     # 4. All clear
     return GateResult(
         escalate=False,
