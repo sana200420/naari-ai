@@ -64,3 +64,39 @@ def log_query(
         logger.debug(f"Logged to Supabase: {path} | {band} | {provider}")
     except Exception as e:
         logger.warning(f"Supabase log failed: {e} — row={row}")
+
+
+_VALID_VOTES = {"up", "down"}
+
+
+def log_feedback(query: str, answer: str, vote: str) -> bool:
+    """
+    Log a thumbs up/down to Supabase feedback_logs table.
+    Never raises — feedback logging must not break the API.
+    Returns True if the row was written, False otherwise (still not raised).
+    """
+    vote = (vote or "").strip().lower()
+    if vote not in _VALID_VOTES:
+        logger.warning(f"Rejected feedback: invalid vote={vote!r}")
+        return False
+
+    row = {
+        "query": (query or "")[:500],
+        "answer": (answer or "")[:2000],
+        "vote": vote,
+    }
+
+    client = _get_client()
+    if client is None:
+        logger.info(f"[no-supabase] feedback | {vote} | q={row['query'][:60]}")
+        return False
+
+    try:
+        client.table("feedback_logs").insert(row).execute()
+        logger.debug(f"Logged feedback: {vote}")
+        return True
+    except Exception as e:
+        logger.warning(f"Supabase feedback log failed: {e} — row={row}")
+        return False
+
+    

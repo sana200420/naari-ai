@@ -166,6 +166,18 @@ def ask_api(query: str, language: str = "sindhi") -> str:
     return json.dumps(_answer_cached(query, language), ensure_ascii=False)
 
 
+def feedback_api(query: str, answer: str, vote: str) -> str:
+    """Thumbs up/down capture (Phase 3, Tooba's request).
+
+    Frontend calls this via the same 2-step gradio_api/call pattern as /ask.
+    Feeds Mahnoor's eval loop -- see api/logging/logger.log_feedback.
+    """
+    from api.logging.logger import log_feedback
+
+    ok = log_feedback(query, answer, vote)
+    return json.dumps({"ok": ok}, ensure_ascii=False)
+
+
 # Everything is built inside a single Blocks context. Re-entering `with demo:`
 # on an already-constructed ChatInterface to attach gr.api made launch() stop
 # blocking, so `python app.py` fell off the end and exited -- the Space came
@@ -184,6 +196,7 @@ with gr.Blocks(title=TITLE) as demo:
     )
     gr.api(ask_api, api_name="ask")
     gr.api(retrieve_api, api_name="retrieve")
+    gr.api(feedback_api, api_name="feedback")
 
 
 # Serve via Gradio's own launcher -- the canonical Gradio-SDK Space entrypoint.
@@ -203,3 +216,6 @@ with gr.Blocks(title=TITLE) as demo:
 # which is Gradio's supported mechanism for this and needs no FastAPI at all.
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", "7860")))
+
+
+    
