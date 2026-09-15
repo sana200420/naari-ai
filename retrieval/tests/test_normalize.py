@@ -22,8 +22,9 @@ KB_PATH = (
 
 # Pinned deliberately: a change here should be a change someone MEANT to make
 # to the corpus, not one that arrives silently with a data drop. 2000 original
-# rows + 9 fever rows (ids 2001-2009, data/incoming/fever_gap_new_rows_only.csv).
-KB_ROWS = 2009
+# rows + 9 fever rows (ids 2001-2009) + 12 PCOS rows (ids 2010-2021) --
+# data/incoming/{fever,pcos}_gap_new_rows_only.csv.
+KB_ROWS = 2021
 
 
 def _load_kb_rows():
