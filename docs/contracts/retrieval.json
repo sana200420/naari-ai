@@ -16,7 +16,8 @@
         "answer": "string — the Sindhi answer text to show/use",
         "source": "string — citation, e.g. 'NHS - https://...'",
         "score": "float — fused/reranked relevance score, higher is better, not bounded to [0,1] until reranking lands",
-        "path": "string — which retrieval leg found this row: one of 'sindhi_dense', 'sindhi_sparse', 'english_dense', 'variant'"
+        "path": "string — which retrieval leg found this row: one of 'sindhi_dense', 'sindhi_sparse', 'english_dense', 'variant'",
+        "review_tier": "string — one of 'A' (clinician-reviewed), 'B' (sourced but unreviewed), 'C' (flagged, must never be served). Consumed by api/phase3_tier.py's enforce_tier(). Defaults to 'B' if the KB row has no review_tier payload field."
       }
     ],
     "latency_ms": "int — wall-clock time for the whole search() call"

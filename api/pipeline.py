@@ -128,11 +128,33 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     retrieval_result = retrieval_search(query)
     chunks = [
         {"id": r["answer_id"], "text": r["answer"], "score": r["score"],
-         "question": r.get("question", "")}
+         "question": r.get("question", ""), "tier": r.get("review_tier", "B")}
         for r in retrieval_result["results"]
     ]
+    # retrieval.search()'s "results" rows carry review_tier as of this fix --
+    # before it, this key was never present and Stage 02b's tier check below
+    # always fell back to "B", so Tier C could never block anything.
     top_score = chunks[0]["score"] if chunks else 0.0
 
+
+    # Stage 02b: enforce review tier
+    from api.phase3_tier import enforce_tier, TIER_C_REFUSAL
+    if chunks:
+        top_tier = chunks[0].get("tier", "B")
+        _, _, blocked = enforce_tier(top_tier, "", False)
+        if blocked:
+            latency = round((time.time() - t0) * 1000, 2)
+            _log(query, [], [], BAND_LOW, "tier_c_block", latency, "none", request.session_id)
+            return AskResponse(
+                answer=TIER_C_REFUSAL,
+                audio_url=None,
+                path="tier_c_block",
+                confidence_band=BAND_LOW,
+                escalated=False,
+                disclaimer=False,
+                retrieved_ids=[],
+                latency_ms=latency,
+            )
     # Stage 03: confidence band decision
     confirm_floor = TAU_CONFIRM if CONFIRM_HIGH_BAND else TAU_HIGH
     if top_score >= TAU_HIGH and chunks:

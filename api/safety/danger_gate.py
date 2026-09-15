@@ -648,10 +648,17 @@ SCOPE_REFERRALS = {
         )
     },
     "not_health": {
+        # PR #22 (سياست, خبرون, ريسيپي, کاڌي جي ترڪيب, ڪرڪيٽ ميچ) and Sana's
+        # measured candidate list (eval/scope_keyword_candidates.csv) both
+        # extended this key from the same base, so موسم and ڪرڪيٽ were added
+        # twice independently -- deduped here rather than kept as duplicate
+        # strings, which would have worked but is noise.
         "keywords": ["recipe", "cooking", "politics", "cricket", "weather", "news",
                      "recipe for biryani", "cricket match score",
-                     "موسم", "تنهنجي پيدائش", "نالو ڇا آهي", "تون ڪير آهين", "فلم", "هوٽل", "تاريخ آهي", "لطيفو", "مفاصلي", "رنگ سٺو", "ريسپي", "گادي وارو", "ڪرڪيٽ", "ڪتاب جي صلاح", "ٻولي ڳالهائين", "موسيقي", "پسنديده کاڌي", "سفر جي جاءِ", "بارش ٿيندي", "روبوٽ"
-                     ],
+                     "ڪرڪيٽ", "موسم", "سياست", "خبرون", "ريسيپي", "کاڌي جي ترڪيب", "ڪرڪيٽ ميچ",
+                     "تنهنجي پيدائش", "نالو ڇا آهي", "تون ڪير آهين", "فلم", "هوٽل", "تاريخ آهي",
+                     "لطيفو", "مفاصلي", "رنگ سٺو", "ريسپي", "گادي وارو", "ڪتاب جي صلاح",
+                     "ٻولي ڳالهائين", "موسيقي", "پسنديده کاڌي", "سفر جي جاءِ", "بارش ٿيندي", "روبوٽ"],
         "response": (
             "معاف ڪجو، هي سوال هن سروس جي دائري کان ٻاهر آهي. "
             "مهرباني ڪري لاڳاپيل شعبي جي ڊاڪٽر يا ماهر سان رابطو ڪريو."
