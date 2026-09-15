@@ -665,8 +665,18 @@ SCOPE_REFERRALS = {
         )
     },
     "doctor_question": {
-        "keywords": ["are you a doctor", "kya tum doctor ho", "ڇا تون ڊاڪٽر آهين",
-                     "ڇا توهان ڊاڪٽر آهيو", "توهان ڊاڪٽر آهيو", "طبيب آهيو"],
+        "keywords": [
+            "are you a doctor", "kya tum doctor ho", "are you a real doctor",
+            "can i trust you like a doctor", "do you have medical degree",
+            "kya aap doctor hain", "kya aap asli doctor hain",
+            "ڇا تون ڊاڪٽر آهين", "ڇا توهان ڊاڪٽر آهيو",
+            "توهان ڊاڪٽر آهيو", "طبيب آهيو",
+            "ڇا توهان اصلي ڊاڪٽر آهيو", "ڇا توهان تي ڀروسو ڪري سگهجي ٿو",
+            "توهان وٽ ڊگري آهي", "ڇا توهان طبيب آهيو",
+            "kya tum pe bharosa kar sakte hain", "tumhari degree kya hai",
+            "are you qualified", "what are your qualifications",
+            "doctor jaisi salah", "kya tum real doctor ho",
+        ],
         "response": (
             "نه، هي هڪ خودڪار معلوماتي سروس آهي، ڊاڪٽر ناهي. "
             "هي عام صحت جي معلومات ڏئي ٿي، تشخيص يا علاج نٿي ڪري. "
