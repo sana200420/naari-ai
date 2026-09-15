@@ -4,8 +4,20 @@
 behind it, and each needs a different person to fix it:
 
   MISSING    the correct row never appears in the shortlist at all. No amount
-             of reranking or threshold tuning reaches it. Needs knowledge base
-             content -- Mahnoor.
+             of reranking or threshold tuning reaches it. USUALLY needs
+             knowledge base content -- Mahnoor. But "usually" is doing real
+             work in that sentence: MISSING means retrieval never surfaced
+             the linked correct_answer_id, not that no good answer exists.
+             Spot-check a few rows' actual KB text before routing a whole
+             MISSING batch to Mahnoor as "write new content" -- 2026-09-15,
+             all 12 of the PCOS MISSING queries turned out to already have a
+             substantively correct linked answer (irregular periods, acne,
+             insulin resistance, fertility difficulty, diagnosis criteria --
+             not vague or tangential matches) that retrieval simply never
+             reached. That is a phrasing-gap problem needing variants or
+             embedding work -- Sana's lane, not Mahnoor's -- and routing it
+             to Mahnoor as a content gap costs her real writing time on rows
+             that would duplicate coverage that already exists.
   RANKING    the correct row is in the shortlist but not first. Retrieval found
              it and ordering lost it. Needs variants or ranking work -- Sana.
   PASSING    the correct row is already first. Nothing to do.
