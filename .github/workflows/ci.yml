@@ -35,12 +35,26 @@ jobs:
       # found while building the Phase 4 uptime-monitoring item, same class
       # of gap as data/ being untested until 2026-09-13.
       - run: pytest scripts/
-      - run: python eval/run_danger_gate_eval.py --ci
+
+      # continue-on-error here is deliberate, not a weakening of the gate --
+      # see "Enforce the safety gate" at the bottom of this file. Without it,
+      # a real regression would skip the PR-comment step below entirely (a
+      # failed step stops the job by default), so the one time the numbers
+      # matter most -- an actual drop -- is exactly when nobody would see
+      # them without digging into the Actions log. The job still ends red on
+      # a regression; the comment just gets to run first.
+      - name: Danger-sign recall
+        id: danger_gate
+        continue-on-error: true
+        run: python eval/run_danger_gate_eval.py --ci
 
       # False-escalation is a section-7 target (<=0.05) and had no gate, so a
       # change that made the danger gate shout at ordinary questions would have
       # passed CI. The script exits non-zero above the threshold.
-      - run: python eval/run_negative_set_eval.py --ci
+      - name: False-escalation rate
+        id: negative_set
+        continue-on-error: true
+        run: python eval/run_negative_set_eval.py --ci
 
       # Mahnoor's harness needs retrieval predictions for recall, which need a
       # live Space, so it cannot gate a PR. It still earns a place here as a
@@ -55,3 +69,65 @@ jobs:
             echo "::error::gold_eval.csv is missing or the wrong size"; exit 1; }
           grep -q "oos_eval_size: 100" /tmp/eval.txt || {
             echo "::error::out_of_scope_eval.csv is missing or the wrong size"; exit 1; }
+
+      # "Every PR comments with recall and safety numbers" (docs/PLAYBOOKS.md,
+      # Mahnoor's Phase 3 item) -- the fail-the-build half of this existed
+      # already (the two steps above); this is the visibility half, which
+      # didn't. Reads the JSON summaries those scripts write rather than
+      # parsing their human-readable stdout. Updates one sticky comment
+      # (marker below) instead of posting a new one on every push.
+      - name: Comment safety numbers on the PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const readJson = (p) => {
+              try { return JSON.parse(fs.readFileSync(p, 'utf8')); }
+              catch { return null; }
+            };
+            const dg = readJson('eval/.danger_gate_summary.json');
+            const ns = readJson('eval/.negative_set_summary.json');
+            const mark = (ok) => ok ? ':white_check_mark:' : ':x:';
+
+            let body = '<!-- ci-safety-summary -->\n### Safety numbers\n\n';
+            body += '| Metric | Target | Actual | |\n|---|---|---|---|\n';
+            if (dg) {
+              const ok = dg.recall >= dg.target;
+              body += `| Danger-sign recall | ${dg.target.toFixed(2)} | ${dg.recall.toFixed(4)} (${dg.hits}/${dg.total}) | ${mark(ok)} |\n`;
+            } else {
+              body += '| Danger-sign recall | 1.00 | *summary missing* | :warning: |\n';
+            }
+            if (ns) {
+              const ok = ns.rate <= ns.target;
+              body += `| False-escalation rate | ≤${ns.target.toFixed(2)} | ${ns.rate.toFixed(4)} (${ns.false_positives}/${ns.total}) | ${mark(ok)} |\n`;
+            } else {
+              body += '| False-escalation rate | ≤0.05 | *summary missing* | :warning: |\n';
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body.startsWith('<!-- ci-safety-summary -->'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number, body,
+              });
+            }
+
+      # The actual safety gate. Runs after the comment above so a regression
+      # is visible on the PR, not just in a log someone has to go find --
+      # but a real regression still ends this job red, same as before
+      # continue-on-error was added to the two steps it checks.
+      - name: Enforce the safety gate
+        if: steps.danger_gate.outcome == 'failure' || steps.negative_set.outcome == 'failure'
+        run: |
+          echo "::error::A safety check failed above -- see the PR comment or the step logs."
+          exit 1

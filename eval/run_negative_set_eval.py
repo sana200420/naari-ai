@@ -24,6 +24,7 @@ eval/negative_set_false_positives.csv on every run.
 
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -74,6 +75,13 @@ def main():
     print(f"Total cases: {total}")
     print(f"False positives (incorrectly escalated): {fp_count}")
     print(f"False positive rate: {fp_rate:.4f}")
+
+    # Structured summary for CI's PR-comment step (.github/workflows/ci.yml)
+    with open(Path(__file__).resolve().parent / ".negative_set_summary.json",
+             "w", encoding="utf-8") as f:
+        json.dump({"total": total, "false_positives": fp_count,
+                   "rate": round(fp_rate, 4),
+                   "target": MAX_ACCEPTABLE_FALSE_POSITIVE_RATE}, f)
 
     if false_positives:
         with open(FALSE_POS_CSV_PATH, "w", newline="", encoding="utf-8-sig") as f:

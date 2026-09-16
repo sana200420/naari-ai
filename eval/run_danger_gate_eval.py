@@ -15,6 +15,7 @@ a real artifact to work from instead of an 80-char stdout snippet.
 
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -69,6 +70,13 @@ def main():
     print(f"Correctly escalated: {hits}")
     print(f"Missed: {len(misses)}")
     print(f"Recall: {recall:.4f}")
+
+    # Structured summary for CI's PR-comment step (.github/workflows/ci.yml)
+    # -- avoids parsing this script's own stdout, which is for a human.
+    with open(Path(__file__).resolve().parent / ".danger_gate_summary.json",
+             "w", encoding="utf-8") as f:
+        json.dump({"total": total, "hits": hits, "missed": len(misses),
+                   "recall": round(recall, 4), "target": 1.0}, f)
 
     if misses:
         with open(MISSES_CSV_PATH, "w", newline="", encoding="utf-8-sig") as f:
