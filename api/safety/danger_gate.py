@@ -875,7 +875,15 @@ def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
                     escalate=True,
                     category=cat_name,
                     scope_block=None,
-                    response=ESCALATION_SCRIPT,
+                    # response_override exists for categories where the
+                    # generic "go to hospital" script is the wrong content --
+                    # abuse_violence is the first: it was defined here but
+                    # never read, so every DV escalation (active-abuse and
+                    # general-inquiry alike) still got told to go to a
+                    # hospital instead of police/shelter. Found 2026-09-15,
+                    # fixed here rather than left for a second silent-dead-
+                    # field bug (see PR #22's review_tier for the first).
+                    response=cat.get("response_override", ESCALATION_SCRIPT),
                     matched_keyword=kw,
                     method="keyword",
                 )
@@ -889,6 +897,13 @@ def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
                 escalate=True,
                 category="embedding_match",
                 scope_block=None,
+                # No single DANGER_CATEGORIES entry to read response_override
+                # from here -- _embedding_match matches against the pooled
+                # reference-phrase list, not one category. Keeping the
+                # generic script on this path is the honest choice, not a
+                # gap: it is a semantic-paraphrase catch-all, not
+                # category-specific, and use_embedding defaults False in
+                # production (main's run_danger_gate) regardless.
                 response=ESCALATION_SCRIPT,
                 matched_keyword=matched_phrase,
                 method="embedding",

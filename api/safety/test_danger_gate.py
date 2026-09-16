@@ -7,6 +7,7 @@ Recall on danger set must be 1.00 — zero misses allowed.
 import pytest
 from api.safety.danger_gate import (
     DANGER_CATEGORIES,
+    ESCALATION_SCRIPT,
     _build_embedding_reference,
     _phrase_matches,
     _significant_tokens,
@@ -257,3 +258,33 @@ def test_abortion_queries_route_to_abortion_scope():
         result = run_danger_gate(q, use_embedding=False)
         assert result.scope_block == "abortion", f"{q!r} -> {result.scope_block}"
         assert result.escalate is False
+
+
+def test_abuse_violence_gets_the_dv_response_not_the_hospital_script():
+    """
+    response_override was added to abuse_violence's DANGER_CATEGORIES entry
+    but never read anywhere in run_danger_gate() -- every DV escalation,
+    active-abuse and general-inquiry alike, still returned the generic
+    "go to a hospital" script shared by heavy_bleeding, seizures, etc.
+    A woman describing active abuse needs police/shelter resources, not
+    medical-emergency advice that never mentions either. Found and fixed
+    2026-09-15 -- same class of bug as PR #22's dead review_tier wiring.
+    """
+    from api.safety.danger_gate import DANGER_CATEGORIES
+
+    override = DANGER_CATEGORIES["abuse_violence"]["response_override"]
+    for phrase in ("he hit me", "گهريلو تشدد", "مار کٽ"):
+        result = run_danger_gate(phrase, use_embedding=False)
+        assert result.category == "abuse_violence"
+        assert result.response == override
+        assert "اسپتال" not in result.response, (
+            "abuse_violence is still returning the hospital script"
+        )
+
+
+def test_other_danger_categories_still_use_the_generic_script():
+    """response_override is per-category, opt-in -- categories without one
+    must be completely unaffected by this fix."""
+    result = run_danger_gate("پيڊ جلدي ڀرجي وڃڻو", use_embedding=False)
+    assert result.category == "heavy_bleeding"
+    assert result.response == ESCALATION_SCRIPT
