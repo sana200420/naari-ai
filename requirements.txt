@@ -34,3 +34,4 @@ uvicorn[standard]>=0.29.0
 pydantic>=2.7.1,<3
 python-dotenv>=1.0.1
 httpx>=0.27.0
+scikit-learn>=1.5   # scripts/unanswered_questions_report.py -- char-ngram clustering, no GPU needed
