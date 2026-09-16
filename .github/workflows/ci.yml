@@ -30,6 +30,11 @@ jobs:
       # for their own folder; these had none running because the folder was
       # never committed.
       - run: pytest data/
+      # scripts/ had tests (unanswered_questions_report's clustering logic,
+      # keep_warm's ping()) that passed locally but nothing ran them here --
+      # found while building the Phase 4 uptime-monitoring item, same class
+      # of gap as data/ being untested until 2026-09-13.
+      - run: pytest scripts/
       - run: python eval/run_danger_gate_eval.py --ci
 
       # False-escalation is a section-7 target (<=0.05) and had no gate, so a
