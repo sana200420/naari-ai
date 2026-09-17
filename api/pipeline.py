@@ -170,6 +170,11 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     else:
         band = BAND_LOW
 
+    # Stage 03b: demo mode -- force verbatim-only, refuse confirm/mid bands
+    from api.phase3_cache import is_demo_mode
+    if is_demo_mode() and band in (BAND_CONFIRM, BAND_MID):
+        band = BAND_LOW
+
     # Stage 04: low band -> refusal
     if band == BAND_LOW:
         latency = round((time.time() - t0) * 1000, 2)
