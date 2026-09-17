@@ -2,6 +2,16 @@
 **File:** `naariai_faq_english_v1.csv` · **500 rows** · Sana's two subtopics
 **Status:** ⚠️ **NOT CLINICALLY REVIEWED.** Draft for reviewer sign-off, then Sindhi translation.
 
+> ⚠️ **The ID ranges below (thyroid 411–432, danger signs 231–250) point at
+> this file, `naariai_faq_english_v1.csv` — they do NOT carry over to the
+> current Sindhi KB (`Womens_Health_KB - 2000_final.csv`), whose category
+> order is different. In that file, thyroid content is actually at
+> 910–931 (+2020) and pregnancy danger-signs at 730–749 (+2002) — see
+> `docs/clinical_review/clinical_reviewer_packet.md` §2 for how this was
+> found and confirmed. If you're pulling a priority row range from this
+> document for anything touching the current KB, use the packet's ranges,
+> not these.**
+
 ---
 
 ## What is in the file
