@@ -35,3 +35,12 @@ Thumbs.db
 slidedeck/
 assets/*.mp4
 assets/*.pptx
+eval/.dod_checkpoint.json
+eval/negative_set_false_positives.csv
+data/variants/_progress.json
+
+# Generated supervisor/report PDFs. Kept out of the repo on purpose: Hugging
+# Face rejects binary files that are not in Xet/LFS, and scripts/deploy_space.py
+# strips only frontend/, so a committed PDF here fails the next Space deploy.
+# Regenerate from the markdown in docs/ when one is needed.
+docs/*.pdf

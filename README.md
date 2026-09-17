@@ -1,3 +1,14 @@
+---
+title: Naari AI
+emoji: 🌸
+colorFrom: pink
+colorTo: purple
+sdk: gradio
+app_file: app.py
+pinned: false
+short_description: Sindhi women's health assistant, RAG over a verified KB
+---
+
 # Naari AI — نارِي اي آءِ
 
 A Sindhi-first women's health assistant for rural Sindh. Answers come from a
@@ -7,7 +18,7 @@ with RAG — not generated freely by a language model.
 Text-based now. Voice in prototype 2.
 
 **Team:** Sana · Sabiha · Tooba · Mahnoor — SZABIST
-
+**Status:** Phase 0 — Foundations. See [docs/status.md](docs/status.md).
 ---
 
 ## What's in here
@@ -26,7 +37,9 @@ ask them. This is what keeps merge conflicts rare.
 
 ## Getting started
 
-New to the repo? Read `docs/SETUP.md`.
+New to the repo? Read `docs/SETUP.md` to install Git and clone, then
+`docs/GIT_GUIDE.md` for how we actually work day to day — branches, pull
+requests, who approves what, and how to fix things when they break.
 
 Planning docs: `docs/ROADMAP.md` (what gets built) and `docs/PLAYBOOKS.md`
 (how, who, and what to do when things go wrong).
