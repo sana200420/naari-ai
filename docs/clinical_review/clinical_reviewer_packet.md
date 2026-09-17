@@ -30,7 +30,7 @@ The Sindhi KB file actually supplied for this review (`1789500167637_Womens_Heal
 
 | Priority cluster | Sindhi sub-category | Actual KB IDs | Row count |
 |---|---|---|---|
-| 1 — Thyroid & hormonal | ٿائرائيڊ ۽ ٻيا هارموني عدم توازن | 910–931, plus 2020 | 23 (REVIEW_NOTES.md expected 22 — see §5) |
+| 1 — Thyroid & hormonal | ٿائرائيڊ ۽ ٻيا هارموني عدم توازن | 910–931 | 22 (matches REVIEW_NOTES.md's expected 22 -- ID 2020 removed, see resolution note in §4) |
 | 2 — Danger signs | حمل ۽ زچگي کانپوءِ خطري جون نشانيون | 730–749, plus 2002 | 21 (REVIEW_NOTES.md expected 20 — see §5) |
 
 **Flag for the project lead:** confirm this ID-range discrepancy with whoever wrote `REVIEW_NOTES.md` — it suggests the notes document a build stage that predates this Sindhi file, and the same mismatch could affect other review notes downstream. This packet did not touch or renumber the KB itself.
@@ -57,13 +57,12 @@ The Sindhi KB file actually supplied for this review (`1789500167637_Womens_Heal
 
 ---
 
-## 4. Priority 1 — Thyroid & Other Hormonal Imbalances (23 items)
+## 4. Priority 1 — Thyroid & Other Hormonal Imbalances (22 items)
 
 Sub-category: ٿائرائيڊ ۽ ٻيا هارموني عدم توازن. Per `REVIEW_NOTES.md`, this is the **highest-priority cluster**: the underlying ATA 2026 guideline text was only partially retrievable during the build, so answers were deliberately kept general (no TSH thresholds, no iodine amounts, no drug names/doses). Reviewer should confirm the general level is acceptable or add specifics.
 
 **Reviewer, please also check specifically:**
-- **ID 2020** is tagged under this sub-category but its question is about PCOS treatment differences in adolescents vs. adults, not thyroid disease — confirm whether it belongs in this cluster or is miscategorized.
-- **ID 2020**'s source is cited as "Mayo Clinic" — this source does not appear in the verified source registry listed in `REVIEW_NOTES.md` (which lists only WHO, ATA, and the Teede 2023 guideline for this cluster). Confirm this citation was actually retrieved and is acceptable, since it sits outside the documented sourcing process.
+- ~~ID 2020 flagged as possibly miscategorized~~ **RESOLVED 2026-09-17, before reviewer sign-off.** Confirmed miscategorized -- its content is PCOS treatment-by-age, not thyroid, and its Mayo Clinic source was correctly outside this cluster's registry for exactly that reason. Recategorized in the KB (both Sindhi and English) from "Thyroid & other hormonal imbalances" to "Lifestyle management," which is where its content -- lifestyle changes as first-line treatment, escalating to medication later -- actually fits among the existing subcategories. Removed from this priority cluster; it's ordinary Tier B content now, same review need as any other non-flagged row, not high-risk-cluster content. See git history for the exact change.
 - IDs 922–926 (ovarian failure, fibroids, endometriosis, bleeding disorders) are all cited to the WHO "menstrual health" fact sheet — confirm that fact sheet actually supports these specific clinical claims, since it is a general fact sheet rather than a condition-specific guideline.
 
 ### THY-01 — Source KB ID 910
@@ -352,18 +351,15 @@ Sub-category: ٿائرائيڊ ۽ ٻيا هارموني عدم توازن. Per `
 - **Reviewer notes:** _______________________________________________
 - **Suggested fix (if "Fix"):** _______________________________________________
 
-### THY-23 — Source KB ID 2020
+### ~~THY-23 — Source KB ID 2020~~ — REMOVED, not a review item
 
-- **Category / Sub-category:** پي سي او ايس ۽ هارموني صحت / ٿائرائيڊ ۽ ٻيا هارموني عدم توازن
-- **Sindhi question:** نوجوان ڇوڪرين ۾ PCOS جو علاج بالغن کان ڪيئن مختلف ٿئي ٿو؟
-- **Current Sindhi answer:** نوجوان ڇوڪرين ۾ عام طور تي پهرين قدم طور زندگي جون تبديليون (متوازن غذا ۽ سرگرمي) ۽ ماهواري باقاعده ڪرڻ لاءِ هارمون جون گوريون تجويز ڪيون وينديون آهن، جڏهن ته انسولين مزاحمت يا فرٽيلٽي دوائون عام طور تي بعد ۾ استعمال ٿينديون آهن جڏهن ضرورت هجي۔ تشخيص به وڌيڪ محتاط طريقي سان ڪئي ويندي آهي ڇو ته شروعاتي سالن ۾ چڪر بي قاعده هجڻ عام آهي۔
-- **Source/citation:** Mayo Clinic - PCOS diagnosis & treatment - https://www.mayoclinic.org/diseases-conditions/polycystic-ovary-syndrome/diagnosis-treatment/drc-20353446
-- **Clinical accuracy check:** ☐ Accurate ☐ Partially accurate ☐ Inaccurate — *Pending*
-- **Safety check:** ☐ Safe ☐ Needs caveat ☐ Unsafe — *Pending*
-- **Referral/escalation check:** ☐ Escalation correct/present ☐ Missing escalation ☐ N/A — *Pending*
-- **Reviewer decision:** ☐ Approve ☐ Fix ☐ Drop — *Pending*
-- **Reviewer notes:** _______________________________________________
-- **Suggested fix (if "Fix"):** _______________________________________________
+This ID was miscategorized under this thyroid cluster (its real content is
+PCOS treatment differences by age) and has been recategorized to "Lifestyle
+management" in the KB as of 2026-09-17. It no longer belongs to Priority 1
+and is not part of the 43 items this packet asks a reviewer to sign off on.
+Kept as a visible strikethrough entry, not deleted outright, so this
+packet's own item numbering (THY-01..THY-22, item count 43) stays
+traceable against the version a reviewer may have already started on.
 
 
 ---
@@ -673,10 +669,10 @@ This file was supplied as "the Sindhi danger-sign CSV," but its structure is dif
 
 **Overall assessment of Priority 2 (Danger signs):** _______________________________________________
 
-**Items approved as-is:** _____ / 44
-**Items needing a fix:** _____ / 44
-**Items to drop:** _____ / 44
-**Items left pending / need more info:** _____ / 44
+**Items approved as-is:** _____ / 43
+**Items needing a fix:** _____ / 43
+**Items to drop:** _____ / 43
+**Items left pending / need more info:** _____ / 43
 
 **Any systemic issue found (applies beyond a single item):** _______________________________________________
 
