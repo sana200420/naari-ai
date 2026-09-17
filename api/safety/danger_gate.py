@@ -185,6 +185,7 @@ class GateResult:
     scope_block: str | None       # which scope referral triggered
     response: str | None          # fixed response if blocked
     matched_keyword: str | None   # for logging/regression tests
+    method: str | None = None     # keyword / embedding / none
 
 
 # ── Main gate function ─────────────────────────────────────────────────────────
@@ -210,6 +211,7 @@ def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
                     scope_block=None,
                     response=cat.get("response_override", ESCALATION_SCRIPT),
                     matched_keyword=kw,
+                    method="keyword",
                 )
 
     # 2. Check scope classifiers
@@ -222,6 +224,7 @@ def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
                     scope_block=scope_name,
                     response=scope["response"],
                     matched_keyword=kw,
+                    method="keyword",
                 )
 
     # 3. All clear
@@ -231,4 +234,5 @@ def run_danger_gate(text: str, use_embedding: bool = False) -> GateResult:
         scope_block=None,
         response=None,
         matched_keyword=None,
+        method="none",
     )
