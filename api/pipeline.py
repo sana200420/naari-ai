@@ -5,6 +5,8 @@ Danger gate short-circuits everything — a danger query never reaches retrieval
 import logging
 import time
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import re
 from api.safety.danger_gate import run_danger_gate, GateResult
 from api.routers.ask import AskRequest, AskResponse
