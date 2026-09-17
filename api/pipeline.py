@@ -92,7 +92,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     # planning, low mood). Re-verify both the danger-set recall AND the
     # negative-set false-positive rate after this change -- see NOTE above
     # EMBEDDING_THRESHOLD in danger_gate.py.
-    gate: GateResult = run_danger_gate(query, use_embedding=True)
+    gate: GateResult = run_danger_gate(query, use_embedding=False)
     if gate.escalate:
         latency = round((time.time() - t0) * 1000, 2)
         _log(query, [], [], BAND_HIGH, "danger", latency, "gate", request.session_id)
