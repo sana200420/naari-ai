@@ -99,6 +99,10 @@ DANGER_CATEGORIES = {
     },
     "abuse_violence": {
         "description": "Domestic violence or abuse",
+        "response_override": (
+            "آپ کی مدد کے لیے لیڈی ہیلتھ ورکر سے فوری رابطہ کریں۔ "
+            "آپ اکیلی نہیں ہیں۔ قریبی پولیس اسٹیشن یا شیلٹر ہوم سے بھی مدد لے سکتی ہیں۔"
+        ),
         "keywords_sindhi": ["مار کٽ", "گهريلو تشدد"],
         "keywords_english": [
             "husband hitting", "domestic violence", "being beaten",
@@ -204,7 +208,7 @@ def run_danger_gate(text: str) -> GateResult:
                     escalate=True,
                     category=cat_name,
                     scope_block=None,
-                    response=ESCALATION_SCRIPT,
+                    response=cat.get("response_override", ESCALATION_SCRIPT),
                     matched_keyword=kw,
                 )
 
