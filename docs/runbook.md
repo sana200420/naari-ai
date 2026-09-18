@@ -50,30 +50,45 @@ thread, so the UI loads before the models are ready.
 
 ## Incident 1 — Service returning 404 or 500
 
+*Both steps below still said Railway dashboard / Railway deployments as of
+2026-09-16, months after production moved to the HF Space (Railway served
+a Phase 0 mock only, see ADR 0001's amendment and the service table above)
+-- following them literally would send you to check a dead dashboard while
+the real Space stayed broken. Fixed here to match the current backend.*
+
 **Steps:**
-1. Go to Railway dashboard → naari-ai → **Deployments** tab
-2. Check latest deployment status — is it **Active** or **Failed**?
-3. Click **View logs** — look for Python errors
+1. Go to the Space dashboard (URL above) → **Logs** tab
+2. Check the latest build/run status
+3. Look for Python errors in the run log
 4. If crash: check if a new commit broke something → revert with:
 ```bash
 git revert HEAD
 git push origin main
+git push space main:main   # the Space is a separate git remote, see below
 ```
+Or check `.github/workflows/keep_warm.yml`'s recent runs first (Actions
+tab) — a red run there tells you it's down before you go looking for why.
 
 ---
 
-## Incident 2 — Cold start (40 second delay)
+## Incident 2 — Cold start (5-15+ second delay)
 
-**Cause:** Railway free tier sleeps after inactivity.
+**Cause:** the free-tier Space sleeps after inactivity; models are ~7GB and
+reload on wake. `keep_warm_once.py`'s live check on 2026-09-16 measured an
+11.4s cold response.
 
 **Fix:**
-- Run `keep_warm.py` before demo:
+- Mitigate automatically: `.github/workflows/keep_warm.yml` pings the Space
+  every 15 minutes and fails visibly (Actions tab) if it's actually down,
+  not just cold.
+- Run `keep_warm.py` before a demo, for continuous pings in your own terminal
+  rather than the Actions tab:
 ```bash
 python3 keep_warm.py
 ```
-- Or ping manually every 10 minutes:
+- Or check once, right now:
 ```bash
-curl https://naari-ai-production.up.railway.app/health
+python3 keep_warm_once.py   # exits 0 if warm/reachable, 1 if not
 ```
 
 ---
@@ -143,9 +158,9 @@ curl https://naari-ai-production.up.railway.app/health
 
 ## Demo day checklist
 
-- [ ] Run health check — expect 200
-- [ ] Run keep_warm.py 30 min before demo
+- [ ] Run `python3 keep_warm_once.py` — expect exit code 0
+- [ ] Run `python3 keep_warm.py` 30 min before demo, leave it running
 - [ ] Test `/ask` with a danger phrase — expect escalation response
 - [ ] Test `/ask` with a normal question — expect answer
-- [ ] Check Railway logs — no errors
+- [ ] Check the Space's Logs tab (dashboard URL above) — no errors
 - [ ] DEMO_MODE ready to flip if needed

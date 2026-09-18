@@ -1,0 +1,42 @@
+name: Keep Space warm
+
+# "Uptime monitoring and cold-start mitigation -- Done when a scheduled ping
+# keeps the Space warm during testing windows and downtime is visible without
+# manual checking" (docs/PLAYBOOKS.md, Sabiha's Phase 4).
+#
+# keep_warm.py existed already but pinged the Railway backend, which
+# docs/runbook.md's own service table says has been retired since ADR 0001's
+# amendment -- it was pinging nothing. This runs the same check (root page up,
+# then a real /ask call through the pipeline) on a schedule instead of relying
+# on someone remembering to leave a terminal open before a demo.
+#
+# A failed run shows red in the Actions tab and triggers GitHub's default
+# workflow-failure notification to watchers -- "visible without manual
+# checking" without needing a separate status-page service. A slow-but-
+# successful cold-start response does NOT fail the run; only a genuine
+# unreachable container or a broken /ask call does, so this doesn't cry wolf
+# on every cold start it exists to soften.
+#
+# workflow_dispatch: lets Sabiha's own pre-demo checklist item ("run
+# keep_warm.py 30 min before demo") be a button click instead of a laptop
+# left running -- see docs/runbook.md.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -q gradio_client requests
+
+      - name: Ping the Space
+        run: python keep_warm_once.py

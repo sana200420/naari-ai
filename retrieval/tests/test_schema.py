@@ -13,7 +13,7 @@ def test_real_kb_file_passes_validation():
 def test_every_row_has_a_review_tier():
     with open(DEFAULT_KB_PATH, encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
-    assert len(rows) == 2009   # 2000 + the 9 fever rows, ids 2001-2009
+    assert len(rows) == 2021   # 2000 + 9 fever rows + 12 PCOS rows, ids 2001-2021
     for row in rows:
         assert row["review_tier"] in VALID_TIERS
 

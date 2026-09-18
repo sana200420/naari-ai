@@ -34,3 +34,11 @@ uvicorn[standard]>=0.29.0
 pydantic>=2.7.1,<3
 python-dotenv>=1.0.1
 httpx>=0.27.0
+scikit-learn>=1.5   # scripts/unanswered_questions_report.py -- char-ngram clustering, no GPU needed
+# Both already resolve transitively through gradio, but pinned explicitly --
+# keep_warm.py and .github/workflows/keep_warm.yml install requirements.txt
+# fresh in a minimal CI runner, and an implicit dependency is exactly the
+# kind of thing this project has already been bitten by once (see the torch
+# comment at the top of this file).
+gradio_client>=1.0
+requests>=2.31
