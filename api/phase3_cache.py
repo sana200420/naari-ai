@@ -34,14 +34,22 @@ def _cache_key(query: str) -> str:
     return hashlib.sha256(normalize_sd(query).encode()).hexdigest()
 
 
+_cache_hits = 0
+_cache_misses = 0
+
+
 def cache_get(query: str) -> Optional[dict]:
+    global _cache_hits, _cache_misses
     key = _cache_key(query)
     if key not in _cache:
+        _cache_misses += 1
         return None
     entry = _cache[key]
     if time.time() - entry["ts"] > _CACHE_TTL:
         del _cache[key]
+        _cache_misses += 1
         return None
+    _cache_hits += 1
     return entry["response"]
 
 
@@ -53,7 +61,10 @@ def cache_set(query: str, response: dict) -> None:
 def cache_stats() -> dict:
     now = time.time()
     valid = sum(1 for e in _cache.values() if now - e["ts"] <= _CACHE_TTL)
-    return {"total": len(_cache), "valid": valid}
+    total_requests = _cache_hits + _cache_misses
+    hit_rate = round(_cache_hits / total_requests, 3) if total_requests else 0.0
+    return {"total": len(_cache), "valid": valid, "hits": _cache_hits,
+            "misses": _cache_misses, "hit_rate": hit_rate}
 
 
 # ── Rate limiting (60 req/min per IP) ─────────────────────────

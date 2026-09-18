@@ -5,6 +5,8 @@ Danger gate short-circuits everything — a danger query never reaches retrieval
 import logging
 import time
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import re
 from api.safety.danger_gate import run_danger_gate, GateResult
 from api.routers.ask import AskRequest, AskResponse
@@ -166,6 +168,11 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     elif top_score >= TAU_LOW and chunks:
         band = BAND_MID
     else:
+        band = BAND_LOW
+
+    # Stage 03b: demo mode -- force verbatim-only, refuse confirm/mid bands
+    from api.phase3_cache import is_demo_mode
+    if is_demo_mode() and band in (BAND_CONFIRM, BAND_MID):
         band = BAND_LOW
 
     # Stage 04: low band -> refusal
