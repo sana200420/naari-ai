@@ -141,9 +141,10 @@ def run_pipeline(request: AskRequest) -> AskResponse:
 
     # Stage 02b: enforce review tier
     from api.phase3_tier import enforce_tier, TIER_C_REFUSAL
+    tier_disclaimer = False
     if chunks:
         top_tier = chunks[0].get("tier", "B")
-        _, _, blocked = enforce_tier(top_tier, "", False)
+        _, tier_disclaimer, blocked = enforce_tier(top_tier, "", False)
         if blocked:
             latency = round((time.time() - t0) * 1000, 2)
             _log(query, [], [], BAND_LOW, "tier_c_block", latency, "none", request.session_id)
@@ -219,9 +220,10 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             path=path,
             confidence_band=BAND_HIGH,
             escalated=False,
-            # A confirmed match is a verified KB row, so no disclaimer -- the
-            # hedging is carried by the question being shown first.
-            disclaimer=False,
+            # Confidence band and review tier are orthogonal: a high-confidence
+            # retrieval can still point at an unreviewed (Tier B) row, so the
+            # disclaimer must reflect the row's tier, not the band.
+            disclaimer=tier_disclaimer,
             retrieved_ids=[c["id"] for c in chunks],
             latency_ms=latency,
         )
@@ -243,7 +245,7 @@ def run_pipeline(request: AskRequest) -> AskResponse:
             path="confirm",
             confidence_band=BAND_CONFIRM,
             escalated=False,
-            disclaimer=False,
+            disclaimer=tier_disclaimer,
             retrieved_ids=[c["id"] for c in chunks],
             latency_ms=latency,
             did_you_mean=top.get("question"),
