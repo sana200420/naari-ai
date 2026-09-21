@@ -157,44 +157,69 @@ class HybridRetriever:
         leg_k: int = 25,
         lang: str | None = "sd",
         use_variants: bool = False,
-        variant_weight: float = 1.0,
     ) -> list[dict]:
+        """Canonical-only fusion, with variant hits allowed to fill LEFTOVER
+        slots only -- never to outrank or displace a canonical result.
+
+        A first version fused variant legs into the SAME weighted-RRF
+        competition as the canonical legs, sliced to top_k afterward. A Colab
+        measurement (eval/variant_index_lift.csv) showed that design regresses
+        Recall@1 by 0.125 for a Recall@20 gain of just 0.008 — noisy variant
+        matches were outranking and displacing correct canonical rows before
+        reranking (in retrieval/pipeline.py's search(), the real production
+        path) ever saw them. Variants are a way of finding a row canonical
+        search missed, not a vote against rows it already found.
+
+        With a KB of any real size, canonical fusion fills top_k on nearly
+        every query, so this leaves little room for variants to matter here --
+        that is intentional restraint, not an oversight. The rescue leg that
+        actually needs headroom (extra reranker candidates beyond top_k) is
+        retrieval/pipeline.py's search(), which callers should use for the
+        production path; this method stays a strict top_k contract.
+        """
         dense_rows = self.dense_search(query, top_k=leg_k, lang=lang)
         sparse_rows = self.sparse_search(query, top_k=leg_k, lang=lang)
 
-        ranked_lists = [
-            [row["answer_id"] for row in dense_rows],
-            [row["answer_id"] for row in sparse_rows],
-        ]
-        weights = [1.0, 1.0]
-        all_rows = dense_rows + sparse_rows
-
-        if use_variants:
-            var_dense, var_sparse = self.variant_search(query, top_k=leg_k)
-            ranked_lists += [
-                [row["answer_id"] for row in var_dense],
-                [row["answer_id"] for row in var_sparse],
-            ]
-            weights += [variant_weight, variant_weight]
-            # Canonical rows are appended FIRST above, so setdefault below keeps
-            # the canonical payload for any answer_id both legs found. A variant
-            # point's payload carries its source row's answer text, but the
-            # canonical row is the one whose question was vetted -- it is what
-            # should be shown and what the reranker should score.
-            all_rows = all_rows + var_dense + var_sparse
-
         row_by_id = {}
-        for row in all_rows:
+        for row in dense_rows + sparse_rows:
             row_by_id.setdefault(row["answer_id"], row)
 
-        fused = reciprocal_rank_fusion(ranked_lists, weights=weights)
+        fused = reciprocal_rank_fusion([
+            [row["answer_id"] for row in dense_rows],
+            [row["answer_id"] for row in sparse_rows],
+        ])
 
         results = []
+        canonical_ids = set()
         for answer_id, fused_score in fused[:top_k]:
             row = dict(row_by_id[answer_id])
             row["score"] = fused_score
-            row["path"] = "fused_variants" if use_variants else "fused"
+            row["path"] = "fused"
             results.append(row)
+            canonical_ids.add(answer_id)
+
+        remaining = top_k - len(results)
+        if use_variants and remaining > 0:
+            var_dense, var_sparse = self.variant_search(query, top_k=leg_k)
+            var_row_by_id = {}
+            for row in var_dense + var_sparse:
+                var_row_by_id.setdefault(row["answer_id"], row)
+            var_fused = reciprocal_rank_fusion([
+                [row["answer_id"] for row in var_dense],
+                [row["answer_id"] for row in var_sparse],
+            ])
+            for answer_id, fused_score in var_fused:
+                if answer_id in canonical_ids:
+                    continue
+                if remaining <= 0:
+                    break
+                row = dict(var_row_by_id[answer_id])
+                row["score"] = fused_score
+                row["path"] = "variant_rescue"
+                results.append(row)
+                canonical_ids.add(answer_id)
+                remaining -= 1
+
         return results
 
     def cross_lingual_search(

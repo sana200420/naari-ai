@@ -292,8 +292,10 @@ def test_weight_scales_a_list_contribution():
 
 
 def test_zero_weight_removes_a_list_influence():
-    """A variant_weight of 0 must make the variant legs inert, so the flag can
-    be turned off by configuration without redeploying code."""
+    """A weight of 0 must make a list inert. reciprocal_rank_fusion() keeps
+    this general-purpose parameter even though the variant rescue leg
+    (HybridRetriever.fused_search / retrieval.pipeline.search) no longer uses
+    per-list weighting -- see those functions' docstrings for why."""
     with_legs = dict(reciprocal_rank_fusion([[1, 2], [9]], weights=[1.0, 0.0]))
     assert with_legs[9] == 0.0
     assert with_legs[1] > with_legs[2]
@@ -360,7 +362,7 @@ def test_fused_search_without_variants_never_queries_them():
     assert rows[0]["path"] == "fused"
 
 
-def test_fused_search_with_variants_adds_two_legs():
+def test_fused_search_with_variants_adds_two_legs_when_room_remains():
     client = _FakeQdrantClient(
         dense_hits=[_FakeHit(1, 0.9)], sparse_hits=[_FakeHit(2, 0.8)]
     )
@@ -369,7 +371,64 @@ def test_fused_search_with_variants_adds_two_legs():
     rows = retriever.fused_search("query", top_k=5, use_variants=True)
 
     assert client.calls == ["dense", "sparse", "dense", "sparse"]
-    assert rows[0]["path"] == "fused_variants"
+    assert rows[0]["path"] == "fused"
+
+
+def test_fused_search_skips_variant_legs_when_canonical_fills_top_k():
+    """
+    The regression this guards against: a first design let variant legs
+    compete with canonical legs for the same fixed top_k slots via weighted
+    RRF, and a Colab measurement (eval/variant_index_lift.csv) showed it cost
+    0.125 of Recall@1 for a 0.008 gain in Recall@20 -- noisy variant matches
+    were outranking correct canonical rows before reranking ever saw them.
+    When canonical fusion already fills every slot, there is no room for a
+    rescue and the variant legs should not even be queried.
+    """
+    client = _FakeQdrantClient(
+        dense_hits=[_FakeHit(1, 0.9), _FakeHit(2, 0.8)], sparse_hits=[]
+    )
+    retriever = HybridRetriever(client, embed_fn=_fake_embed)
+
+    rows = retriever.fused_search("query", top_k=2, use_variants=True)
+
+    assert client.calls == ["dense", "sparse"]     # variant legs never queried
+    assert [r["answer_id"] for r in rows] == [1, 2]
+
+
+def test_fused_search_variant_rescue_never_displaces_a_canonical_row():
+    """
+    A variant match that would rank ABOVE every canonical candidate must
+    still never evict one of them -- it may only occupy an otherwise-empty
+    slot. This is the property the regression above violated.
+    """
+    client = _FakeQdrantClient(
+        dense_hits=[_FakeHit(1, 0.9)], sparse_hits=[]
+    )
+
+    class _Client(_FakeQdrantClient):
+        def query_points(self, collection_name, query, using, limit,
+                         with_payload, query_filter=None):
+            self.calls.append(using)
+            self.filters.append(query_filter)
+            is_variant = (
+                query_filter is not None
+                and query_filter.must[0].match.value == VARIANT_LANG
+            )
+            if is_variant and using == "dense":
+                # A variant match for a DIFFERENT row than canonical found,
+                # ranked as strongly as possible.
+                return SimpleNamespace(points=[_FakeHit(99, 0.99)][:limit])
+            return SimpleNamespace(points=(self._dense_hits if using == "dense"
+                                          else self._sparse_hits)[:limit])
+
+    retriever = HybridRetriever(_Client([_FakeHit(1, 0.9)], []), embed_fn=_fake_embed)
+
+    rows = retriever.fused_search("query", top_k=1, use_variants=True)
+
+    # top_k=1 and canonical already found one row -- there is no room, so the
+    # variant's row 99 must not appear even though it would outrank row 1 in
+    # a straight fusion.
+    assert [r["answer_id"] for r in rows] == [1]
 
 
 def test_canonical_payload_wins_over_a_variant_payload():

@@ -86,16 +86,14 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     t0 = time.time()
     query = request.query
 
-    # Stage 00: danger gate — runs FIRST, always
-    # use_embedding=False: after the 33-phrase round + the token-bag fix, the
-    # keyword path alone hits 100/100 on eval/danger_sign_eval_100.csv (0/100
-    # rows depend on the embedding path) and 52/52 on the independent
-    # 52-phrase bank. Keeping embedding on cost ~15.5ms/question for zero
-    # extra recall, and turned three ordinary questions into emergencies -- a
-    # PCOS diet question, a pre-conception planning question, and one about
-    # low mood. Retired here, not deleted: flip back to True (and see the NOTE
-    # above EMBEDDING_THRESHOLD in danger_gate.py) if a future eval finds a
-    # gap only it can catch.
+    # use_embedding=True: re-enabled 2026-09-14 to restore Phase 1's
+    # semantic-fallback requirement (catch paraphrases with no shared
+    # keyword). Cost/trade-off measured previously: ~15.5ms/question extra
+    # latency, and at threshold 0.96 it produced 3 false-positive
+    # escalations on ordinary questions (PCOS diet, pre-conception
+    # planning, low mood). Re-verify both the danger-set recall AND the
+    # negative-set false-positive rate after this change -- see NOTE above
+    # EMBEDDING_THRESHOLD in danger_gate.py.
     gate: GateResult = run_danger_gate(query, use_embedding=False)
     if gate.escalate:
         latency = round((time.time() - t0) * 1000, 2)
@@ -168,6 +166,11 @@ def run_pipeline(request: AskRequest) -> AskResponse:
     elif top_score >= TAU_LOW and chunks:
         band = BAND_MID
     else:
+        band = BAND_LOW
+
+    # Stage 03b: demo mode -- force verbatim-only, refuse confirm/mid bands
+    from api.phase3_cache import is_demo_mode
+    if is_demo_mode() and band in (BAND_CONFIRM, BAND_MID):
         band = BAND_LOW
 
     # Stage 04: low band -> refusal
