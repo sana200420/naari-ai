@@ -7,7 +7,12 @@ A bug here has a physical consequence for a real woman.
 
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
+
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # ── Escalation script (fixed — never change without clinical review) ──────────
 ESCALATION_SCRIPT = (
@@ -163,10 +168,64 @@ SCOPE_REFERRALS = {
     }
 }
 
+# ── Semantic anchor phrases per danger category ────────────────────────────────
+DANGER_ANCHORS = {
+    "heavy_bleeding":       "excessive uncontrolled bleeding blood loss",
+    "severe_pain":          "unbearable severe sudden intense pain abdomen pelvis",
+    "pregnancy_danger":     "dangerous emergency sign during pregnancy baby not moving fits",
+    "postpartum_danger":    "danger after delivery fever infection wound smell",
+    "suicide_self_harm":    "wanting to die ending life hurting oneself",
+    "unconsciousness":      "passed out fainted seizure loss of consciousness",
+    "breathing_difficulty": "unable to breathe gasping chest pain suffocation",
+    "high_fever":           "very high temperature fever not breaking burning up",
+    "abuse_violence":       "being beaten hit domestic violence forced assault",
+    "infant_danger":        "newborn baby not breathing not feeding yellow limp",
+    "ectopic_miscarriage":  "pregnancy loss miscarriage bleeding tissue ectopic",
+}
+
+SIMILARITY_THRESHOLD = 0.55
+
+# ── Lazy-loaded model ──────────────────────────────────────────────────────────
+_model: Optional[SentenceTransformer] = None
+_anchor_embeddings: Optional[np.ndarray] = None
+_anchor_categories: list[str] = []
+
+
+def _get_model() -> SentenceTransformer:
+    global _model
+    if _model is None:
+        _model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+    return _model
+
+
+def _get_anchor_embeddings() -> tuple[np.ndarray, list[str]]:
+    global _anchor_embeddings, _anchor_categories
+    if _anchor_embeddings is None:
+        model = _get_model()
+        _anchor_categories = list(DANGER_ANCHORS.keys())
+        anchors = [DANGER_ANCHORS[c] for c in _anchor_categories]
+        _anchor_embeddings = model.encode(anchors, normalize_embeddings=True)
+    return _anchor_embeddings, _anchor_categories
+
+
+def _semantic_check(text: str) -> Optional[tuple[str, float]]:
+    """
+    Embed query and compare against 11 danger anchors.
+    Catches phrasing that shares NO keyword but means the same thing.
+    """
+    model = _get_model()
+    anchor_embs, categories = _get_anchor_embeddings()
+    query_emb = model.encode([text], normalize_embeddings=True)
+    scores = cosine_similarity(query_emb, anchor_embs)[0]
+    best_idx = int(np.argmax(scores))
+    best_score = float(scores[best_idx])
+    if best_score >= SIMILARITY_THRESHOLD:
+        return categories[best_idx], best_score
+    return None
+
 
 # ── Normaliser ─────────────────────────────────────────────────────────────────
 def normalise(text: str) -> str:
-    """Lowercase, strip diacritics, collapse whitespace."""
     text = text.lower().strip()
     text = unicodedata.normalize("NFKD", text)
     text = re.sub(r"\s+", " ", text)
@@ -177,21 +236,23 @@ def normalise(text: str) -> str:
 @dataclass
 class GateResult:
     escalate: bool
-    category: str | None          # which danger category triggered
-    scope_block: str | None       # which scope referral triggered
-    response: str | None          # fixed response if blocked
-    matched_keyword: str | None   # for logging/regression tests
+    category: Optional[str]
+    scope_block: Optional[str]
+    response: Optional[str]
+    matched_keyword: Optional[str]
+    similarity_score: Optional[float] = field(default=None)
 
 
 # ── Main gate function ─────────────────────────────────────────────────────────
-def run_danger_gate(text: str) -> GateResult:
+def run_danger_gate(text: str, use_semantic: bool = True) -> GateResult:
     """
-    Pure function. Call this FIRST — before retrieval, before LLM.
-    Returns GateResult with escalate=True if any danger keyword matches.
+    Two-stage detection:
+      1. Keyword matching  — fast, zero model cost.
+      2. Embedding similarity — catches keyword-free paraphrases.
     """
     norm = normalise(text)
 
-    # 1. Check all 11 danger categories
+    # Stage 1: Keyword matching
     for cat_name, cat in DANGER_CATEGORIES.items():
         all_keywords = (
             cat.get("keywords_english", [])
@@ -206,9 +267,24 @@ def run_danger_gate(text: str) -> GateResult:
                     scope_block=None,
                     response=ESCALATION_SCRIPT,
                     matched_keyword=kw,
+                    similarity_score=None,
                 )
 
-    # 2. Check scope classifiers
+    # Stage 2: Embedding similarity
+    if use_semantic:
+        result = _semantic_check(text)
+        if result is not None:
+            cat_name, score = result
+            return GateResult(
+                escalate=True,
+                category=cat_name,
+                scope_block=None,
+                response=ESCALATION_SCRIPT,
+                matched_keyword=None,
+                similarity_score=score,
+            )
+
+    # Stage 3: Scope classifiers
     for scope_name, scope in SCOPE_REFERRALS.items():
         for kw in scope["keywords"]:
             if normalise(kw) in norm:
@@ -218,13 +294,15 @@ def run_danger_gate(text: str) -> GateResult:
                     scope_block=scope_name,
                     response=scope["response"],
                     matched_keyword=kw,
+                    similarity_score=None,
                 )
 
-    # 3. All clear
+    # Stage 4: All clear
     return GateResult(
         escalate=False,
         category=None,
         scope_block=None,
         response=None,
         matched_keyword=None,
+        similarity_score=None,
     )
