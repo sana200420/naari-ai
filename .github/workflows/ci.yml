@@ -23,7 +23,30 @@ jobs:
           fi
           echo "No .env in the repo."
 
-      # Uncomment as each piece lands:
-      # - run: pip install -r requirements.txt
-      # - run: pytest retrieval/ api/
-      # - run: python eval/run_eval.py --ci
+      - run: pip install -r requirements.txt
+      - run: pytest retrieval/
+      - run: pytest api/
+      # Mahnoor's corpus and eval-set tests. Every folder owner writes tests
+      # for their own folder; these had none running because the folder was
+      # never committed.
+      - run: pytest data/
+      - run: python eval/run_danger_gate_eval.py --ci
+
+      # False-escalation is a section-7 target (<=0.05) and had no gate, so a
+      # change that made the danger gate shout at ordinary questions would have
+      # passed CI. The script exits non-zero above the threshold.
+      - run: python eval/run_negative_set_eval.py --ci
+
+      # Mahnoor's harness needs retrieval predictions for recall, which need a
+      # live Space, so it cannot gate a PR. It still earns a place here as a
+      # data-integrity check: it fails loudly if a gold or out-of-scope set
+      # goes missing or loses its schema. eval/out_of_scope_eval.csv was absent
+      # from the repo for three weeks and nothing noticed until a Colab run
+      # died on it.
+      - name: Evaluation data is present and well-formed
+        run: |
+          python eval/run_eval.py | tee /tmp/eval.txt
+          grep -q "gold_eval_size: 180" /tmp/eval.txt || {
+            echo "::error::gold_eval.csv is missing or the wrong size"; exit 1; }
+          grep -q "oos_eval_size: 100" /tmp/eval.txt || {
+            echo "::error::out_of_scope_eval.csv is missing or the wrong size"; exit 1; }
