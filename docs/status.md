@@ -66,7 +66,7 @@ Mahnoor's `data/build_corpus.py` + eval pipeline is landed in `/data` and `/eval
 - `eval/out_of_scope_eval.csv`: 100 rows, 20/scope-type — **fixed** a generator bug that had produced only 4 distinct queries per type repeated to pad to 20 (80% exact duplicates); regression tests added in `data/tests/test_eval_sets.py`
 - `eval/run_eval.py`: harness works end-to-end for dataset sizes; retrieval/safety metrics correctly report "NOT AVAILABLE" rather than fabricating numbers until predictions exist — **fixed** a crash when the (expected-missing) danger-sign file isn't present yet
 - `eval/negative_set_100.csv`, `eval/danger_sign_eval_100.csv`, `eval/out_of_scope_eval_v2_100.csv`: newer deliverables from Mahnoor, verified clean (0 dup, 0 blank)
-- `data/variants/colloquial_variants.csv`: smoke-test batch only, answer_id 1–30 of ~2000 (resumable via `_progress.json`)
+- `data/variants/colloquial_variants.csv`: **superseded** -- this was a 150-row smoke-test batch (answer_id 1-30), reviewed/approved (PR #32) and then superseded entirely once the real corpus landed. The real variant corpus is `data/processed/variant_queue_clean.csv`, 4,000 rows, all 2,000 KB answer_ids, 4,000/4,000 usable (0 flagged). This line said "1.5% complete" for 12 days after that landed -- see the burn-down section below for what that actually caused.
 - Danger-sign eval set: correctly not generated — blocked on an approved clinical source file, not fabricated
 
 ## Latest eval numbers
@@ -75,7 +75,33 @@ See `eval/results.md`. Provisional dense/sparse/fused ablation exists; final num
 
 ## Variant review burn-down
 
-Not yet started — variant generation itself is only ~1.5% complete (30/2000 answer_ids).
+**Corrected 2026-09-25** -- this section said "not yet started, 1.5% complete"
+from early September until today, describing a 150-row smoke-test batch
+(`data/variants/colloquial_variants.csv`) that was superseded by the real
+4,000-row corpus on 2026-09-17/18. Nobody updated this file when that
+landed, and it got read as current status and escalated as a live blocker
+on 2026-09-25 -- it wasn't. Lesson: a stale status line does real damage
+once someone acts on it, not just an accuracy nitpick.
+
+- Generation: complete. `data/processed/variant_queue_clean.csv`, 4,000/4,000
+  usable, all 2,000 KB answer_ids covered, 0 flagged.
+- Per-category human review burn-down (distinct from the above --
+  confirming variants read naturally and fit their category, not just
+  that they aren't padding): tracker file `data/variants/review_status.csv`
+  does not exist yet. Nobody has started their own two categories.
+  Owners: Sana (Pregnancy/Maternal, PCOS), Sabiha (Menstrual, Mental Health
+  -- her PR #32 approval may already satisfy this, needs confirming
+  against what the tracker will actually measure), Tooba (Fertility,
+  Hygiene), Mahnoor (Nutrition, Menopause).
+
+## Clinical review
+
+**Done, 2026-09-20/23.** Dr Arshia (FCPS) reviewed the 43-item high-risk
+packet (`docs/clinical_review/`): 36 approved as-is, 7 need a fix (in
+English, need Sindhi translation before they replace KB content -- not
+yet done). The 36 approved rows are promoted to `review_tier=A` in both
+KB files as of this commit; everything else remains Tier B. Tier counts:
+36 A, 1985 B, 0 C.
 
 ---
 *Update this file when reality changes, not on a schedule.*
