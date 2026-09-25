@@ -87,12 +87,17 @@ once someone acts on it, not just an accuracy nitpick.
   usable, all 2,000 KB answer_ids covered, 0 flagged.
 - Per-category human review burn-down (distinct from the above --
   confirming variants read naturally and fit their category, not just
-  that they aren't padding): tracker file `data/variants/review_status.csv`
-  does not exist yet. Nobody has started their own two categories.
-  Owners: Sana (Pregnancy/Maternal, PCOS), Sabiha (Menstrual, Mental Health
-  -- her PR #32 approval may already satisfy this, needs confirming
-  against what the tracker will actually measure), Tooba (Fertility,
-  Hygiene), Mahnoor (Nutrition, Menopause).
+  that they aren't padding): tracker now exists,
+  `scripts/variant_review_burndown.py` writes `data/variants/review_status.csv`,
+  500 variants/category, 8 categories. Current state: **0% everywhere,
+  all four owners.** Sabiha's PR #32 approval does NOT count here --
+  confirmed it's a different file (`data/variants/colloquial_variants.csv`,
+  superseded, see above) -- so she starts at 0% same as everyone else,
+  genuinely, not a tracking gap.
+  Owners: Sana (Pregnancy/Maternal, PCOS), Sabiha (Menstrual, Mental
+  Health), Tooba (Fertility, Hygiene), Mahnoor (Nutrition, Menopause).
+  Not yet wired into CI (PLAYBOOKS.md wants a burn-down line written on
+  every push) -- the script runs on demand for now.
 
 ## Clinical review
 
