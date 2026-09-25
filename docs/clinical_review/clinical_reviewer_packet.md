@@ -1,7 +1,10 @@
 # NaariAI Sindhi KB — Clinical Reviewer Packet
-## ⚠️ STATUS: PENDING CLINICAL REVIEW — NOT YET APPROVED
+## ✅ STATUS: REVIEWED — Dr Arshia (FCPS), 2026-09-20/23. See §7.
 
-No item in this packet has been reviewed, corrected, or signed off by a doctor or LHW (Lady Health Worker) supervisor. Nothing here should be treated as clinically approved or pushed to production until the sign-off section at the end is completed by a qualified reviewer.
+36 of 43 items approved as-is. 7 need a Sindhi-translated fix before pilot
+use (suggested corrections in `clinical_review_tracking.csv`, currently
+English only). Full details and the process note about one item reviewed
+against a stale copy of this packet: §7.
 
 ---
 
@@ -663,28 +666,60 @@ This file was supplied as "the Sindhi danger-sign CSV," but its structure is dif
 
 ## 7. Final Reviewer Summary
 
-*(To be completed by the clinical reviewer)*
+**COMPLETED 2026-09-20/23** — full per-item decisions in
+`clinical_review_tracking.csv` (Sindhi) / `clinical_review_tracking_english.csv`
+(English, same review_ids, cross-checked for zero decision mismatches).
 
-**Overall assessment of Priority 1 (Thyroid):** _______________________________________________
+**Priority 1 (Thyroid, 22 items):** 18 approved as-is, 4 need a fix (R004,
+R009, R010, R014) -- all four are the same shape of issue: the Sindhi
+answer was safe but incomplete next to what a clinician would actually
+say (e.g. R004 didn't name the TSH blood test; R009 didn't name T3/T4 or
+mention pregnancy-specific iodine guidance). See each item's
+`suggested_fix` in the tracking CSV.
 
-**Overall assessment of Priority 2 (Danger signs):** _______________________________________________
+**Priority 2 (Danger signs, 21 items):** 18 approved as-is, 3 need a fix
+(R028, R034, R039) -- R039 (postpartum haemorrhage) is the one worth
+flagging specifically: the reviewer's fix adds "leading cause of
+maternal death" and "go to the hospital immediately, don't wait to see
+whether it decreases" -- stronger and more specific than the current
+KB wording.
 
-**Items approved as-is:** _____ / 43
-**Items needing a fix:** _____ / 43
-**Items to drop:** _____ / 43
-**Items left pending / need more info:** _____ / 43
+**Items approved as-is:** 36 / 43
+**Items needing a fix:** 7 / 43
+**Items to drop:** 0 / 43
+**Items left pending / need more info:** 0 / 43
 
-**Any systemic issue found (applies beyond a single item):** _______________________________________________
+**Process note, not a clinical finding:** the copy of this packet actually
+sent for review predated the 2026-09-17 fix that removed item THY-23
+(source ID 2020, miscategorized under Thyroid -- see the struck-through
+entry in §4). The reviewer reviewed it anyway under its old framing and
+approved the content as accurate and safe (review_id R023, not counted
+in the 43 above). No harm done -- the content was fine, only its filing
+was wrong, and that's already corrected in the KB independently -- but
+future packets should be re-diffed against `main` immediately before
+sending, not assumed current.
 
-**Cleared for pilot use?** ☐ Yes ☐ No ☐ Yes, with fixes applied first ☐ Not yet — needs another review pass
+**Any systemic issue found:** No. The 7 fixes are all specific,
+local corrections (more detail/named tests, stronger emergency wording)
+-- the reviewer did not flag a pattern affecting items beyond themselves.
+
+**Cleared for pilot use?** ☒ Yes, with fixes applied first
+
+**Next step, not done here:** the 7 `suggested_fix` entries are in
+English. They need Sindhi translation before they can replace the KB's
+current answers -- deliberately not done in this pass; inventing a
+Sindhi medical translation without review would recreate the exact
+problem this process exists to catch.
 
 ---
 
 ### Reviewer sign-off
 
-- **Reviewer name:** _______________________________________________
-- **Credentials / role (e.g. MBBS, LHW Supervisor):** _______________________________________________
-- **Date of review:** _______________________________________________
-- **Signature:** _______________________________________________
+- **Reviewer name:** Dr Arshia
+- **Credentials / role:** FCPS
+- **Date of review:** 2026-09-20 to 2026-09-23 (per-item dates in the tracking CSV)
+- **Signature:** on file in the tracking CSV (`reviewer`/`reviewer_credentials` columns, per row)
 
-*This packet is not valid as a clinical approval until this section is completed by a named, credentialed reviewer.*
+**This packet is now a valid clinical approval for the 36 approved items.**
+The 7 "Fix" items are approved in principle, conditional on the suggested
+corrections being applied (in Sindhi) before pilot use.
