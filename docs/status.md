@@ -101,12 +101,9 @@ once someone acts on it, not just an accuracy nitpick.
 
 ## Clinical review
 
-**Done, 2026-09-20/23.** Dr Arshia (FCPS) reviewed the 43-item high-risk
-packet (`docs/clinical_review/`): 36 approved as-is, 7 need a fix (in
-English, need Sindhi translation before they replace KB content -- not
-yet done). The 36 approved rows are promoted to `review_tier=A` in both
-KB files as of this commit; everything else remains Tier B. Tier counts:
-36 A, 1985 B, 0 C.
+**Done, 2026-09-23.** Dr Arshia (FCPS) reviewed the 44-item high-risk packet (`docs/clinical_review/`): 37 approved as-is, 7 needed a fix. Fixes translated to Sindhi and applied directly to the KB (`Womens_Health_KB_SINDHI_TIERED.csv`). All 44 rows promoted to `review_tier=A` in both KB files as of this commit; everything else remains Tier B. Tier counts: 44 A, 1977 B, 0 C.
+
+Next: LHW language/real-world-relevance review (`docs/clinical_review/lhw_review_packet.md`) — 24-row sample drawn from Tier B, one reviewer per KB category, not yet sent.
 
 ---
 *Update this file when reality changes, not on a schedule.*
