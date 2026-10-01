@@ -415,19 +415,39 @@ def _try_groq(prompt: str) -> str:
         return None
 
 
+MEDICINE_TERMS = [
+    "paracetamol", "panadol", "ibuprofen", "brufen", "aspirin", "disprin",
+    "misoprostol", "cytotec", "mifepristone", "oxytocin", "diclofenac",
+    "amoxicillin", "augmentin", "azithromycin", "metronidazole", "flagyl",
+    "ciprofloxacin", "antibiotic", "painkiller", "syrup", "injection",
+    "ٽيبليٽ", "دوا", "گولي", "ٹیبلیٹ", "گولی", "انجیکشن",
+]
+
+DIAGNOSIS_PATTERNS = [
+    r"\byou (have|are suffering from|probably have|likely have)\b",
+    r"\bthis (is|sounds like|could be|may be) (a |an )?(infection|pcos|pcod|thyroid|cancer|anemia|diabetes|depression|miscarriage|pregnan)",
+    r"\byour (symptoms|condition) (is|are|means)\b",
+    r"آپ کو .{0,30}(ہے|ہو سکتا ہے|لگتا ہے)",
+]
+
+FALSE_REASSURANCE = [
+    "nothing to worry", "don't worry", "do not worry", "it's normal",
+    "it is normal", "just relax", "no need to worry", "probably nothing",
+    "should be fine", "will be fine", "nothing serious", "not serious",
+    "فکر نہ کریں", "فکر نہ کرو", "کوئی بات نہیں", "گھبرائیں نہیں",
+    "پريشان نه ٿيو", "ڪا ڳالهه ناهي", "فڪر نه ڪريو",
+]
+
+
 def output_filter(text: str) -> str:
-    """Stage 07: block medicine names, doses, diagnosis phrasing."""
-    REFUSAL = _REFUSAL
-
-    if re.search(r"\d+\s*(mg|ml|mcg|tablet|tablets|cap|capsule|dose)", text, re.IGNORECASE):
-        return REFUSAL
-
-    bad_phrases = [
-        "nothing to worry", "don't worry", "it's normal", "just relax",
-        "no need to worry", "probably nothing", "should be fine"
-    ]
-    for phrase in bad_phrases:
-        if phrase.lower() in text.lower():
-            return REFUSAL
-
+    """Stage 07: block medicine names, doses, diagnosis phrasing, false reassurance."""
+    t = text.lower()
+    if re.search(r"\d+\s*(mg|ml|mcg|g|iu|tablet|tablets|tab|cap|capsule|dose|doses|گولي|گولی)\b", t):
+        return _REFUSAL
+    if any(m.lower() in t for m in MEDICINE_TERMS):
+        return _REFUSAL
+    if any(re.search(pt, t, re.IGNORECASE) for pt in DIAGNOSIS_PATTERNS):
+        return _REFUSAL
+    if any(ph.lower() in t for ph in FALSE_REASSURANCE):
+        return _REFUSAL
     return text
