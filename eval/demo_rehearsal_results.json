@@ -1,451 +1,56 @@
 [
   {
     "run": 1,
-    "timestamp": "2026-09-17T10:02:27.441646+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1365.4,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1043.8,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1105.9,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1438.1,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1044.9,
-        "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 2,
-    "timestamp": "2026-09-17T10:03:07.814843+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1153.3,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1087.8,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1055.1,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 988.7,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1080.5,
-        "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 3,
-    "timestamp": "2026-09-17T10:03:51.091681+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1712.6,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1550.7,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1662.2,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1323.6,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 2017.1,
-        "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 4,
-    "timestamp": "2026-09-17T10:04:39.323497+00:00",
+    "timestamp": "2026-09-25T06:03:08.471245+00:00",
     "clean": false,
     "count_429": 0,
-    "count_cold_start": 1,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1510.1,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 2561.3,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1765.8,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1514.2,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 5870.2,
-        "is_429": false,
-        "is_cold_start": true
-      }
-    ]
-  },
-  {
-    "run": 5,
-    "timestamp": "2026-09-17T10:05:23.339554+00:00",
-    "clean": true,
-    "count_429": 0,
     "count_cold_start": 0,
-    "count_error": 0,
+    "count_error": 5,
     "details": [
       {
         "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 2004.7,
+        "ok": false,
+        "path": null,
+        "latency_ms": 1236.3,
         "is_429": false,
-        "is_cold_start": false
+        "is_cold_start": false,
+        "error": "ValueError: The current space is in the invalid state: RUNTIME_ERROR. Please contact the owner to fix this."
       },
       {
         "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1447.4,
+        "ok": false,
+        "path": null,
+        "latency_ms": 636.9,
         "is_429": false,
-        "is_cold_start": false
+        "is_cold_start": false,
+        "error": "ValueError: The current space is in the invalid state: RUNTIME_ERROR. Please contact the owner to fix this."
       },
       {
         "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1826.9,
+        "ok": false,
+        "path": null,
+        "latency_ms": 640.4,
         "is_429": false,
-        "is_cold_start": false
+        "is_cold_start": false,
+        "error": "ValueError: The current space is in the invalid state: RUNTIME_ERROR. Please contact the owner to fix this."
       },
       {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1986.1,
+        "query": "پي سي او ايس جون علامتون ڪهڙيون آهن",
+        "ok": false,
+        "path": null,
+        "latency_ms": 632.4,
         "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1740.9,
-        "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 6,
-    "timestamp": "2026-09-17T10:06:03.909344+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1164.0,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1161.0,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1083.8,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1135.5,
-        "is_429": false,
-        "is_cold_start": false
+        "is_cold_start": false,
+        "error": "ValueError: The current space is in the invalid state: RUNTIME_ERROR. Please contact the owner to fix this."
       },
       {
         "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1015.8,
+        "ok": false,
+        "path": null,
+        "latency_ms": 603.9,
         "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 7,
-    "timestamp": "2026-09-17T10:06:44.528847+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1373.1,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1087.0,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1044.3,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1094.1,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1009.0,
-        "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 8,
-    "timestamp": "2026-09-17T10:07:25.668902+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1028.4,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1163.6,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1747.9,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1070.9,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1118.4,
-        "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 9,
-    "timestamp": "2026-09-17T10:08:07.163556+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1451.8,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1719.6,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1200.0,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1040.0,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1071.4,
-        "is_429": false,
-        "is_cold_start": false
-      }
-    ]
-  },
-  {
-    "run": 10,
-    "timestamp": "2026-09-17T10:08:48.385434+00:00",
-    "clean": true,
-    "count_429": 0,
-    "count_cold_start": 0,
-    "count_error": 0,
-    "details": [
-      {
-        "query": "ماهواري ڇا آهي",
-        "status": 404,
-        "latency_ms": 1146.5,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "حمل ۾ الٽي ڇو ٿئي ٿي",
-        "status": 404,
-        "latency_ms": 1244.9,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "گھڻو رت وهي رهيو آهي",
-        "status": 404,
-        "latency_ms": 1104.9,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "بارش نه ٿيڻ جو سبب ڇا آهي",
-        "status": 404,
-        "latency_ms": 1692.7,
-        "is_429": false,
-        "is_cold_start": false
-      },
-      {
-        "query": "پيريڊ دوران درد لاءِ ڇا ڪجي",
-        "status": 404,
-        "latency_ms": 1022.8,
-        "is_429": false,
-        "is_cold_start": false
+        "is_cold_start": false,
+        "error": "ValueError: The current space is in the invalid state: RUNTIME_ERROR. Please contact the owner to fix this."
       }
     ]
   }

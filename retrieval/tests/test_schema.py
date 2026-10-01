@@ -18,13 +18,38 @@ def test_every_row_has_a_review_tier():
         assert row["review_tier"] in VALID_TIERS
 
 
-def test_all_rows_currently_default_to_b():
-    # true today: nothing has been clinically reviewed yet. This test is
-    # expected to start failing once a reviewer promotes real rows to A —
-    # that's the point; update it then, don't just delete it.
+def test_tier_a_matches_the_clinical_review_sign_off():
+    # Was test_all_rows_currently_default_to_b, asserting every row was B --
+    # that stopped being true 2026-09-25 when Dr Arshia's (FCPS) review of
+    # docs/clinical_review/ promoted 36 rows to A. This is the update that
+    # test's own comment asked for, not a workaround: A-tier ids must be
+    # exactly the ones with decision=="Approve" in the tracking CSV (minus
+    # R023, reviewed against a stale packet copy -- see docs/status.md),
+    # and every review_tier value must still be a valid tier. No row should
+    # ever become C by silent default.
+    import csv as csv_mod
+    from pathlib import Path
+
     with open(DEFAULT_KB_PATH, encoding="utf-8", newline="") as f:
-        rows = list(csv.DictReader(f))
-    assert all(row["review_tier"] == "B" for row in rows)
+        rows = list(csv_mod.DictReader(f))
+    assert all(row["review_tier"] in VALID_TIERS for row in rows)
+    assert not any(row["review_tier"] == "C" for row in rows), (
+        "a row became Tier C -- that blocks serving entirely and must be "
+        "a deliberate clinical decision, never a silent default"
+    )
+
+    tracking = Path(__file__).resolve().parents[2] / "docs/clinical_review/clinical_review_tracking.csv"
+    with open(tracking, encoding="utf-8-sig", newline="") as f:  # the CSV has a BOM
+        tracking_rows = list(csv_mod.DictReader(f))
+    expected_a = {r["source_id"] for r in tracking_rows
+                 if r["decision"] == "Approve" and r["review_id"] != "R023"}
+
+    actual_a = {row["id"] for row in rows if row["review_tier"] == "A"}
+    assert actual_a == expected_a, (
+        f"Tier A in the KB doesn't match the clinical review sign-off. "
+        f"In KB but not approved: {actual_a - expected_a}. "
+        f"Approved but not promoted: {expected_a - actual_a}."
+    )
 
 
 def test_validator_catches_a_bad_tier(tmp_path):
